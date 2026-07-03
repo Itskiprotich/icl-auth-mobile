@@ -28,6 +28,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.savedstate.read
+import dev.ohs.player.auth.ForgotPasswordScreen
 import dev.ohs.player.auth.LoginScreen
 import dev.ohs.player.auth.LoginScreenConfig
 import dev.ohs.player.library.registry.LocalViewRegistry
@@ -55,16 +56,24 @@ fun App() {
     CompositionLocalProvider(LocalViewRegistry provides registry) {
         OhsPlayerTheme {
             var isLoggedIn by rememberSaveable { mutableStateOf(false) }
+            var showForgotPassword by rememberSaveable { mutableStateOf(false) }
 
-            if (isLoggedIn) {
-                ReferenceAppNavigation()
-            } else {
-                LoginScreen(
-                    config = LOGIN_SCREEN_CONFIG,
-                    onLoginSuccess = { isLoggedIn = true },
-                    onForgotPasswordClick = {},
-                    onTermsAndConditionsClick = {},
-                )
+            when {
+                isLoggedIn -> ReferenceAppNavigation()
+                showForgotPassword -> {
+                    ForgotPasswordScreen(
+                        onSubmit = { Result.success(Unit) },
+                        onBackToLoginClick = { showForgotPassword = false },
+                    )
+                }
+                else -> {
+                    LoginScreen(
+                        config = LOGIN_SCREEN_CONFIG,
+                        onLoginSuccess = { isLoggedIn = true },
+                        onForgotPasswordClick = { showForgotPassword = true },
+                        onTermsAndConditionsClick = {},
+                    )
+                }
             }
         }
     }

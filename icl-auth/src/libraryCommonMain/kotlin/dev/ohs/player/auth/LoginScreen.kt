@@ -312,7 +312,7 @@ private fun LoginFooter(onTermsAndConditionsClick: () -> Unit, modifier: Modifie
 }
 
 @Composable
-private fun AuthLogo(modifier: Modifier = Modifier) {
+internal fun AuthLogo(modifier: Modifier = Modifier) {
   val primary = MaterialTheme.colorScheme.primary
   val secondary = MaterialTheme.colorScheme.secondary
   val primaryContainer = MaterialTheme.colorScheme.primaryContainer
