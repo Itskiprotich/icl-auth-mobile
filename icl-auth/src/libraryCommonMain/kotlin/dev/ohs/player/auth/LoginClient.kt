@@ -62,6 +62,16 @@ internal data class ResolvedSetNewPasswordConfig(
   val responseMessageResolver: ((statusCode: Int, responseBody: String) -> String?)?,
 )
 
+internal data class ResolvedResetPasswordConfig(
+  val resetPasswordUrl: String?,
+  val requestHeaders: Map<String, String>,
+  val minPasswordLength: Int,
+  val requestTimeoutMillis: Long,
+  val responseMessageKeys: List<String>,
+  val messages: ResetPasswordMessages,
+  val responseMessageResolver: ((statusCode: Int, responseBody: String) -> String?)?,
+)
+
 internal sealed interface LoginAttemptResult {
   data class Success(val value: LoginSuccess) : LoginAttemptResult
 
@@ -72,6 +82,12 @@ internal sealed interface SetNewPasswordAttemptResult {
   data class Success(val value: SetNewPasswordSuccess) : SetNewPasswordAttemptResult
 
   data class Failure(val value: SetNewPasswordFailure) : SetNewPasswordAttemptResult
+}
+
+internal sealed interface ResetPasswordAttemptResult {
+  data class Success(val value: ResetPasswordSuccess) : ResetPasswordAttemptResult
+
+  data class Failure(val value: ResetPasswordFailure) : ResetPasswordAttemptResult
 }
 
 internal sealed interface ProviderProfileRequestResult {
@@ -221,6 +237,60 @@ internal class LoginService(val httpClient: HttpClient) {
       )
     }
   }
+
+  suspend fun resetPassword(
+    config: ResolvedResetPasswordConfig,
+    request: ResetPasswordReq,
+  ): ResetPasswordAttemptResult {
+    val validationFailure = validateResetPasswordRequest(config = config, request = request)
+    if (validationFailure != null) {
+      return ResetPasswordAttemptResult.Failure(validationFailure)
+    }
+
+    val resetPasswordUrl =
+      config.resetPasswordUrl
+        ?: return ResetPasswordAttemptResult.Failure(
+          ResetPasswordFailure(message = config.messages.missingResetPasswordUrl)
+        )
+
+    return try {
+      val response =
+        httpClient.post(resetPasswordUrl) {
+          header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+          accept(ContentType.Application.Json)
+          config.requestHeaders.forEach { (name, value) -> header(name, value) }
+          setBody(buildResetPasswordRequestBody(request))
+        }
+      val responseBody = response.bodyAsText()
+
+      if (response.status.isSuccess()) {
+        ResetPasswordAttemptResult.Success(
+          ResetPasswordSuccess(statusCode = response.status.value, responseBody = responseBody)
+        )
+      } else {
+        ResetPasswordAttemptResult.Failure(
+          ResetPasswordFailure(
+            message =
+              resolveResetPasswordFailureMessage(
+                config = config,
+                statusCode = response.status.value,
+                responseBody = responseBody,
+              ),
+            statusCode = response.status.value,
+            responseBody = responseBody,
+          )
+        )
+      }
+    } catch (error: Throwable) {
+      if (error is CancellationException) {
+        throw error
+      }
+
+      ResetPasswordAttemptResult.Failure(
+        ResetPasswordFailure(message = config.messages.networkError)
+      )
+    }
+  }
 }
 
 private suspend fun LoginService.fetchProviderProfile(
@@ -340,6 +410,32 @@ internal fun buildSetNewPasswordRequestBody(request: SetNewPasswordReq): String 
   return Json.encodeToString(JsonObject.serializer(), payload)
 }
 
+internal fun validateResetPasswordRequest(
+  config: ResolvedResetPasswordConfig,
+  request: ResetPasswordReq,
+): ResetPasswordFailure? =
+  when {
+    config.resetPasswordUrl.isNullOrBlank() ->
+      ResetPasswordFailure(message = config.messages.missingResetPasswordUrl)
+    request.identifier.isBlank() ->
+      ResetPasswordFailure(message = config.messages.missingIdentifier)
+    request.otp.isBlank() -> ResetPasswordFailure(message = config.messages.emptyOtp)
+    request.password.isBlank() -> ResetPasswordFailure(message = config.messages.emptyPassword)
+    request.password.length < config.minPasswordLength ->
+      ResetPasswordFailure(message = config.messages.passwordTooShort)
+    else -> null
+  }
+
+internal fun buildResetPasswordRequestBody(request: ResetPasswordReq): String {
+  val payload = buildJsonObject {
+    put("otp", JsonPrimitive(request.otp))
+    put("identifier", JsonPrimitive(request.identifier))
+    put("password", JsonPrimitive(request.password))
+  }
+
+  return Json.encodeToString(JsonObject.serializer(), payload)
+}
+
 internal fun resolveFailureMessage(
   config: ResolvedLoginConfig,
   statusCode: Int,
@@ -362,6 +458,19 @@ internal fun resolveSetNewPasswordFailureMessage(
     ?: extractResponseMessage(responseBody = responseBody, keys = config.responseMessageKeys)
     ?: when {
       statusCode in 400..499 -> config.messages.unexpectedError
+      statusCode >= 500 -> config.messages.serverError
+      else -> config.messages.unexpectedError
+    }
+
+internal fun resolveResetPasswordFailureMessage(
+  config: ResolvedResetPasswordConfig,
+  statusCode: Int,
+  responseBody: String,
+): String =
+  config.responseMessageResolver?.invoke(statusCode, responseBody)?.takeIf(String::isNotBlank)
+    ?: extractResponseMessage(responseBody = responseBody, keys = config.responseMessageKeys)
+    ?: when {
+      statusCode in 400..499 -> config.messages.invalidOtp
       statusCode >= 500 -> config.messages.serverError
       else -> config.messages.unexpectedError
     }
@@ -526,6 +635,25 @@ internal fun resolveSetNewPasswordConfig(
         ?: authConfig?.responseMessageKeys
         ?: listOf("message", "error", "detail"),
     messages = screenConfig.messages ?: SetNewPasswordMessages(),
+    responseMessageResolver = screenConfig.responseMessageResolver,
+  )
+
+internal fun resolveResetPasswordConfig(
+  screenConfig: ResetPasswordScreenConfig,
+  authConfig: IclAuthConfig? = IclAuth.currentConfiguration(),
+): ResolvedResetPasswordConfig =
+  ResolvedResetPasswordConfig(
+    resetPasswordUrl =
+      resolveAuthUrl(baseAuthUrl = authConfig?.baseAuthUrl, endpoint = screenConfig.endpoint),
+    requestHeaders = authConfig?.defaultRequestHeaders.orEmpty() + screenConfig.requestHeaders,
+    minPasswordLength = screenConfig.minPasswordLength,
+    requestTimeoutMillis =
+      screenConfig.requestTimeoutMillis ?: authConfig?.requestTimeoutMillis ?: 15_000,
+    responseMessageKeys =
+      screenConfig.responseMessageKeys
+        ?: authConfig?.responseMessageKeys
+        ?: listOf("message", "error", "detail"),
+    messages = screenConfig.messages ?: ResetPasswordMessages(),
     responseMessageResolver = screenConfig.responseMessageResolver,
   )
 
