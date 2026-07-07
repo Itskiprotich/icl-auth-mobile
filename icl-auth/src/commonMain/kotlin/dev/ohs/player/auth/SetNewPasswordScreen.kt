@@ -58,6 +58,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import icl.ohs.libs.auth.AuthMessageBanner
+import icl.ohs.libs.auth.AuthMessageBannerType
 import kotlinx.coroutines.launch
 
 internal const val SET_NEW_PASSWORD_CURRENT_TAG = "set_new_password_current"
@@ -225,6 +227,15 @@ private fun SetNewPasswordScreenContent(
           .imePadding(),
       contentAlignment = Alignment.Center,
     ) {
+      if (errorMessage != null) {
+        AuthMessageBanner(
+          message = errorMessage,
+          type = AuthMessageBannerType.Error,
+          onDismiss = {},
+          modifier =
+            Modifier.align(Alignment.TopCenter).padding(start = 20.dp, top = 12.dp, end = 20.dp),
+        )
+      }
       Column(
         modifier =
           Modifier.widthIn(max = 460.dp)
@@ -343,7 +354,9 @@ private fun validateSetNewPasswordForm(
   when {
     confirmPassword.isBlank() ->
       SetNewPasswordFailure(message = config.messages.emptyConfirmPassword)
+
     request.password != confirmPassword ->
       SetNewPasswordFailure(message = config.messages.passwordMismatch)
+
     else -> validateSetNewPasswordRequest(config = config, request = request)
   }

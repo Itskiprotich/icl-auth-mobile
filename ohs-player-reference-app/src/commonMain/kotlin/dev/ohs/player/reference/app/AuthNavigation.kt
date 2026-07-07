@@ -235,9 +235,7 @@ fun AuthNavigation(onAuthenticated: () -> Unit) {
 }
 
 private fun androidx.navigation.NavController.navigateToSetNewPassword(initialIdNumber: String) {
-  navigate(
-    "$AUTH_SET_NEW_PASSWORD_ROUTE?$SET_NEW_PASSWORD_ID_NUMBER_ARG=${initialIdNumber.trim()}"
-  )
+  navigate("$AUTH_SET_NEW_PASSWORD_ROUTE?$SET_NEW_PASSWORD_ID_NUMBER_ARG=${initialIdNumber.trim()}")
 }
 
 private fun androidx.navigation.NavController.navigateToResetPassword(identifier: String) {
