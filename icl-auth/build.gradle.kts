@@ -27,7 +27,7 @@ plugins {
   signing
 }
 
-group = providers.gradleProperty("POM_GROUP_ID").getOrElse("io.github.intellisoft-consulting")
+group = providers.gradleProperty("POM_GROUP_ID").getOrElse("io.github.Itskiprotich")
 
 version =
   providers
@@ -109,7 +109,7 @@ publishing {
                 "https://maven.pkg.github.com/$it"
               }
             )
-            .getOrElse("https://maven.pkg.github.com/IntelliSOFT-Consulting/icl-auth-mobile")
+            .getOrElse("https://maven.pkg.github.com/Itskiprotich/icl-auth-mobile")
         )
 
       credentials {
@@ -140,7 +140,7 @@ publishing {
       url.set(
         providers
           .gradleProperty("POM_URL")
-          .getOrElse("https://github.com/IntelliSOFT-Consulting/icl-auth-mobile")
+          .getOrElse("https://github.com/Itskiprotich/icl-auth-mobile")
       )
 
       licenses {
@@ -158,7 +158,7 @@ publishing {
 
       developers {
         developer {
-          id.set(providers.gradleProperty("POM_DEVELOPER_ID").getOrElse("intellisoft-consulting"))
+          id.set(providers.gradleProperty("POM_DEVELOPER_ID").getOrElse("Itskiprotich"))
           name.set(
             providers.gradleProperty("POM_DEVELOPER_NAME").getOrElse("IntelliSOFT Consulting")
           )
@@ -170,7 +170,7 @@ publishing {
           organizationUrl.set(
             providers
               .gradleProperty("POM_DEVELOPER_ORGANIZATION_URL")
-              .getOrElse("https://github.com/IntelliSOFT-Consulting")
+              .getOrElse("https://github.com/Itskiprotich")
           )
         }
       }
@@ -179,17 +179,17 @@ publishing {
         url.set(
           providers
             .gradleProperty("POM_SCM_URL")
-            .getOrElse("https://github.com/IntelliSOFT-Consulting/icl-auth-mobile")
+            .getOrElse("https://github.com/Itskiprotich/icl-auth-mobile")
         )
         connection.set(
           providers
             .gradleProperty("POM_SCM_CONNECTION")
-            .getOrElse("scm:git:git://github.com/IntelliSOFT-Consulting/icl-auth-mobile.git")
+            .getOrElse("scm:git:git://github.com/Itskiprotich/icl-auth-mobile.git")
         )
         developerConnection.set(
           providers
             .gradleProperty("POM_SCM_DEVELOPER_CONNECTION")
-            .getOrElse("scm:git:ssh://git@github.com/IntelliSOFT-Consulting/icl-auth-mobile.git")
+            .getOrElse("scm:git:ssh://git@github.com/Itskiprotich/icl-auth-mobile.git")
         )
       }
     }
