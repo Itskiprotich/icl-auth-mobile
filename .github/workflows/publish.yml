@@ -1,18 +1,29 @@
-name: Publish ICL Auth Library
+name: Publish ICL Auth To Maven Central
 
 on:
   workflow_dispatch:
+    inputs:
+      version_name:
+        description: Release version to bundle or publish, without the leading v
+        required: false
+        type: string
+      publish:
+        description: Upload the generated bundle to Maven Central
+        required: false
+        default: false
+        type: boolean
   release:
     types:
       - published
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   publish:
     runs-on: macos-latest
+    env:
+      CI: true
 
     steps:
       - name: Check out repository
@@ -27,18 +38,65 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Resolve release version
+        run: |
+          version_name=""
+
+          if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
+            version_name="${GITHUB_REF_NAME#v}"
+          elif [ -n "${{ inputs.version_name }}" ]; then
+            version_name="${{ inputs.version_name }}"
+          fi
+
+          if [ -n "$version_name" ]; then
+            echo "VERSION_NAME=$version_name" >> "$GITHUB_ENV"
+          fi
+
       - name: Run auth checks
         run: |
           chmod +x gradlew
           ./gradlew :icl-auth:jvmTest
 
-      - name: Publish package
+      - name: Validate Maven Central publish secrets
+        if: github.event_name == 'release' || inputs.publish == true
+        run: |
+          : "${SIGNING_KEY:?Set the SIGNING_KEY repository secret}"
+          : "${MAVEN_CENTRAL_USERNAME:?Set the MAVEN_CENTRAL_USERNAME repository secret}"
+          : "${MAVEN_CENTRAL_PASSWORD:?Set the MAVEN_CENTRAL_PASSWORD repository secret}"
+          if [[ "${VERSION_NAME:-}" == *-SNAPSHOT ]]; then
+            echo "Maven Central releases cannot use -SNAPSHOT versions" >&2
+            exit 1
+          fi
+        env:
+          VERSION_NAME: ${{ env.VERSION_NAME }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+
+      - name: Build Maven Central bundle
         run: |
           chmod +x gradlew
-          if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
-            export VERSION_NAME="${GITHUB_REF_NAME#v}"
-          fi
-          ./gradlew :icl-auth:publishAllPublicationsToGitHubPackagesRepository
+          ./gradlew :icl-auth:bundleMavenCentralRelease
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_NAME: ${{ env.VERSION_NAME }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+
+      - name: Upload Maven Central bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: icl-auth-maven-central-bundle
+          path: icl-auth/build/maven-central/central-bundle.zip
+
+      - name: Publish to Maven Central
+        if: github.event_name == 'release' || inputs.publish == true
+        run: |
+          chmod +x .github/scripts/upload-maven-central.sh
+          deployment_name="icl-auth:${VERSION_NAME:-$(date +%Y%m%d%H%M%S)}"
+          ./.github/scripts/upload-maven-central.sh \
+            icl-auth/build/maven-central/central-bundle.zip \
+            "$deployment_name"
+        env:
+          VERSION_NAME: ${{ env.VERSION_NAME }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}

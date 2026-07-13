@@ -20,7 +20,7 @@ All public types live in the `icl.ohs.libs.auth` package.
 Default coordinates for publication from this repository:
 
 ```text
-io.github.intellisoft-consulting:icl-auth:<version>
+io.github.Itskiprotich:icl-auth:<version>
 ```
 
 ## Consume from another project
@@ -43,27 +43,19 @@ repositories {
 }
 
 commonMain.dependencies {
-  implementation("io.github.intellisoft-consulting:icl-auth:0.1.0-SNAPSHOT")
+  implementation("io.github.Itskiprotich:icl-auth:0.1.0-alpha01")
 }
 ```
 
-### GitHub Packages
+### Maven Central
 
 ```kotlin
 repositories {
-  google()
   mavenCentral()
-  maven {
-    url = uri("https://maven.pkg.github.com/IntelliSOFT-Consulting/icl-auth-mobile")
-    credentials {
-      username = providers.gradleProperty("gpr.user").orNull
-      password = providers.gradleProperty("gpr.key").orNull
-    }
-  }
 }
 
 commonMain.dependencies {
-  implementation("io.github.intellisoft-consulting:icl-auth:<version>")
+  implementation("io.github.Itskiprotich:icl-auth:<version>")
 }
 ```
 
@@ -75,23 +67,48 @@ commonMain.dependencies {
 ./gradlew :icl-auth:publishToMavenLocal
 ```
 
-### GitHub Packages publish
+### Maven Central bundle
+
+Build the exact bundle that the GitHub Actions workflow uploads to Sonatype:
 
 ```shell
-export GITHUB_ACTOR=your-github-username
-export GITHUB_TOKEN=your-github-token
 export VERSION_NAME=0.1.0
 
-./gradlew :icl-auth:publishAllPublicationsToGitHubPackagesRepository
+./gradlew :icl-auth:bundleMavenCentralRelease
 ```
 
-Optional Gradle properties/env vars supported by the publish configuration:
+This writes `icl-auth/build/maven-central/central-bundle.zip`.
+
+### Maven Central publish
+
+Before publishing:
+
+- verify your namespace in the Sonatype Central Portal
+- generate a Central user token
+- provide an ASCII-armored OpenPGP private key for signing
+
+Then export the required credentials:
+
+```shell
+export VERSION_NAME=0.1.0
+export SIGNING_KEY="$(cat /path/to/private-key.asc)"
+export SIGNING_PASSWORD=your-signing-key-password
+export MAVEN_CENTRAL_USERNAME=your-central-token-username
+export MAVEN_CENTRAL_PASSWORD=your-central-token-password
+
+./gradlew :icl-auth:bundleMavenCentralRelease
+./.github/scripts/upload-maven-central.sh \
+  icl-auth/build/maven-central/central-bundle.zip \
+  "icl-auth:${VERSION_NAME}"
+```
+
+The GitHub Actions workflow does the same thing automatically for Releases and
+can also build-only on `workflow_dispatch`.
+
+Publication-related Gradle properties/env vars supported by this module:
 
 - `POM_GROUP_ID`
 - `VERSION_NAME`
-- `MAVEN_REPOSITORY_URL`
-- `MAVEN_USERNAME`
-- `MAVEN_PASSWORD`
 - `SIGNING_KEY`
 - `SIGNING_PASSWORD`
 
