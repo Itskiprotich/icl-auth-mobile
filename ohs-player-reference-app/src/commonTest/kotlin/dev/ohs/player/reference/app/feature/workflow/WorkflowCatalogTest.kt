@@ -18,6 +18,7 @@ package dev.ohs.player.reference.app.feature.workflow
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 
 class WorkflowCatalogTest {
@@ -90,5 +91,69 @@ class WorkflowCatalogTest {
     assertEquals("rcce-tools", card.key)
     assertEquals("RCCE Tools", card.title)
     assertEquals("Record rumors and social investigation data.", card.description)
+  }
+
+  @Test
+  fun workflowAction_deserializesQuestionnaireAndRecordListDestinations() {
+    val catalog =
+      json.decodeFromString(
+        WorkflowCatalog.serializer(),
+        """
+        {
+          "modules": [
+            {
+              "id": "notifiable-diseases",
+              "title": "Notifiable Diseases",
+              "description": "Capture immediate, weekly and monthly alerts.",
+              "icon": "warning",
+              "startNodeId": "measles",
+              "nodes": [
+                {
+                  "id": "measles",
+                  "title": "Measles",
+                  "layout": "actions",
+                  "items": [
+                    {
+                      "id": "add-case",
+                      "title": "Add New Measles Case",
+                      "action": {
+                        "type": "questionnaire",
+                        "resource": "questionnaires/measles-case-intake.json",
+                        "title": "New Measles Case",
+                        "subtitle": "Capture patient details.",
+                        "primaryActionLabel": "Submit Case"
+                      }
+                    },
+                    {
+                      "id": "case-list",
+                      "title": "Measles Case List",
+                      "action": {
+                        "type": "record_list",
+                        "resource": "records/measles-cases.json",
+                        "title": "Measles Case List"
+                      },
+                      "trailingValue": "25",
+                      "trailingLabel": "Cases"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """.trimIndent(),
+      )
+
+    val module = assertNotNull(catalog.findModule("notifiable-diseases"))
+    val addCase = assertNotNull(module.findItem(nodeId = "measles", itemId = "add-case"))
+    val caseList = assertNotNull(module.findItem(nodeId = "measles", itemId = "case-list"))
+
+    assertEquals(WorkflowActionType.QUESTIONNAIRE, addCase.action?.type)
+    assertEquals("questionnaires/measles-case-intake.json", addCase.action?.resource)
+    assertEquals("Submit Case", addCase.action?.primaryActionLabel)
+    assertEquals(WorkflowActionType.RECORD_LIST, caseList.action?.type)
+    assertEquals("records/measles-cases.json", caseList.action?.resource)
+    assertEquals("25", caseList.trailingValue)
+    assertTrue(caseList.action != null)
   }
 }

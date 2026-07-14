@@ -1,7 +1,7 @@
 [versions]
 agp = "8.11.2"
 android-compileSdk = "37"
-android-minSdk = "24"
+android-minSdk = "26"
 android-targetSdk = "37"
 androidx-activity = "1.13.0"
 androidx-appcompat = "1.7.1"
@@ -27,6 +27,8 @@ kotlinxSerializationJson = "1.11.0"
 spotless = "8.6.0"
 ohsFhirModel    = "1.0.0-beta05"
 ohsFhirPath     = "1.0.0-beta03"
+ohsFhirEngine   = "2.0.0-alpha01"
+ohsFhirDataCapture = "2.0.0-alpha02"
 kotlinxDatetime = "0.8.0"
 ionspin-bignum = "0.3.10"
 
@@ -63,6 +65,8 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 ohs-fhir-model = { module = "dev.ohs.fhir:fhir-model", version.ref = "ohsFhirModel" }
 ohs-fhir-path = { module = "dev.ohs.fhir:fhir-path", version.ref = "ohsFhirPath" }
+ohs-fhir-engine = { module = "dev.ohs.fhir:fhir-engine", version.ref = "ohsFhirEngine" }
+ohs-fhir-data-capture = { module = "dev.ohs.fhir:fhir-data-capture", version.ref = "ohsFhirDataCapture" }
 ionspin-bignum = { module = "com.ionspin.kotlin:bignum", version.ref = "ionspin-bignum" }
 spotless = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless" }
 

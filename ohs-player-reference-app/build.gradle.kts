@@ -74,6 +74,7 @@ kotlin {
       implementation(libs.kotlinx.serialization.json)
       implementation(libs.kotlinx.datetime)
       implementation(libs.navigation.compose)
+      implementation(libs.ohs.fhir.data.capture)
       implementation(libs.ohs.fhir.model)
       implementation(libs.ohs.fhir.path)
     }
@@ -85,8 +86,12 @@ kotlin {
     jvmMain.dependencies {
       implementation(compose.desktop.currentOs)
       implementation(libs.kotlinx.coroutinesSwing)
+      implementation(libs.ohs.fhir.engine)
     }
     jvmTest.dependencies { implementation(compose.desktop.currentOs) }
+    named("androidMain") { dependencies { implementation(libs.ohs.fhir.engine) } }
+    named("iosArm64Main") { dependencies { implementation(libs.ohs.fhir.engine) } }
+    named("iosSimulatorArm64Main") { dependencies { implementation(libs.ohs.fhir.engine) } }
   }
 }
 

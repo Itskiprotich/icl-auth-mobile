@@ -74,7 +74,7 @@
               "description": "Open a structured case questionnaire for rapid reporting.",
               "action": {
                 "type": "questionnaire",
-                "resource": "questionnaires/measles-case-intake.json",
+                "resource": "questionnaires/add-case.json",
                 "title": "New Measles Case",
                 "subtitle": "Capture patient, clinical, and surveillance details.",
                 "primaryActionLabel": "Submit Case"

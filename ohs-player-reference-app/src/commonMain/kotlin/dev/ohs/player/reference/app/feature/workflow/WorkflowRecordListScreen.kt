@@ -16,7 +16,6 @@
 package dev.ohs.player.reference.app.feature.workflow
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +57,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -75,23 +73,43 @@ fun WorkflowRecordListScreen(
   val screenState by
     produceState<RecordListScreenState>(
       initialValue = RecordListScreenState.Loading,
+      title,
+      subtitle,
       resource,
     ) {
       value =
-        runCatching { WorkflowRecordsStore.records(resource) }
-          .fold(
-            onSuccess = RecordListScreenState::Ready,
-            onFailure = {
-              RecordListScreenState.Error(
-                it.message ?: "The record collection could not be loaded.",
+        runCatching {
+            if (WorkflowFhirStore.isPersistenceAvailable) {
+              RecordListScreenState.Ready(
+                collection =
+                  buildStoredResponseCollection(
+                    title = title,
+                    subtitle = subtitle,
+                    responses = WorkflowFhirStore.listQuestionnaireResponses(),
+                  ),
+                sourceLabel = "Local FHIR Store",
               )
-            },
-          )
+            } else {
+              val assetCollection = WorkflowRecordsStore.records(resource)
+              RecordListScreenState.Ready(
+                collection =
+                  assetCollection.copy(
+                    title = title.ifBlank { assetCollection.title },
+                    subtitle = subtitle.ifBlank { assetCollection.subtitle },
+                  ),
+                sourceLabel = "Sample Records",
+              )
+            }
+          }
+          .getOrElse { error ->
+            RecordListScreenState.Error(
+              error.message ?: "The case list could not be loaded.",
+            )
+          }
     }
 
   Scaffold(
     modifier = modifier,
-    containerColor = Color.Transparent,
     topBar = {
       RecordListTopBar(
         title = title,
@@ -102,15 +120,6 @@ fun WorkflowRecordListScreen(
     Box(
       modifier =
         Modifier.fillMaxSize()
-          .background(
-            Brush.verticalGradient(
-              listOf(
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.06f),
-                MaterialTheme.colorScheme.background,
-                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.18f),
-              )
-            )
-          )
           .padding(innerPadding),
     ) {
       when (val state = screenState) {
@@ -119,15 +128,16 @@ fun WorkflowRecordListScreen(
             CircularProgressIndicator()
           }
         is RecordListScreenState.Error ->
-          RecordListMessage(
-            title = "Case list unavailable",
-            message = state.message,
-          )
+          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            RecordListMessage(
+              title = "Case list unavailable",
+              message = state.message,
+            )
+          }
         is RecordListScreenState.Ready ->
           WorkflowRecordListContent(
             collection = state.collection,
-            screenTitle = title,
-            screenSubtitle = subtitle,
+            sourceLabel = state.sourceLabel,
           )
       }
     }
@@ -137,7 +147,10 @@ fun WorkflowRecordListScreen(
 private sealed interface RecordListScreenState {
   data object Loading : RecordListScreenState
 
-  data class Ready(val collection: WorkflowRecordCollection) : RecordListScreenState
+  data class Ready(
+    val collection: WorkflowRecordCollection,
+    val sourceLabel: String,
+  ) : RecordListScreenState
 
   data class Error(val message: String) : RecordListScreenState
 }
@@ -170,8 +183,7 @@ private fun RecordListTopBar(
 @Composable
 private fun WorkflowRecordListContent(
   collection: WorkflowRecordCollection,
-  screenTitle: String,
-  screenSubtitle: String,
+  sourceLabel: String,
 ) {
   var query by rememberSaveable(collection.id) { mutableStateOf("") }
   var visibleCount by rememberSaveable(collection.id, query) {
@@ -218,15 +230,16 @@ private fun WorkflowRecordListContent(
   LazyColumn(
     state = listState,
     modifier = Modifier.fillMaxSize(),
-    contentPadding = PaddingValues(start = 24.dp, top = 20.dp, end = 24.dp, bottom = 28.dp),
+    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 24.dp),
     verticalArrangement = Arrangement.spacedBy(16.dp),
   ) {
     item {
-      CaseListHeroCard(
-        title = screenTitle,
-        subtitle = screenSubtitle.ifBlank { collection.subtitle },
-        filteredCount = filteredRecords.size,
-        totalCount = collection.records.size,
+      CaseListSummaryCard(
+        title = collection.title,
+        subtitle = collection.subtitle,
+        sourceLabel = sourceLabel,
+        visibleCount = visibleRecords.size,
+        totalCount = filteredRecords.size,
       )
     }
 
@@ -235,7 +248,7 @@ private fun WorkflowRecordListContent(
         value = query,
         onValueChange = { query = it },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         singleLine = true,
         label = { Text("Search cases") },
         placeholder = { Text("Search by patient, status, or field value") },
@@ -266,7 +279,7 @@ private fun WorkflowRecordListContent(
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
           LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
           Text(
-            text = "Loading more records as you browse",
+            text = "Loading more records",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
           )
@@ -277,111 +290,78 @@ private fun WorkflowRecordListContent(
 }
 
 @Composable
-private fun CaseListHeroCard(
+private fun CaseListSummaryCard(
   title: String,
   subtitle: String,
-  filteredCount: Int,
+  sourceLabel: String,
+  visibleCount: Int,
   totalCount: Int,
 ) {
   Card(
-    shape = RoundedCornerShape(30.dp),
-    colors =
-      CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface,
-      ),
-    border =
-      BorderStroke(
-        1.dp,
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-      ),
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
   ) {
     Column(
-      modifier =
-        Modifier.fillMaxWidth()
-          .background(
-            Brush.verticalGradient(
-              listOf(
-                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f),
-                MaterialTheme.colorScheme.surface,
-              )
-            )
-          )
-          .padding(22.dp),
-      verticalArrangement = Arrangement.spacedBy(16.dp),
+      modifier = Modifier.fillMaxWidth().padding(18.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-      Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-          text = "Paginated Records Host",
-          style = MaterialTheme.typography.labelLarge,
-          color = MaterialTheme.colorScheme.primary,
-          fontWeight = FontWeight.Bold,
-        )
+      Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
           text = title,
-          style = MaterialTheme.typography.headlineMedium,
+          style = MaterialTheme.typography.headlineSmall,
           color = MaterialTheme.colorScheme.onSurface,
           fontWeight = FontWeight.Bold,
         )
-        Text(
-          text = subtitle.ifBlank { "Browse, search, and paginate records from the workflow asset." },
-          style = MaterialTheme.typography.bodyLarge,
-          color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        if (subtitle.isNotBlank()) {
+          Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+        }
       }
 
-      Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        CaseListMetricChip(label = "Visible", value = filteredCount.toString())
-        CaseListMetricChip(label = "Total", value = totalCount.toString())
+      Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        SummaryChip(label = "Source", value = sourceLabel)
+        SummaryChip(label = "Visible", value = visibleCount.toString())
+        SummaryChip(label = "Total", value = totalCount.toString())
       }
     }
   }
 }
 
 @Composable
-private fun CaseListMetricChip(
+private fun SummaryChip(
   label: String,
   value: String,
 ) {
   Surface(
-    shape = RoundedCornerShape(18.dp),
-    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+    shape = RoundedCornerShape(999.dp),
+    color = MaterialTheme.colorScheme.surfaceVariant,
   ) {
-    Row(
-      modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-      horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-      Text(
-        text = label,
-        style = MaterialTheme.typography.labelMedium,
-        color = MaterialTheme.colorScheme.primary,
-      )
-      Text(
-        text = value,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.onSurface,
-        fontWeight = FontWeight.Bold,
-      )
-    }
+    Text(
+      text = "$label: $value",
+      modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+      style = MaterialTheme.typography.labelLarge,
+      color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
   }
 }
 
 @Composable
 private fun WorkflowRecordCard(record: WorkflowRecord) {
   Card(
-    shape = RoundedCornerShape(24.dp),
-    colors =
-      CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface,
-      ),
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     border =
       BorderStroke(
         1.dp,
         record.statusTone.borderColor().copy(alpha = 0.16f),
       ),
-    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 18.dp),
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
       verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
       Row(
@@ -391,7 +371,7 @@ private fun WorkflowRecordCard(record: WorkflowRecord) {
       ) {
         Column(
           modifier = Modifier.weight(1f),
-          verticalArrangement = Arrangement.spacedBy(6.dp),
+          verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
           Text(
             text = record.title,
@@ -407,6 +387,7 @@ private fun WorkflowRecordCard(record: WorkflowRecord) {
             )
           }
         }
+
         if (record.status.isNotBlank()) {
           Surface(
             color = record.statusTone.containerColor(),
@@ -414,7 +395,7 @@ private fun WorkflowRecordCard(record: WorkflowRecord) {
           ) {
             Text(
               text = record.status,
-              modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+              modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
               style = MaterialTheme.typography.labelLarge,
               color = record.statusTone.contentColor(),
               fontWeight = FontWeight.Bold,
@@ -427,7 +408,7 @@ private fun WorkflowRecordCard(record: WorkflowRecord) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
           record.meta.take(3).forEach { meta ->
             Surface(
-              color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+              color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
               shape = RoundedCornerShape(999.dp),
             ) {
               Text(
@@ -474,11 +455,12 @@ private fun RecordListMessage(
   message: String,
 ) {
   Card(
-    shape = RoundedCornerShape(24.dp),
+    shape = RoundedCornerShape(20.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().padding(22.dp),
+      modifier = Modifier.fillMaxWidth().padding(18.dp),
       verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
       Text(

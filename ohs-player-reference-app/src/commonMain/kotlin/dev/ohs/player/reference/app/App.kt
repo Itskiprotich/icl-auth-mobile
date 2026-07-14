@@ -65,6 +65,7 @@ import dev.ohs.player.reference.app.feature.patient.profile.PatientProfileScreen
 import dev.ohs.player.reference.app.feature.workflow.DefaultWorkflowCatalog
 import dev.ohs.player.reference.app.feature.workflow.WorkflowActionHostScreen
 import dev.ohs.player.reference.app.feature.workflow.WorkflowCatalogStore
+import dev.ohs.player.reference.app.feature.workflow.WorkflowFhirStore
 import dev.ohs.player.reference.app.feature.workflow.WorkflowModuleScreen
 import dev.ohs.player.reference.app.feature.workflow.toCardSpec
 import icl.ohs.libs.auth.IclAuth
@@ -87,8 +88,9 @@ private val AUTH_CONFIG =
   IclAuthConfig(baseAuthUrl = "https://dsrkeycloak.intellisoftkenya.com/auth")
 
 @Composable
-fun App() {
+fun App(platformContext: Any = Unit) {
   remember(AUTH_CONFIG) { IclAuth.initialize(AUTH_CONFIG) }
+  remember(platformContext) { WorkflowFhirStore.initialize(platformContext) }
   val registry = remember { buildAppViewRegistry() }
 
   CompositionLocalProvider(LocalViewRegistry provides registry) {
