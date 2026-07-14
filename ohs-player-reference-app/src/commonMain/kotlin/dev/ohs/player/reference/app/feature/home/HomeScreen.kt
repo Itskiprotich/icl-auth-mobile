@@ -15,25 +15,24 @@
  */
 package dev.ohs.player.reference.app.feature.home
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -44,8 +43,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,8 +57,6 @@ fun HomeScreen(
     workflows: List<WorkflowCardSpec>,
     onWorkflowClick: (WorkflowCardSpec) -> Unit,
     modifier: Modifier = Modifier,
-    onNotificationsClick: () -> Unit = {},
-    onMenuClick: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier
@@ -69,44 +64,45 @@ fun HomeScreen(
             .background(MaterialTheme.colorScheme.background),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
+        // Header Section
         item {
-            // Simple header matching screenshot
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                    .padding(horizontal = 24.dp, vertical = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
                         Text(
                             text = greetingForCurrentTime(),
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.onBackground,
-                            fontWeight = FontWeight.Bold,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = uiState.displayName,
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
-                    // Profile avatar/icon
+                    // Profile Avatar
                     Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer,
                         modifier = Modifier.size(48.dp),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = uiState.displayName.take(1).uppercase(),
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Profile",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
                     }
@@ -114,57 +110,63 @@ fun HomeScreen(
             }
         }
 
+        // Title Section
         item {
             Column(
                 modifier = Modifier.padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = "Reporting Workflows",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Choose a reporting pathway and continue with the exact tools your team needs.",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
+        // Workflow Cards - Grid Layout (2 columns)
         if (workflows.isEmpty()) {
             item {
-                Surface(
-                    modifier = Modifier.padding(horizontal = 24.dp),
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
                     shape = RoundedCornerShape(16.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
                     Text(
                         text = "No workflows are configured yet.",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         } else {
-            // Display workflows in rows of 2 (matching screenshot with 3+2 layout)
-            itemsIndexed(workflows.chunked(2)) { rowIndex, rowItems ->
+            // Display workflows in 2-column grid
+            items(workflows.chunked(2)) { rowItems ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    rowItems.forEachIndexed { columnIndex, workflow ->
+                    rowItems.forEach { workflow ->
                         WorkflowCard(
                             workflow = workflow,
                             modifier = Modifier.weight(1f),
-                            onClick = { onWorkflowClick(workflow) },
+                            onClick = { onWorkflowClick(workflow) }
                         )
                     }
-
+                    // Fill empty space if odd number
                     if (rowItems.size == 1) {
                         Spacer(modifier = Modifier.weight(1f))
                     }
@@ -172,7 +174,9 @@ fun HomeScreen(
             }
         }
 
-        item { Spacer(modifier = Modifier.height(16.dp)) }
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
 }
 
@@ -182,28 +186,34 @@ private fun WorkflowCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Use workflow-specific color or default
-    val cardColor = workflow.color ?: MaterialTheme.colorScheme.primary
+    // Different accent colors for each card based on index
+    val accentColors = listOf(
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.secondary,
+        MaterialTheme.colorScheme.tertiary,
+        MaterialTheme.colorScheme.primary,
+        MaterialTheme.colorScheme.secondary
+    )
+    val accentColor = workflow.color ?: accentColors[workflow.key.hashCode().mod(accentColors.size)]
 
     Card(
         modifier = modifier
-            .height(180.dp)
-            .aspectRatio(0.85f),
+            .height(180.dp),
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp,
-            pressedElevation = 6.dp,
-        ),
+            pressedElevation = 6.dp
+        )
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
+                .padding(20.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 // Icon with colored background
@@ -211,14 +221,14 @@ private fun WorkflowCard(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(cardColor.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center,
+                        .background(accentColor.copy(alpha = 0.12f)),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = workflow.icon,
                         contentDescription = null,
-                        tint = cardColor,
-                        modifier = Modifier.size(24.dp),
+                        tint = accentColor,
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
@@ -229,28 +239,28 @@ private fun WorkflowCard(
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = workflow.description.take(60) + if (workflow.description.length > 60) "..." else "",
+                        text = workflow.description,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
-            // Arrow indicator at bottom
+            // Arrow indicator
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.End
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -266,4 +276,3 @@ private fun greetingForCurrentTime(): String {
         else -> "Welcome Back"
     }
 }
-

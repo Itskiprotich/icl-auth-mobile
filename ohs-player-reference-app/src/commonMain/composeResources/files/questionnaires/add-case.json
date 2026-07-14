@@ -276,12 +276,103 @@
                 },
                 "use": "mobile"
               }
+            ],
+            "address": [
+              {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+                    "valueString": "item.where(linkId = 'address-group')"
+                  }
+                ],
+                "use": "home",
+                "_city": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = 'a2-ward').answer.value.display"
+                    }
+                  ]
+                },
+                "_district": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = 'a3-sub-county').answer.value.display"
+                    }
+                  ]
+                },
+                "_state": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = 'a4-county').answer.value.display"
+                    }
+                  ]
+                },
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='424111786438').answer.value + ', ' + item.where(linkId='242811643559').answer.value + ', ' + item.where(linkId='946232932304').answer.value + ', ' + item.where(linkId='a2-ward').answer.value.display + ', ' + item.where(linkId='a3-sub-county').answer.value.display + ', ' + item.where(linkId='a4-county').answer.value.display"
+                    }
+                  ]
+                }
+              }
             ]
           },
           "request": {
             "method": "POST",
             "url": "Patient",
             "ifMatch": "Patient?_name=urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '670954892057').item.where(linkId = 'address-group')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd035",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vital-signs"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "EPID",
+                  "display": "EPID Number"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "'KEN-' + item.where(linkId='a4-county').answer.value.display + '-' + item.where(linkId='a3-sub-county').answer.value.display + '-' + 'MEA-'"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
           }
         },
         {
@@ -1577,105 +1668,112 @@
           "required": true
         },
         {
-          "linkId": "a4-county",
-          "text": "County",
-          "type": "reference",
-          "required": true,
-          "extension": [
+          "linkId": "address-group",
+          "text": "Address Information",
+          "type": "group",
+          "item": [
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
-              "valueExpression": {
-                "language": "application/x-fhir-query",
-                "expression": "Location?partof=Location/0&_sort=name"
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+              "linkId": "a4-county",
+              "text": "County",
+              "type": "reference",
+              "required": true,
               "extension": [
                 {
-                  "url": "path",
-                  "valueString": "name"
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof=Location/0&_sort=name"
+                  }
                 },
                 {
-                  "url": "forDisplay",
-                  "valueBoolean": true
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "type": "reference",
-          "linkId": "a3-sub-county",
-          "text": "Sub County",
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
-              "valueExpression": {
-                "language": "application/x-fhir-query",
-                "expression": "Location?partof={{%patientCountyName}}"
-              }
             },
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+              "type": "reference",
+              "linkId": "a3-sub-county",
+              "text": "Sub County",
+              "required": true,
               "extension": [
                 {
-                  "url": "path",
-                  "valueString": "name"
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%patientCountyName}}"
+                  }
                 },
                 {
-                  "url": "forDisplay",
-                  "valueBoolean": true
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
                 }
               ]
-            }
-          ]
-        },
-        {
-          "type": "reference",
-          "linkId": "a2-ward",
-          "text": "Ward",
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
-              "valueExpression": {
-                "language": "application/x-fhir-query",
-                "expression": "Location?partof={{%patientSubCountyName}}"
-              }
             },
             {
-              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+              "type": "reference",
+              "linkId": "a2-ward",
+              "text": "Ward",
+              "required": true,
               "extension": [
                 {
-                  "url": "path",
-                  "valueString": "name"
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-answerExpression",
+                  "valueExpression": {
+                    "language": "application/x-fhir-query",
+                    "expression": "Location?partof={{%patientSubCountyName}}"
+                  }
                 },
                 {
-                  "url": "forDisplay",
-                  "valueBoolean": true
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-choiceColumn",
+                  "extension": [
+                    {
+                      "url": "path",
+                      "valueString": "name"
+                    },
+                    {
+                      "url": "forDisplay",
+                      "valueBoolean": true
+                    }
+                  ]
                 }
               ]
+            },
+            {
+              "type": "string",
+              "linkId": "242811643559",
+              "text": "Residence or Village"
+            },
+            {
+              "type": "string",
+              "linkId": "946232932304",
+              "text": "Neighborhood major landmark",
+              "required": true
+            },
+            {
+              "type": "string",
+              "linkId": "424111786438",
+              "text": "Street/Plot/Estate/S. location",
+              "required": true
             }
           ]
-        },
-        {
-          "type": "string",
-          "linkId": "242811643559",
-          "text": "Residence or Village"
-        },
-        {
-          "type": "string",
-          "linkId": "946232932304",
-          "text": "Neighborhood major landmark",
-          "required": true
-        },
-        {
-          "type": "string",
-          "linkId": "424111786438",
-          "text": "Street/Plot/Estate/S. location",
-          "required": true
         },
         {
           "type": "string",
