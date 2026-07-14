@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		85F4A8892E760E1B45D181CD /* OhsPlayerReferenceClientApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OhsPlayerReferenceClientApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		85F4A8892E760E1B45D181CD /* ICLAuth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ICLAuth.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,7 +59,7 @@
 		06FB2EA4233F888AFBDBDD70 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				85F4A8892E760E1B45D181CD /* OhsPlayerReferenceClientApp.app */,
+				85F4A8892E760E1B45D181CD /* ICLAuth.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 85F4A8892E760E1B45D181CD /* OhsPlayerReferenceClientApp.app */;
+			productReference = 85F4A8892E760E1B45D181CD /* ICLAuth.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

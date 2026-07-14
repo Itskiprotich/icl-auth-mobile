@@ -38,6 +38,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -54,10 +55,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -77,6 +82,9 @@ import kotlinx.coroutines.launch
 internal const val LOGIN_USERNAME_TAG = "login_username"
 internal const val LOGIN_PASSWORD_TAG = "login_password"
 internal const val LOGIN_BUTTON_TAG = "login_button"
+internal const val LOGIN_USERNAME_CLEAR_BUTTON_TAG = "login_username_clear_button"
+internal const val LOGIN_PASSWORD_CLEAR_BUTTON_TAG = "login_password_clear_button"
+internal const val LOGIN_PASSWORD_VISIBILITY_BUTTON_TAG = "login_password_visibility_button"
 
 @Composable
 fun LoginScreen(
@@ -278,7 +286,12 @@ private fun LoginScreenContent(
                 KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
               trailingIcon = {
                 if (username.isNotEmpty()) {
-                  TextButton(onClick = { onUsernameChange("") }) { Text("Clear") }
+                  LoginFieldActionButton(
+                    tag = LOGIN_USERNAME_CLEAR_BUTTON_TAG,
+                    contentDescription = "Clear username",
+                    glyph = LoginFieldActionGlyph.Clear,
+                    onClick = { onUsernameChange("") },
+                  )
                 }
               },
             )
@@ -306,12 +319,30 @@ private fun LoginScreenContent(
                   verticalAlignment = Alignment.CenterVertically,
                 ) {
                   if (password.isNotEmpty()) {
-                    TextButton(onClick = { onPasswordChange("") }) { Text("Clear") }
+                    LoginFieldActionButton(
+                      tag = LOGIN_PASSWORD_CLEAR_BUTTON_TAG,
+                      contentDescription = "Clear password",
+                      glyph = LoginFieldActionGlyph.Clear,
+                      onClick = { onPasswordChange("") },
+                    )
                   }
 
-                  TextButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Text(if (passwordVisible) "Hide" else "Show")
-                  }
+                  LoginFieldActionButton(
+                    tag = LOGIN_PASSWORD_VISIBILITY_BUTTON_TAG,
+                    contentDescription =
+                      if (passwordVisible) {
+                        "Hide password"
+                      } else {
+                        "Show password"
+                      },
+                    glyph =
+                      if (passwordVisible) {
+                        LoginFieldActionGlyph.VisibilityOff
+                      } else {
+                        LoginFieldActionGlyph.Visibility
+                      },
+                    onClick = { passwordVisible = !passwordVisible },
+                  )
                 }
               },
             )
@@ -333,6 +364,94 @@ private fun LoginScreenContent(
               Text(if (isSubmitting) "Signing in..." else "Log in")
             }
           }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun LoginFieldActionButton(
+  tag: String,
+  contentDescription: String,
+  glyph: LoginFieldActionGlyph,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  IconButton(
+    onClick = onClick,
+    modifier =
+      modifier.testTag(tag).semantics { this.contentDescription = contentDescription }
+  ) {
+    LoginFieldActionGlyphIcon(glyph = glyph)
+  }
+}
+
+private enum class LoginFieldActionGlyph {
+  Clear,
+  Visibility,
+  VisibilityOff,
+}
+
+@Composable
+private fun LoginFieldActionGlyphIcon(
+  glyph: LoginFieldActionGlyph,
+  modifier: Modifier = Modifier,
+) {
+  val strokeColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+  Canvas(modifier = modifier.size(20.dp)) {
+    val strokeWidth = size.minDimension * 0.12f
+
+    when (glyph) {
+      LoginFieldActionGlyph.Clear -> {
+        drawLine(
+          color = strokeColor,
+          start = Offset(size.width * 0.25f, size.height * 0.25f),
+          end = Offset(size.width * 0.75f, size.height * 0.75f),
+          strokeWidth = strokeWidth,
+          cap = StrokeCap.Round,
+        )
+        drawLine(
+          color = strokeColor,
+          start = Offset(size.width * 0.75f, size.height * 0.25f),
+          end = Offset(size.width * 0.25f, size.height * 0.75f),
+          strokeWidth = strokeWidth,
+          cap = StrokeCap.Round,
+        )
+      }
+
+      LoginFieldActionGlyph.Visibility,
+      LoginFieldActionGlyph.VisibilityOff -> {
+        val eyePath =
+          Path().apply {
+            moveTo(size.width * 0.08f, size.height * 0.50f)
+            quadraticTo(size.width * 0.30f, size.height * 0.16f, size.width * 0.50f, size.height * 0.16f)
+            quadraticTo(size.width * 0.70f, size.height * 0.16f, size.width * 0.92f, size.height * 0.50f)
+            quadraticTo(size.width * 0.70f, size.height * 0.84f, size.width * 0.50f, size.height * 0.84f)
+            quadraticTo(size.width * 0.30f, size.height * 0.84f, size.width * 0.08f, size.height * 0.50f)
+            close()
+          }
+
+        drawPath(
+          path = eyePath,
+          color = strokeColor,
+          style = Stroke(width = strokeWidth, cap = StrokeCap.Round, join = StrokeJoin.Round),
+        )
+        drawCircle(
+          color = strokeColor,
+          radius = size.minDimension * 0.12f,
+          center = Offset(size.width * 0.50f, size.height * 0.50f),
+        )
+
+        if (glyph == LoginFieldActionGlyph.VisibilityOff) {
+          drawLine(
+            color = strokeColor,
+            start = Offset(size.width * 0.18f, size.height * 0.82f),
+            end = Offset(size.width * 0.82f, size.height * 0.18f),
+            strokeWidth = strokeWidth,
+            cap = StrokeCap.Round,
+          )
         }
       }
     }

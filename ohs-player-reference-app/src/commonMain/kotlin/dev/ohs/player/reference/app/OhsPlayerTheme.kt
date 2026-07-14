@@ -22,32 +22,32 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val OhsPrimary = Color(0xFF0B57D0)
+private val OhsPrimary = Color(0xFF236B3A)
 private val OhsOnPrimary = Color.White
-private val OhsPrimaryContainer = Color(0xFFD3E3FD)
-private val OhsOnPrimaryContainer = Color(0xFF041E49)
+private val OhsPrimaryContainer = Color(0xFFB7F0C2)
+private val OhsOnPrimaryContainer = Color(0xFF00210D)
 
-private val OhsSecondary = Color(0xFF00639B)
+private val OhsSecondary = Color(0xFF506352)
 private val OhsOnSecondary = Color.White
-private val OhsSecondaryContainer = Color(0xFFC2E7FF)
-private val OhsOnSecondaryContainer = Color(0xFF001E31)
+private val OhsSecondaryContainer = Color(0xFFD3E8D3)
+private val OhsOnSecondaryContainer = Color(0xFF0E1F12)
 
-private val OhsTertiary = Color(0xFF146C2E)
+private val OhsTertiary = Color(0xFF2F6B54)
 private val OhsOnTertiary = Color.White
-private val OhsTertiaryContainer = Color(0xFFC4EED0)
-private val OhsOnTertiaryContainer = Color(0xFF072711)
+private val OhsTertiaryContainer = Color(0xFFB2F1D1)
+private val OhsOnTertiaryContainer = Color(0xFF002117)
 
 private val OhsError = Color(0xFFB3261E)
 private val OhsOnError = Color.White
 private val OhsErrorContainer = Color(0xFFF9DEDC)
 private val OhsOnErrorContainer = Color(0xFF601410)
 
-private val OhsBackground = Color(0xFFFFFFFF)
-private val OhsSurface = Color(0xFFFFFFFF)
-private val OhsOnSurface = Color(0xFF1F1F1F)
-private val OhsSurfaceVariant = Color(0xFFE1E3F8)
-private val OhsOnSurfaceVariant = Color(0xFF45464F)
-private val OhsOutline = Color(0xFF757680)
+private val OhsBackground = Color(0xFFF6FBF4)
+private val OhsSurface = Color(0xFFF6FBF4)
+private val OhsOnSurface = Color(0xFF171D18)
+private val OhsSurfaceVariant = Color(0xFFDDE5DA)
+private val OhsOnSurfaceVariant = Color(0xFF414941)
+private val OhsOutline = Color(0xFF717970)
 
 private val OhsLightColorScheme =
   lightColorScheme(
@@ -78,29 +78,29 @@ private val OhsLightColorScheme =
 
 private val OhsDarkColorScheme =
   darkColorScheme(
-    primary = Color(0xFFA8C7FA),
-    onPrimary = Color(0xFF0842A0),
-    primaryContainer = Color(0xFF0842A0),
-    onPrimaryContainer = Color(0xFFD3E3FD),
-    secondary = Color(0xFF7FCFFF),
-    onSecondary = Color(0xFF004A77),
-    secondaryContainer = Color(0xFF004A77),
-    onSecondaryContainer = Color(0xFFC2E7FF),
-    tertiary = Color(0xFF91D5A3),
-    onTertiary = Color(0xFF0F5223),
-    tertiaryContainer = Color(0xFF0F5223),
-    onTertiaryContainer = Color(0xFFC4EED0),
+    primary = Color(0xFF9DD7A7),
+    onPrimary = Color(0xFF073916),
+    primaryContainer = Color(0xFF0E5123),
+    onPrimaryContainer = Color(0xFFB7F0C2),
+    secondary = Color(0xFFB7CCB7),
+    onSecondary = Color(0xFF223426),
+    secondaryContainer = Color(0xFF384B39),
+    onSecondaryContainer = Color(0xFFD3E8D3),
+    tertiary = Color(0xFF97D5B4),
+    onTertiary = Color(0xFF003828),
+    tertiaryContainer = Color(0xFF16513D),
+    onTertiaryContainer = Color(0xFFB2F1D1),
     error = Color(0xFFF2B8B5),
     onError = Color(0xFF601410),
     errorContainer = Color(0xFF8C1D18),
     onErrorContainer = Color(0xFFF9DEDC),
-    background = Color(0xFF1F1F1F),
-    onBackground = Color(0xFFE3E3E3),
-    surface = Color(0xFF1F1F1F),
-    onSurface = Color(0xFFE3E3E3),
-    surfaceVariant = Color(0xFF45464F),
-    onSurfaceVariant = Color(0xFFC5C6D0),
-    outline = Color(0xFF8F9099),
+    background = Color(0xFF0F1511),
+    onBackground = Color(0xFFDCE5DC),
+    surface = Color(0xFF0F1511),
+    onSurface = Color(0xFFDCE5DC),
+    surfaceVariant = Color(0xFF414941),
+    onSurfaceVariant = Color(0xFFC1C9BE),
+    outline = Color(0xFF8B938A),
   )
 
 @Composable

@@ -15,8 +15,17 @@
  */
 package icl.ohs.libs.auth
 
+import io.ktor.client.HttpClient
+import io.ktor.client.request.accept
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.isSuccess
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlinx.coroutines.CancellationException
 
 object IclAuth {
 
@@ -69,6 +78,17 @@ object IclAuth {
   fun currentAuthHeaders(now: Instant = Clock.System.now()): Map<String, String> =
     currentAuthorizationHeader(now)?.let { mapOf("Authorization" to it) }.orEmpty()
 
+  suspend fun refreshProviderProfile(): ProviderProfile? {
+    val config = currentConfiguration() ?: return currentProviderProfile()
+    val httpClient = buildLoginHttpClient(config.requestTimeoutMillis)
+
+    return try {
+      refreshProviderProfile(httpClient)
+    } finally {
+      httpClient.close()
+    }
+  }
+
   internal fun currentConfiguration(): IclAuthConfig? = configuration
 
   private fun currentValidSession(now: Instant): AuthSession? =
@@ -83,5 +103,37 @@ object IclAuth {
 
   internal fun updateProviderProfile(providerProfile: ProviderProfile?) {
     this.providerProfile = providerProfile
+  }
+
+  internal suspend fun refreshProviderProfile(httpClient: HttpClient): ProviderProfile? {
+    val authConfig = currentConfiguration() ?: return currentProviderProfile()
+    val session = currentValidSession(Clock.System.now()) ?: return currentProviderProfile()
+    val providerProfileUrl =
+      resolveAuthUrl(
+        baseAuthUrl = authConfig.baseAuthUrl,
+        endpoint = authConfig.providerProfileEndpoint,
+      ) ?: return currentProviderProfile()
+
+    return try {
+      val response =
+        httpClient.get(providerProfileUrl) {
+          accept(ContentType.Application.Json)
+          authConfig.defaultRequestHeaders.forEach { (name, value) -> header(name, value) }
+          header(HttpHeaders.Authorization, session.authorizationHeader)
+        }
+      val responseBody = response.bodyAsText()
+
+      if (response.status.isSuccess()) {
+        parseProviderProfile(responseBody)?.also(::updateProviderProfile)
+      } else {
+        currentProviderProfile()
+      }
+    } catch (error: Throwable) {
+      if (error is CancellationException) {
+        throw error
+      }
+
+      currentProviderProfile()
+    }
   }
 }

@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.time.Duration.Companion.milliseconds
@@ -56,15 +55,22 @@ internal fun AuthMessageBanner(
     onDismiss()
   }
 
+  // Derive banner colors from the host MaterialTheme so embedded auth screens
+  // automatically match the calling application's palette.
   val backgroundColor =
     when (type) {
-      AuthMessageBannerType.Success -> Color(0xFF1F7A3D)
-      AuthMessageBannerType.Error -> Color(0xFFC0392B)
+      AuthMessageBannerType.Success -> MaterialTheme.colorScheme.tertiaryContainer
+      AuthMessageBannerType.Error -> MaterialTheme.colorScheme.errorContainer
     }
   val accentColor =
     when (type) {
-      AuthMessageBannerType.Success -> Color(0xFFB8F5C8)
-      AuthMessageBannerType.Error -> Color(0xFFFFD6D1)
+      AuthMessageBannerType.Success -> MaterialTheme.colorScheme.tertiary
+      AuthMessageBannerType.Error -> MaterialTheme.colorScheme.error
+    }
+  val contentColor =
+    when (type) {
+      AuthMessageBannerType.Success -> MaterialTheme.colorScheme.onTertiaryContainer
+      AuthMessageBannerType.Error -> MaterialTheme.colorScheme.onErrorContainer
     }
 
   Surface(
@@ -83,7 +89,7 @@ internal fun AuthMessageBanner(
       Text(
         text = message,
         style = MaterialTheme.typography.bodyMedium,
-        color = Color.White,
+        color = contentColor,
         fontWeight = FontWeight.Medium,
       )
     }

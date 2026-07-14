@@ -19,10 +19,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,7 +39,10 @@ import dev.ohs.player.library.scaffold.ListScaffold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GroupListScreen(onGroupClick: (String) -> Unit) {
+fun GroupListScreen(
+  onGroupClick: (String) -> Unit,
+  onBack: (() -> Unit)? = null,
+) {
   val viewModel: GroupListViewModel = viewModel { GroupListViewModel() }
   val groups by viewModel.groups.collectAsStateWithLifecycle()
 
@@ -57,6 +63,17 @@ fun GroupListScreen(onGroupClick: (String) -> Unit) {
     topBar {
       TopAppBar(
         title = { Text("Households") },
+        navigationIcon =
+          onBack?.let {
+            {
+              androidx.compose.material3.IconButton(onClick = it) {
+                Icon(
+                  imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                  contentDescription = "Back",
+                )
+              }
+            }
+          } ?: {},
         colors =
           TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary,

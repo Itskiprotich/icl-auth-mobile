@@ -1,0 +1,149 @@
+{
+  "id": "measles-cases",
+  "title": "Measles Case List",
+  "subtitle": "Browse reported measles cases and continue investigations.",
+  "emptyMessage": "No measles cases match the current search.",
+  "pageSize": 8,
+  "records": [
+    {
+      "id": "mc-001",
+      "title": "Achieng Atieno",
+      "subtitle": "Rash onset 2026-07-10",
+      "status": "Submitted",
+      "statusTone": "success",
+      "meta": ["Kakamega", "Navakholo", "5 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-001" },
+        { "label": "Facility", "value": "Navakholo Sub-County Hospital" },
+        { "label": "Classification", "value": "Suspected" },
+        { "label": "Reporter", "value": "Nyayieka Patrick" }
+      ]
+    },
+    {
+      "id": "mc-002",
+      "title": "Brian Mutiso",
+      "subtitle": "Rash onset 2026-07-09",
+      "status": "Draft",
+      "statusTone": "warning",
+      "meta": ["Kakamega", "Lurambi", "2 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-002" },
+        { "label": "Facility", "value": "Shibwe Dispensary" },
+        { "label": "Classification", "value": "Suspected" },
+        { "label": "Reporter", "value": "Japheth Kiprotich" }
+      ]
+    },
+    {
+      "id": "mc-003",
+      "title": "Faith Nekesa",
+      "subtitle": "Rash onset 2026-07-08",
+      "status": "Reviewed",
+      "statusTone": "info",
+      "meta": ["Kakamega", "Mumias East", "8 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-003" },
+        { "label": "Facility", "value": "Mumias Level 4 Hospital" },
+        { "label": "Classification", "value": "Probable" },
+        { "label": "Reporter", "value": "Nyayieka Patrick" }
+      ]
+    },
+    {
+      "id": "mc-004",
+      "title": "Kevin Wanjala",
+      "subtitle": "Rash onset 2026-07-07",
+      "status": "Submitted",
+      "statusTone": "success",
+      "meta": ["Kakamega", "Butere", "4 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-004" },
+        { "label": "Facility", "value": "Butere County Hospital" },
+        { "label": "Classification", "value": "Confirmed" },
+        { "label": "Reporter", "value": "Mercy Ayuma" }
+      ]
+    },
+    {
+      "id": "mc-005",
+      "title": "Mercy Adhiambo",
+      "subtitle": "Rash onset 2026-07-06",
+      "status": "Escalated",
+      "statusTone": "critical",
+      "meta": ["Kakamega", "Ikolomani", "1 yr"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-005" },
+        { "label": "Facility", "value": "Ikolomani Sub-County Hospital" },
+        { "label": "Classification", "value": "Suspected" },
+        { "label": "Reporter", "value": "David Ouma" }
+      ]
+    },
+    {
+      "id": "mc-006",
+      "title": "Nancy Shivachi",
+      "subtitle": "Rash onset 2026-07-05",
+      "status": "Draft",
+      "statusTone": "warning",
+      "meta": ["Kakamega", "Shinyalu", "7 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-006" },
+        { "label": "Facility", "value": "Shinyalu Health Centre" },
+        { "label": "Classification", "value": "Probable" },
+        { "label": "Reporter", "value": "Mercy Ayuma" }
+      ]
+    },
+    {
+      "id": "mc-007",
+      "title": "Peter Omondi",
+      "subtitle": "Rash onset 2026-07-04",
+      "status": "Submitted",
+      "statusTone": "success",
+      "meta": ["Kakamega", "Khwisero", "6 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-007" },
+        { "label": "Facility", "value": "Khwisero Health Centre" },
+        { "label": "Classification", "value": "Suspected" },
+        { "label": "Reporter", "value": "David Ouma" }
+      ]
+    },
+    {
+      "id": "mc-008",
+      "title": "Roseline Juma",
+      "subtitle": "Rash onset 2026-07-03",
+      "status": "Reviewed",
+      "statusTone": "info",
+      "meta": ["Kakamega", "Malava", "3 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-008" },
+        { "label": "Facility", "value": "Malava Sub-County Hospital" },
+        { "label": "Classification", "value": "Confirmed" },
+        { "label": "Reporter", "value": "Japheth Kiprotich" }
+      ]
+    },
+    {
+      "id": "mc-009",
+      "title": "Martin Mboya",
+      "subtitle": "Rash onset 2026-07-02",
+      "status": "Submitted",
+      "statusTone": "success",
+      "meta": ["Kakamega", "Lugari", "9 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-009" },
+        { "label": "Facility", "value": "Lumakanda Hospital" },
+        { "label": "Classification", "value": "Probable" },
+        { "label": "Reporter", "value": "Mercy Ayuma" }
+      ]
+    },
+    {
+      "id": "mc-010",
+      "title": "Dorcas Wafula",
+      "subtitle": "Rash onset 2026-07-01",
+      "status": "Draft",
+      "statusTone": "warning",
+      "meta": ["Kakamega", "Matungu", "11 yrs"],
+      "fields": [
+        { "label": "Case ID", "value": "MC-010" },
+        { "label": "Facility", "value": "Matungu Level 4 Hospital" },
+        { "label": "Classification", "value": "Suspected" },
+        { "label": "Reporter", "value": "Nyayieka Patrick" }
+      ]
+    }
+  ]
+}

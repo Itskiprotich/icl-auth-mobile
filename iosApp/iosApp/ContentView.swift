@@ -1,6 +1,6 @@
 import UIKit
 import SwiftUI
-import OhsPlayerReferenceApp
+import ICLAuthApp
 
 struct ComposeView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
@@ -16,6 +16,5 @@ struct ContentView: View {
             .ignoresSafeArea()
     }
 }
-
 
 

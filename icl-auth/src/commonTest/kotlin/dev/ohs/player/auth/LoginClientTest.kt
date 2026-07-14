@@ -213,6 +213,52 @@ class LoginClientTest {
   }
 
   @Test
+  fun refreshProviderProfile_usesCurrentBearerToken_andUpdatesStoredUser() = runTest {
+    IclAuth.clear()
+    val sessionStore =
+      InMemoryAuthSessionStore.also {
+        it.session =
+          AuthSession(
+            accessToken = "abc123",
+            tokenType = "Bearer",
+            issuedAt = Instant.parse("2026-07-14T03:00:00Z"),
+          )
+      }
+    IclAuth.initialize(
+      IclAuthConfig(baseAuthUrl = "https://auth.example.com", sessionStore = sessionStore)
+    )
+    val client =
+      HttpClient(
+        MockEngine { request ->
+          assertEquals(HttpMethod.Get, request.method)
+          assertEquals("/provider/me", request.url.encodedPath)
+          assertEquals("Bearer abc123", request.headers[HttpHeaders.Authorization])
+
+          respond(
+            content =
+              """{"status":"success","user":{"firstName":"Nyayieka","lastName":"Patrick","fhirPractitionerId":"89b31bfe-6f83-42c3-8653-88968e871a46","practitionerRole":"SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER","role":"SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER","status":true,"id":"89b31bfe-6f83-42c3-8653-88968e871a46","idNumber":"13877484","fullNames":"Nyayieka Patrick","phone":"0711713272","email":"nyayieka2021@gmail.com","locationInfo":{"facility":"","facilityName":"","ward":"","wardName":"","subCounty":"NAVAKHOLO","subCountyName":"NAVAKHOLO","county":"37","countyName":"KAKAMEGA","country":"0","countryName":"Kenya"}}}""",
+            status = HttpStatusCode.OK,
+            headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString()),
+          )
+        }
+      ) {
+        expectSuccess = false
+      }
+
+    try {
+      val providerProfile = IclAuth.refreshProviderProfile(client)
+
+      assertEquals("success", providerProfile?.status)
+      assertEquals("Nyayieka", providerProfile?.user?.firstName)
+      assertEquals("Nyayieka Patrick", IclAuth.currentProviderUser()?.fullNames)
+      assertEquals("KAKAMEGA", IclAuth.currentProviderUser()?.locationInfo?.countyName)
+    } finally {
+      client.close()
+      IclAuth.clear()
+    }
+  }
+
+  @Test
   fun parseLoginTokenResponse_extractsKnownTokenFields() {
     val tokenResponse =
       parseLoginTokenResponse(

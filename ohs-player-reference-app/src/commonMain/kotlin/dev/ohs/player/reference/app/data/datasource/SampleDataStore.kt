@@ -25,10 +25,10 @@ import dev.ohs.fhir.model.r4.Patient
 import dev.ohs.fhir.model.r4.RelatedPerson
 import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.player.library.model.SearchResult
+import iclauth.ohs_player_reference_app.generated.resources.Res
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
-import ohsplayerreferenceclientapp.ohs_player_reference_app.generated.resources.Res
 
 private val fhirJson = Json { ignoreUnknownKeys = true }
 

@@ -1,0 +1,144 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "measles-case-intake",
+  "title": "New Measles Case",
+  "status": "active",
+  "description": "Capture the minimum information needed to notify and investigate a measles case.",
+  "item": [
+    {
+      "linkId": "introduction",
+      "text": "Complete all required fields before submitting this case.",
+      "type": "display"
+    },
+    {
+      "linkId": "patient-details",
+      "text": "Patient Details",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "patient-full-name",
+          "text": "Patient full name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "linkId": "patient-age",
+          "text": "Age in years",
+          "type": "integer",
+          "required": true
+        },
+        {
+          "linkId": "patient-sex",
+          "text": "Sex",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "female",
+                "display": "Female"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "male",
+                "display": "Male"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "other",
+                "display": "Other"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "patient-phone",
+          "text": "Patient or next of kin phone number",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "linkId": "clinical-details",
+      "text": "Clinical Details",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "rash-onset-date",
+          "text": "Date of rash onset",
+          "type": "date",
+          "required": true
+        },
+        {
+          "linkId": "fever-present",
+          "text": "Fever present",
+          "type": "boolean",
+          "required": true
+        },
+        {
+          "linkId": "vitamin-a-given",
+          "text": "Vitamin A administered",
+          "type": "boolean"
+        },
+        {
+          "linkId": "symptoms-summary",
+          "text": "Symptoms summary",
+          "type": "text",
+          "required": true
+        }
+      ]
+    },
+    {
+      "linkId": "surveillance-details",
+      "text": "Surveillance Details",
+      "type": "group",
+      "item": [
+        {
+          "linkId": "case-classification",
+          "text": "Case classification",
+          "type": "choice",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "suspected",
+                "display": "Suspected"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "probable",
+                "display": "Probable"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "confirmed",
+                "display": "Confirmed"
+              }
+            }
+          ]
+        },
+        {
+          "linkId": "reporting-facility",
+          "text": "Reporting facility",
+          "type": "string",
+          "required": true
+        },
+        {
+          "linkId": "sub-county",
+          "text": "Sub-county",
+          "type": "string",
+          "required": true
+        },
+        {
+          "linkId": "comments",
+          "text": "Additional remarks",
+          "type": "text"
+        }
+      ]
+    }
+  ]
+}
