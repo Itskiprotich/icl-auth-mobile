@@ -7,6 +7,12 @@
   },
   "extension": [
     {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+      "valueReference": {
+        "reference": "#bunExtract"
+      }
+    },
+    {
       "extension": [
         {
           "url": "name",
@@ -189,6 +195,353 @@
   ],
   "title": "Measles Case Report",
   "status": "draft",
+  "contained": [
+    {
+      "resourceType": "Bundle",
+      "id": "bunExtract",
+      "type": "transaction",
+      "entry": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '670954892057')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031",
+          "resource": {
+            "resourceType": "Patient",
+            "language": "en",
+            "name": [
+              {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+                    "valueString": "item.where(linkId = 'name')"
+                  }
+                ],
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='873240407472' or linkId='246751846436' or linkId='486402457213').answer.value.join(' ')"
+                    }
+                  ]
+                },
+                "_family": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = '486402457213').answer.value.first()"
+                    }
+                  ]
+                },
+                "_given": [
+                  {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "item.where(linkId = '873240407472' or linkId='246751846436').answer.value"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "gender": "unknown",
+            "_gender": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "item.where(linkId = '929966324957').answer.value.first().code"
+                }
+              ]
+            },
+            "telecom": [
+              {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+                    "valueString": "item.where(linkId = '754217593839').answer.value"
+                  }
+                ],
+                "system": "phone",
+                "_value": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "first()"
+                    }
+                  ]
+                },
+                "use": "mobile"
+              }
+            ]
+          },
+          "request": {
+            "method": "POST",
+            "url": "Patient",
+            "ifMatch": "Patient?_name=urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '294367770999_national' or linkId = '294367770999_county' or linkId = '294367770999_sub_county' or linkId = '294367770999')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd033",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "294367770999",
+                  "display": "Reporting County"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '819946803642_national' or linkId = '819946803642_county' or linkId = '819946803642_sub_county' or linkId = '819946803642')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd033",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819946803642",
+                  "display": "Reporting Sub County"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '819943434_national' or linkId = '819943434_county' or linkId = '819943434_sub_county' or linkId = '819943434')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd033",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819943434",
+                  "display": "Reporting Ward"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level'  or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '819946803677_national' or linkId = '819946803677_county' or linkId = '819946803677_sub_county' or linkId = '819946803677')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd033",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819946803677",
+                  "display": "Reporting Facility"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level'  or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '438862163919_national' or linkId = '438862163919_county' or linkId = '438862163919_sub_county' or linkId = '438862163919')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd034",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vital-signs"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "438862163919",
+                  "display": "Type of health facility"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        }
+      ]
+    }
+  ],
   "item": [
     {
       "item": [
@@ -955,21 +1308,28 @@
     {
       "item": [
         {
-          "type": "string",
-          "linkId": "873240407472",
-          "text": "First name",
-          "required": true
-        },
-        {
-          "type": "string",
-          "linkId": "246751846436",
-          "text": "Middle name"
-        },
-        {
-          "type": "string",
-          "linkId": "486402457213",
-          "text": "Surname/Family name",
-          "required": true
+          "linkId": "name",
+          "text": "Patient Name",
+          "type": "group",
+          "item": [
+            {
+              "type": "string",
+              "linkId": "873240407472",
+              "text": "First name",
+              "required": true
+            },
+            {
+              "type": "string",
+              "linkId": "246751846436",
+              "text": "Middle name"
+            },
+            {
+              "type": "string",
+              "linkId": "486402457213",
+              "text": "Surname/Family name",
+              "required": true
+            }
+          ]
         },
         {
           "type": "choice",
@@ -1060,7 +1420,7 @@
             },
             {
               "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
+              "_valueDate": {
                 "extension": [
                   {
                     "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
@@ -1384,1132 +1744,6 @@
       ],
       "linkId": "670954892057",
       "text": "Case Demographics"
-    },
-    {
-      "item": [
-        {
-          "type": "date",
-          "linkId": "554231819382",
-          "text": "Date 1st seen at health facility",
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-              "valueCode": "horizontal"
-            }
-          ],
-          "linkId": "483042281962",
-          "text": "Hospitalized? ",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no",
-                "display": "No"
-              }
-            }
-          ]
-        },
-        {
-          "type": "date",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "Date of Admission should be after the date 1st seen at the facility"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='554231819382').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "Date of Admission should be after date 1st seen at the facility"
-                },
-                {
-                  "url": "location",
-                  "valueString": "554231819382"
-                }
-              ]
-            }
-          ],
-          "linkId": "340908984116",
-          "text": "Date of Admission",
-          "enableWhen": [
-            {
-              "question": "483042281962",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true
-        },
-        {
-          "type": "string",
-          "linkId": "755731625544",
-          "text": "IP/ OP No",
-          "required": true
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-              "valueCode": "horizontal"
-            }
-          ],
-          "linkId": "508745697175",
-          "text": "Outcome",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "Alive",
-                "display": "Alive"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Dead",
-                "display": "Dead"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Unknown",
-                "display": "Unknown"
-              }
-            }
-          ]
-        }
-      ],
-      "type": "group",
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page"
-              }
-            ]
-          }
-        }
-      ],
-      "linkId": "216343227137",
-      "text": "Case Information"
-    },
-    {
-      "item": [
-        {
-          "type": "date",
-          "linkId": "728034137219",
-          "text": "Date of onset of illness",
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "Date of Onset of illness should be before the date 1st seen at the facility"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value <= %resource.descendants().where(linkId='554231819382').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "Date of Onset of illness should be before the date 1st seen at the facility"
-                },
-                {
-                  "url": "location",
-                  "valueString": "554231819382"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "check-box",
-                    "display": "Check-box"
-                  }
-                ]
-              }
-            }
-          ],
-          "linkId": "745196148424",
-          "text": "Clinical symptoms",
-          "repeats": true,
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "Fever",
-                "display": "Fever"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Rash",
-                "display": "Rash"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Cough",
-                "display": "Cough"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Coryza",
-                "display": "Coryza"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Conjunctivitis",
-                "display": "Conjunctivitis"
-              }
-            }
-          ]
-        },
-        {
-          "type": "date",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "Date of Onset of rash should be after the onset of illness"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='728034137219').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "Date of Onset of rash should be after the onset of illness"
-                },
-                {
-                  "url": "location",
-                  "valueString": "728034137219"
-                }
-              ]
-            }
-          ],
-          "linkId": "576528567552",
-          "text": "Date of Onset of rash",
-          "enableWhen": [
-            {
-              "question": "745196148424",
-              "operator": "=",
-              "answerCoding": {
-                "code": "Rash",
-                "display": "Rash"
-              }
-            }
-          ],
-          "required": true
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "drop-down",
-                    "display": "Drop down"
-                  }
-                ]
-              }
-            }
-          ],
-          "linkId": "704922081985",
-          "text": "Type of Rash",
-          "enableWhen": [
-            {
-              "question": "745196148424",
-              "operator": "=",
-              "answerCoding": {
-                "code": "Rash",
-                "display": "Rash"
-              }
-            }
-          ],
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "Maculopapular",
-                "display": "Maculopapular"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Other",
-                "display": "Other"
-              }
-            }
-          ]
-        },
-        {
-          "type": "string",
-          "linkId": "679340979918",
-          "text": "If Other, specify",
-          "enableWhen": [
-            {
-              "question": "704922081985",
-              "operator": "=",
-              "answerCoding": {
-                "code": "Other",
-                "display": "Other"
-              }
-            }
-          ],
-          "required": true
-        },
-        {
-          "type": "display",
-          "linkId": "817978705295",
-          "text": "Measles Surveilance"
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-              "valueCode": "horizontal"
-            }
-          ],
-          "linkId": "207408507040",
-          "text": "Was home of patient visited for contact investigation",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no",
-                "display": "No"
-              }
-            }
-          ]
-        },
-        {
-          "type": "date",
-          "linkId": "566661890668",
-          "text": "If yes, date of visit",
-          "enableWhen": [
-            {
-              "question": "207408507040",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "Date of Home visit should be after the date 1st seen at the facility"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='554231819382').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "Date of Home visit should be after the date 1st seen at the facility"
-                },
-                {
-                  "url": "location",
-                  "valueString": "554231819382"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-              "valueCode": "horizontal"
-            }
-          ],
-          "linkId": "865158268604",
-          "text": "Is this a Case or a Line List?",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "Case",
-                "display": "Case"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Line List",
-                "display": "Line List"
-              }
-            }
-          ]
-        }
-      ],
-      "type": "group",
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page"
-              }
-            ]
-          }
-        }
-      ],
-      "linkId": "477144604557",
-      "text": "Clinical History"
-    },
-    {
-      "type": "group",
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page"
-              }
-            ]
-          }
-        }
-      ],
-      "linkId": "736291402384",
-      "text": "Vaccination History",
-      "item": [
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-              "valueCode": "horizontal"
-            }
-          ],
-          "linkId": "517772812375",
-          "text": "Was patient vaccinated against illness?",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no",
-                "display": "No"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "unknown",
-                "display": "Unknown"
-              }
-            }
-          ]
-        },
-        {
-          "type": "integer",
-          "linkId": "886125589225",
-          "text": "If yes, number of doses",
-          "enableWhen": [
-            {
-              "question": "517772812375",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-              "valueInteger": 8
-            }
-          ]
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-              "valueCode": "horizontal"
-            }
-          ],
-          "linkId": "308128177300",
-          "text": "MR vaccination given in last 30 days prior to onset of illness",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no",
-                "display": "No"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "unknown",
-                "display": "Unknown"
-              }
-            }
-          ]
-        },
-        {
-          "type": "date",
-          "linkId": "544290619304",
-          "text": "Date of last vaccination",
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "Date of last vaccination should be before Date of onset of illness"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value <= %resource.descendants().where(linkId='728034137219').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "Date of last vaccination  should be before Date of onset of illness"
-                },
-                {
-                  "url": "location",
-                  "valueString": "728034137219"
-                }
-              ]
-            }
-          ],
-          "enableWhen": [
-            {
-              "question": "308128177300",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "item": [
-        {
-          "type": "choice",
-          "linkId": "412689284625",
-          "text": "Please select specimen collected",
-          "required": true,
-          "repeats": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "Blood",
-                "display": "Blood"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Urine",
-                "display": "Urine"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "Respiratory Sample",
-                "display": "Respiratory Sample"
-              }
-            }
-          ]
-        },
-        {
-          "type": "date",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "Date of Specimen Collection should be after the date 1st seen at the facility"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='554231819382').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "Date of Specimen Collection should be after the date 1st seen at the facility"
-                },
-                {
-                  "url": "location",
-                  "valueString": "554231819382"
-                }
-              ]
-            }
-          ],
-          "linkId": "8962468583341",
-          "text": "Date of specimen collection",
-          "enableWhen": [
-            {
-              "question": "412689284625",
-              "operator": "exists",
-              "answerBoolean": true
-            }
-          ],
-          "required": true
-        },
-        {
-          "type": "choice",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
-              "valueCode": "horizontal"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-              "valueCodeableConcept": {
-                "coding": [
-                  {
-                    "system": "http://hl7.org/fhir/questionnaire-item-control",
-                    "code": "radio-button",
-                    "display": "Radio Button"
-                  }
-                ]
-              }
-            }
-          ],
-          "linkId": "258912872921",
-          "text": "Were other specimen types collected?",
-          "required": true,
-          "answerOption": [
-            {
-              "valueCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            },
-            {
-              "valueCoding": {
-                "code": "no",
-                "display": "No"
-              }
-            }
-          ]
-        },
-        {
-          "type": "string",
-          "linkId": "340507649387",
-          "text": "If yes, specify other specimen type",
-          "enableWhen": [
-            {
-              "question": "258912872921",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true
-        },
-        {
-          "type": "date",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "Date of Specimen Collection should be after the date 1st seen at the facility"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='554231819382').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "Date of Specimen Collection should be after the date 1st seen at the facility"
-                },
-                {
-                  "url": "location",
-                  "valueString": "554231819382"
-                }
-              ]
-            }
-          ],
-          "linkId": "699353598445",
-          "text": "Date of other specimen type collection",
-          "enableWhen": [
-            {
-              "question": "258912872921",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true
-        },
-        {
-          "type": "date",
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
-              "valueString": "d/M/y"
-            },
-            {
-              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
-              "valueString": "Cannot be a date in the future"
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-             "_valueDate": {
-                "extension": [
-                  {
-                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
-                    "valueExpression": {
-                      "language": "text/fhirpath",
-                      "expression": "today()"
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
-              "extension": [
-                {
-                  "url": "key",
-                  "valueId": "constraint-1"
-                },
-                {
-                  "url": "requirements",
-                  "valueString": "The date should be after the specimen collection date"
-                },
-                {
-                  "url": "severity",
-                  "valueCode": "error"
-                },
-                {
-                  "url": "expression",
-                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='8962468583341').answer.value"
-                },
-                {
-                  "url": "human",
-                  "valueString": "The date should be after the specimen collection date"
-                },
-                {
-                  "url": "location",
-                  "valueString": "8962468583341"
-                }
-              ]
-            }
-          ],
-          "linkId": "718251724172",
-          "text": "Date specimen sent to lab",
-          "required": true
-        }
-      ],
-      "type": "group",
-      "extension": [
-        {
-          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "http://hl7.org/fhir/questionnaire-item-control",
-                "code": "page",
-                "display": "Page"
-              }
-            ]
-          }
-        }
-      ],
-      "linkId": "271053545237",
-      "text": "Sample/Specimen Collection",
-      "enableWhen": [
-        {
-          "question": "865158268604",
-          "operator": "=",
-          "answerCoding": {
-            "code": "Case",
-            "display": "Case"
-          }
-        }
-      ]
     }
   ]
 }

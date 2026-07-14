@@ -53,6 +53,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.ohs.fhir.datacapture.Questionnaire
 import dev.ohs.fhir.datacapture.QuestionnaireConfig
+import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
+import dev.ohs.fhir.model.r4.Bundle
+import dev.ohs.fhir.model.r4.Questionnaire
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -66,6 +69,16 @@ import kotlin.time.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 
+
+object FhirJson {
+    val instance: Json = Json {
+        prettyPrint = true
+        explicitNulls = false
+        encodeDefaults = false
+        ignoreUnknownKeys = true
+    }
+}
+
 @Composable
 fun QuestionnaireHostScreen(
     title: String,
@@ -75,11 +88,13 @@ fun QuestionnaireHostScreen(
     modifier: Modifier = Modifier,
     primaryActionLabel: String = "Submit Case",
 ) {
+    val fhirJson = FhirJson.instance
     val screenState by
     produceState<QuestionnaireScreenState>(
         initialValue = QuestionnaireScreenState.Loading,
         resource,
-    ) {
+    )
+    {
         value =
             runCatching { WorkflowQuestionnaireStore.questionnaireJson(resource) }
                 .fold(
@@ -177,6 +192,19 @@ fun QuestionnaireHostScreen(
                                             val response = getResponse()
                                             val savedId =
                                                 WorkflowFhirStore.saveQuestionnaireResponse(response)
+                                            val questionnaire = fhirJson.decodeFromString(
+                                                Questionnaire.serializer(),
+                                                state.questionnaireJson
+                                            )
+                                            val extractedBundle = TemplateExtractionEngine.extract(
+                                                questionnaire,
+                                                response
+                                            )
+                                            val normalizedBundle = fhirJson.encodeToString(
+                                                Bundle.serializer(),
+                                                extractedBundle
+                                            )
+                                            println(normalizedBundle)
                                             val message =
                                                 if (WorkflowFhirStore.isPersistenceAvailable) {
                                                     if (savedId != null) {
