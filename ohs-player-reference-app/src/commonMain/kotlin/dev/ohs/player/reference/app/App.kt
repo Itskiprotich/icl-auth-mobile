@@ -100,6 +100,7 @@ fun App(platformContext: Any = Unit) {
             if (isLoggedIn) {
                 ReferenceAppNavigation()
             } else {
+//                ReferenceAppNavigation()
                 AuthNavigation(onAuthenticated = { isLoggedIn = true })
             }
         }
