@@ -18,40 +18,52 @@ package dev.ohs.player.reference.app.feature.workflow
 import dev.ohs.fhir.FhirEngine
 import dev.ohs.fhir.FhirEngineConfiguration
 import dev.ohs.fhir.FhirEngineProvider
+import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 import dev.ohs.fhir.model.r4.terminologies.ResourceType
 import dev.ohs.fhir.search.Search
 
 actual object WorkflowFhirStore {
-  private var platformContext: Any? = null
-  private var fhirEngine: FhirEngine? = null
+    private var platformContext: Any? = null
+    private var fhirEngine: FhirEngine? = null
 
-  actual val isPersistenceAvailable: Boolean = true
+    actual val isPersistenceAvailable: Boolean = true
 
-  actual fun initialize(platformContext: Any) {
-    this.platformContext = platformContext
-    if (FhirEngineProvider.isNotInitialized()) {
-      FhirEngineProvider.init(FhirEngineConfiguration(), platformContext)
+    actual fun initialize(platformContext: Any) {
+        this.platformContext = platformContext
+        if (FhirEngineProvider.isNotInitialized()) {
+            FhirEngineProvider.init(FhirEngineConfiguration(), platformContext)
+        }
+        if (fhirEngine == null) {
+            fhirEngine = FhirEngineProvider.getInstance(platformContext)
+        }
     }
-    if (fhirEngine == null) {
-      fhirEngine = FhirEngineProvider.getInstance(platformContext)
+
+    actual suspend fun saveQuestionnaireResponse(response: QuestionnaireResponse): String? {
+        return engine().create(response).firstOrNull()
     }
-  }
 
-  actual suspend fun saveQuestionnaireResponse(response: QuestionnaireResponse): String? {
-    return engine().create(response).firstOrNull()
-  }
 
-  actual suspend fun listQuestionnaireResponses(): List<QuestionnaireResponse> {
-    return engine().search<QuestionnaireResponse>(Search(ResourceType.QuestionnaireResponse)).map { it.resource }
-  }
+    actual suspend fun listQuestionnaireResponses(): List<QuestionnaireResponse> {
+        return engine().search<QuestionnaireResponse>(Search(ResourceType.QuestionnaireResponse))
+            .map { it.resource }
+    }
 
-  private fun engine(): FhirEngine {
-    val context =
-      checkNotNull(platformContext) {
-        "WorkflowFhirStore has not been initialized with an Android application context."
-      }
-    initialize(context)
-    return checkNotNull(fhirEngine)
-  }
+    private fun engine(): FhirEngine {
+        val context =
+            checkNotNull(platformContext) {
+                "WorkflowFhirStore has not been initialized with an Android application context."
+            }
+        initialize(context)
+        return checkNotNull(fhirEngine)
+    }
+
+    actual suspend fun saveBundle(bundle: Bundle): List<String?> {
+//        TODO("Not yet implemented")
+        bundle.entry.forEach {
+            it.resource?.let { resource -> engine().create(resource) }
+        }
+
+        return emptyList()
+    }
 }

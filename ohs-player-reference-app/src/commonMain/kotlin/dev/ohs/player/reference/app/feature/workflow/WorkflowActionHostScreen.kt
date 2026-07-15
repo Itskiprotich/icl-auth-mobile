@@ -102,12 +102,12 @@ fun WorkflowActionHostScreen(
       when (state.action.type) {
         WorkflowActionType.QUESTIONNAIRE ->
           QuestionnaireHostScreen(
-            title = state.title,
-            subtitle = state.subtitle,
-            resource = state.action.resource,
-            onBack = onBack,
-            modifier = modifier,
-            primaryActionLabel = state.action.primaryActionLabel ?: "Submit Case",
+              title = state.title,
+              subtitle = state.subtitle,
+              resource = state.action.resource,
+              onBack = onBack,
+              modifier = modifier,
+              primaryActionLabel = state.action.primaryActionLabel ?: "Submit Case",
           )
         WorkflowActionType.RECORD_LIST ->
           WorkflowRecordListScreen(

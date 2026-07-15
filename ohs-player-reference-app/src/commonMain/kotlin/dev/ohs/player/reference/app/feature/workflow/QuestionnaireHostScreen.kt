@@ -15,6 +15,7 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
+import dev.ohs.fhir.model.r4.String as FhirString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,7 +56,14 @@ import dev.ohs.fhir.datacapture.Questionnaire
 import dev.ohs.fhir.datacapture.QuestionnaireConfig
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
 import dev.ohs.fhir.model.r4.Bundle
+import dev.ohs.fhir.model.r4.Condition
+import dev.ohs.fhir.model.r4.Encounter
+import dev.ohs.fhir.model.r4.Observation
+import dev.ohs.fhir.model.r4.Patient
 import dev.ohs.fhir.model.r4.Questionnaire
+import dev.ohs.fhir.model.r4.Reference
+import dev.ohs.fhir.model.r4.Specimen
+import dev.ohs.player.reference.app.generateUuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -89,11 +97,14 @@ fun QuestionnaireHostScreen(
     primaryActionLabel: String = "Submit Case",
 ) {
     val fhirJson = FhirJson.instance
+    fun String?.orGeneratedId(): String = takeUnless { it.isNullOrBlank() } ?: generateUuid()
+
     val screenState by
     produceState<QuestionnaireScreenState>(
         initialValue = QuestionnaireScreenState.Loading,
         resource,
     )
+
     {
         value =
             runCatching { WorkflowQuestionnaireStore.questionnaireJson(resource) }
@@ -189,9 +200,25 @@ fun QuestionnaireHostScreen(
                                     scope.launch {
                                         isSubmitting = true
                                         try {
+                                            val patientId = generateUuid()
+                                            val encounterId = generateUuid()
+                                            val patientReference =
+                                                FhirString(value = "Patient/$patientId")
+                                            val patientRef = Reference(reference = patientReference)
+
+                                            val encounterReference =
+                                                FhirString(value = "Encounter/$encounterId")
+                                            val encounterRef =
+                                                Reference(reference = encounterReference)
+
                                             val response = getResponse()
                                             val savedId =
-                                                WorkflowFhirStore.saveQuestionnaireResponse(response)
+                                                WorkflowFhirStore.saveQuestionnaireResponse(
+                                                    response.copy(
+                                                        subject = patientRef,
+                                                        encounter = encounterRef
+                                                    )
+                                                )
                                             val questionnaire = fhirJson.decodeFromString(
                                                 Questionnaire.serializer(),
                                                 state.questionnaireJson
@@ -204,6 +231,53 @@ fun QuestionnaireHostScreen(
                                                 Bundle.serializer(),
                                                 extractedBundle
                                             )
+
+                                            val bundle =
+                                                extractedBundle.copy(
+                                                    entry =
+                                                        extractedBundle.entry.map { entry ->
+                                                            val updatedResource =
+                                                                when (val resource =
+                                                                    entry.resource) {
+                                                                    is Observation ->
+                                                                        resource.copy(
+                                                                            id = resource.id.orGeneratedId(),
+                                                                            subject = patientRef,
+                                                                            encounter = encounterRef
+                                                                        )
+
+
+                                                                    is Condition ->
+                                                                        resource.copy(
+                                                                            id = resource.id.orGeneratedId(),
+                                                                            subject = patientRef,
+                                                                            encounter = encounterRef
+                                                                        )
+
+                                                                    is Encounter ->
+                                                                        resource.copy(
+                                                                            id = resource.id.orGeneratedId(),
+                                                                            subject = patientRef
+                                                                        )
+
+                                                                    is Specimen ->
+                                                                        resource.copy(
+                                                                            id = resource.id.orGeneratedId(),
+                                                                            subject = patientRef
+                                                                        )
+
+                                                                    is Patient ->
+                                                                        resource.copy(
+                                                                            id = resource.id.orGeneratedId()
+                                                                        )
+
+                                                                    else -> resource
+                                                                }
+
+                                                            entry.copy(resource = updatedResource)
+                                                        }
+                                                )
+                                            WorkflowFhirStore.saveBundle(bundle)
                                             println(normalizedBundle)
                                             val message =
                                                 if (WorkflowFhirStore.isPersistenceAvailable) {
