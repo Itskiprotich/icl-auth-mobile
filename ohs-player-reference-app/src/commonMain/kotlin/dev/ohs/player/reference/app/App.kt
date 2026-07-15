@@ -85,7 +85,7 @@ private const val WORKFLOW_MODULE_ID_ARG = "workflowModuleId"
 private const val WORKFLOW_NODE_ID_ARG = "workflowNodeId"
 private const val WORKFLOW_ITEM_ID_ARG = "workflowItemId"
 private val AUTH_CONFIG =
-    IclAuthConfig(baseAuthUrl = "https://dsrkeycloak.intellisoftkenya.com/auth")
+    IclAuthConfig(baseAuthUrl = "https://auth.nphiis.health.go.ke")
 
 @Composable
 fun App(platformContext: Any = Unit) {
@@ -100,7 +100,6 @@ fun App(platformContext: Any = Unit) {
             if (isLoggedIn) {
                 ReferenceAppNavigation()
             } else {
-//                ReferenceAppNavigation()
                 AuthNavigation(onAuthenticated = { isLoggedIn = true })
             }
         }

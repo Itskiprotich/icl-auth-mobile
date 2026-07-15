@@ -96,8 +96,8 @@ fun LoginScreen(
   onTermsAndConditionsClick: () -> Unit = {},
   onPrivacyPolicyClick: (() -> Unit)? = null,
 ) {
-  var username by rememberSaveable { mutableStateOf("") }
-  var password by rememberSaveable { mutableStateOf("") }
+  var username by rememberSaveable { mutableStateOf("32645167") }
+  var password by rememberSaveable { mutableStateOf("00001111") }
   var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
   var isSubmitting by rememberSaveable { mutableStateOf(false) }
   val coroutineScope = rememberCoroutineScope()
