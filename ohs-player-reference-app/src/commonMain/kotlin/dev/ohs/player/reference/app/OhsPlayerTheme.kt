@@ -17,10 +17,20 @@ package dev.ohs.player.reference.app
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import iclauth.ohs_player_reference_app.generated.resources.Res
+import iclauth.ohs_player_reference_app.generated.resources.urbanist_bold
+import iclauth.ohs_player_reference_app.generated.resources.urbanist_medium
+import iclauth.ohs_player_reference_app.generated.resources.urbanist_regular
+import iclauth.ohs_player_reference_app.generated.resources.urbanist_semibold
+import org.jetbrains.compose.resources.Font
 
 private val OhsPrimary = Color(0xFF236B3A)
 private val OhsOnPrimary = Color.White
@@ -104,7 +114,71 @@ private val OhsDarkColorScheme =
   )
 
 @Composable
+fun urbanistFontFamily(): FontFamily =
+  FontFamily(
+    Font(resource = Res.font.urbanist_regular, weight = FontWeight.Normal),
+    Font(resource = Res.font.urbanist_medium, weight = FontWeight.Medium),
+    Font(resource = Res.font.urbanist_semibold, weight = FontWeight.SemiBold),
+    Font(resource = Res.font.urbanist_bold, weight = FontWeight.Bold),
+  )
+
+@Composable
+fun appTypography(): Typography {
+  val urbanist = urbanistFontFamily()
+
+  return Typography(
+    headlineLarge =
+      Typography()
+        .headlineLarge
+        .copy(
+          fontFamily = urbanist,
+          fontWeight = FontWeight.Bold,
+          fontSize = 34.sp,
+          lineHeight = 40.sp,
+        ),
+    headlineSmall =
+      Typography()
+        .headlineSmall
+        .copy(
+          fontFamily = urbanist,
+          fontWeight = FontWeight.Bold,
+          fontSize = 24.sp,
+          lineHeight = 30.sp,
+        ),
+    titleLarge =
+      Typography()
+        .titleLarge
+        .copy(
+          fontFamily = urbanist,
+          fontWeight = FontWeight.Medium,
+          fontSize = 21.sp,
+          lineHeight = 27.sp,
+        ),
+    titleMedium =
+      Typography()
+        .titleMedium
+        .copy(
+          fontFamily = urbanist,
+          fontWeight = FontWeight.Bold,
+          fontSize = 17.sp,
+          lineHeight = 22.sp,
+        ),
+    bodyMedium =
+      Typography()
+        .bodyMedium
+        .copy(
+          fontFamily = urbanist,
+          fontWeight = FontWeight.Normal,
+          fontSize = 15.sp,
+          lineHeight = 20.sp,
+        ),
+    labelLarge =
+      Typography().labelLarge.copy(fontFamily = urbanist, fontWeight = FontWeight.SemiBold),
+  )
+}
+
+@Composable
 fun OhsPlayerTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
   val colorScheme = if (darkTheme) OhsDarkColorScheme else OhsLightColorScheme
-  MaterialTheme(colorScheme = colorScheme, content = content)
+  MaterialTheme(colorScheme = colorScheme, typography = appTypography(), content = content)
 }

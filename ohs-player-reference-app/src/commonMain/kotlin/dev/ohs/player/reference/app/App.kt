@@ -84,291 +84,280 @@ private const val PATIENT_ID_ARG = "patientId"
 private const val WORKFLOW_MODULE_ID_ARG = "workflowModuleId"
 private const val WORKFLOW_NODE_ID_ARG = "workflowNodeId"
 private const val WORKFLOW_ITEM_ID_ARG = "workflowItemId"
-private val AUTH_CONFIG =
-    IclAuthConfig(baseAuthUrl = "https://auth.nphiis.health.go.ke")
+private val AUTH_CONFIG = IclAuthConfig(baseAuthUrl = "https://auth.nphiis.health.go.ke")
+private val bottomBarRoutes = setOf(HOME_ROUTE, PROFILE_ROUTE)
 
 @Composable
 fun App(platformContext: Any = Unit) {
-    remember(AUTH_CONFIG) { IclAuth.initialize(AUTH_CONFIG) }
-    remember(platformContext) { WorkflowFhirStore.initialize(platformContext) }
-    val registry = remember { buildAppViewRegistry() }
+  remember(AUTH_CONFIG) { IclAuth.initialize(AUTH_CONFIG) }
+  remember(platformContext) { WorkflowFhirStore.initialize(platformContext) }
+  val registry = remember { buildAppViewRegistry() }
 
-    CompositionLocalProvider(LocalViewRegistry provides registry) {
-        OhsPlayerTheme {
-            var isLoggedIn by rememberSaveable { mutableStateOf(IclAuth.hasValidAccessToken()) }
+  CompositionLocalProvider(LocalViewRegistry provides registry) {
+    OhsPlayerTheme {
+      var isLoggedIn by rememberSaveable { mutableStateOf(IclAuth.hasValidAccessToken()) }
 
-            if (isLoggedIn) {
-                ReferenceAppNavigation()
-            } else {
-                AuthNavigation(onAuthenticated = { isLoggedIn = true })
-            }
-        }
+      if (isLoggedIn) {
+        ReferenceAppNavigation()
+      } else {
+        AuthNavigation(onAuthenticated = { isLoggedIn = true })
+      }
     }
+  }
 }
 
 @Composable
 private fun ReferenceAppNavigation() {
-    val navController = rememberNavController()
-    val shellViewModel: HomeShellViewModel = viewModel { HomeShellViewModel() }
-    val uiState by shellViewModel.uiState.collectAsStateWithLifecycle()
-    val workflowCards by
+  val navController = rememberNavController()
+  val shellViewModel: HomeShellViewModel = viewModel { HomeShellViewModel() }
+  val uiState by shellViewModel.uiState.collectAsStateWithLifecycle()
+  val workflowCards by
     produceState(initialValue = DefaultWorkflowCatalog.cards) {
-        value =
-            runCatching { WorkflowCatalogStore.catalog().modules.map { it.toCardSpec() } }
-                .getOrElse { DefaultWorkflowCatalog.cards }
+      value =
+        runCatching { WorkflowCatalogStore.catalog().modules.map { it.toCardSpec() } }
+          .getOrElse { DefaultWorkflowCatalog.cards }
     }
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = backStackEntry?.destination?.route
-    val showBottomBar =
-        currentRoute == HOME_ROUTE ||
-                currentRoute == PROFILE_ROUTE ||
-                currentRoute?.startsWith("workflow/") == true
-    val homeSelected = currentRoute != PROFILE_ROUTE
+  val backStackEntry by navController.currentBackStackEntryAsState()
+  val currentRoute = backStackEntry?.destination?.route
+  val showBottomBar = currentRoute in bottomBarRoutes
+  val homeSelected = currentRoute == HOME_ROUTE
+  val profileSelected = currentRoute == PROFILE_ROUTE
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            if (showBottomBar) {
-                ReferenceBottomBar(
-                    homeSelected = homeSelected,
-                    profileSelected = currentRoute == PROFILE_ROUTE,
-                    onHomeClick = {
-                        navController.navigate(HOME_ROUTE) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                    onProfileClick = {
-                        navController.navigate(PROFILE_ROUTE) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
-                )
+  Scaffold(
+    containerColor = MaterialTheme.colorScheme.background,
+    bottomBar = {
+      if (showBottomBar) {
+        ReferenceBottomBar(
+          homeSelected = homeSelected,
+          profileSelected = profileSelected,
+          onHomeClick = {
+            navController.navigate(HOME_ROUTE) {
+              popUpTo(navController.graph.startDestinationId) { saveState = true }
+              launchSingleTop = true
+              restoreState = true
             }
-        },
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = HOME_ROUTE,
-            modifier = Modifier.padding(innerPadding),
-        ) {
-            composable(HOME_ROUTE) {
-                HomeScreen(
-                    uiState = uiState,
-                    workflows = workflowCards,
-                    onWorkflowClick = { workflow ->
-                        if (workflow.key == "case-management") {
-                            navController.navigate(CASE_MANAGEMENT_ROUTE)
-                        } else {
-                            navController.navigate("$WORKFLOW_MODULE_ROUTE/${workflow.key}")
-                        }
-                    },
-                )
+          },
+          onProfileClick = {
+            navController.navigate(PROFILE_ROUTE) {
+              popUpTo(navController.graph.startDestinationId) { saveState = true }
+              launchSingleTop = true
+              restoreState = true
             }
+          },
+        )
+      }
+    },
+  ) { innerPadding ->
+    NavHost(
+      navController = navController,
+      startDestination = HOME_ROUTE,
+      modifier = Modifier.padding(innerPadding),
+    ) {
+      composable(HOME_ROUTE) {
+        HomeScreen(
+          uiState = uiState,
+          workflows = workflowCards,
+          onWorkflowClick = { workflow ->
+            if (workflow.key == "case-management") {
+              navController.navigate(CASE_MANAGEMENT_ROUTE)
+            } else {
+              navController.navigate("$WORKFLOW_MODULE_ROUTE/${workflow.key}")
+            }
+          },
+        )
+      }
 
-            composable(PROFILE_ROUTE) {
-                ProfileScreen(
-                    uiState = uiState,
-                    onRefreshClick = shellViewModel::refreshProviderProfile
-                )
-            }
+      composable(PROFILE_ROUTE) {
+        ProfileScreen(uiState = uiState, onRefreshClick = shellViewModel::refreshProviderProfile)
+      }
 
-            composable(CASE_MANAGEMENT_ROUTE) {
-                GroupListScreen(
-                    onGroupClick = { id -> navController.navigate("$GROUP_PROFILE_ROUTE/$id") },
-                    onBack = { navController.popBackStack() },
-                )
-            }
+      composable(CASE_MANAGEMENT_ROUTE) {
+        GroupListScreen(
+          onGroupClick = { id -> navController.navigate("$GROUP_PROFILE_ROUTE/$id") },
+          onBack = { navController.popBackStack() },
+        )
+      }
 
-            composable(
-                route = "$WORKFLOW_MODULE_ROUTE/{$WORKFLOW_MODULE_ID_ARG}",
-                arguments = listOf(navArgument(WORKFLOW_MODULE_ID_ARG) {
-                    type = NavType.StringType
-                }),
-            ) { back ->
-                val moduleId = back.arguments?.read { getString(WORKFLOW_MODULE_ID_ARG) }.orEmpty()
-                WorkflowModuleScreen(
-                    moduleId = moduleId,
-                    onBack = { navController.popBackStack() },
-                    onNodeSelected = { nextNodeId ->
-                        navController.navigate("$WORKFLOW_NODE_ROUTE/$moduleId/$nextNodeId")
-                    },
-                    onActionClick = { nodeId, itemId ->
-                        navController.navigate("$WORKFLOW_ACTION_ROUTE/$moduleId/$nodeId/$itemId")
-                    },
-                )
-            }
+      composable(
+        route = "$WORKFLOW_MODULE_ROUTE/{$WORKFLOW_MODULE_ID_ARG}",
+        arguments = listOf(navArgument(WORKFLOW_MODULE_ID_ARG) { type = NavType.StringType }),
+      ) { back ->
+        val moduleId = back.arguments?.read { getString(WORKFLOW_MODULE_ID_ARG) }.orEmpty()
+        WorkflowModuleScreen(
+          moduleId = moduleId,
+          onBack = { navController.popBackStack() },
+          onNodeSelected = { nextNodeId ->
+            navController.navigate("$WORKFLOW_NODE_ROUTE/$moduleId/$nextNodeId")
+          },
+          onActionClick = { nodeId, itemId ->
+            navController.navigate("$WORKFLOW_ACTION_ROUTE/$moduleId/$nodeId/$itemId")
+          },
+        )
+      }
 
-            composable(
-                route = "$WORKFLOW_NODE_ROUTE/{$WORKFLOW_MODULE_ID_ARG}/{$WORKFLOW_NODE_ID_ARG}",
-                arguments =
-                    listOf(
-                        navArgument(WORKFLOW_MODULE_ID_ARG) { type = NavType.StringType },
-                        navArgument(WORKFLOW_NODE_ID_ARG) { type = NavType.StringType },
-                    ),
-            ) { back ->
-                val moduleId = back.arguments?.read { getString(WORKFLOW_MODULE_ID_ARG) }.orEmpty()
-                val nodeId = back.arguments?.read { getString(WORKFLOW_NODE_ID_ARG) }.orEmpty()
-                WorkflowModuleScreen(
-                    moduleId = moduleId,
-                    nodeId = nodeId,
-                    onBack = { navController.popBackStack() },
-                    onNodeSelected = { nextNodeId ->
-                        navController.navigate("$WORKFLOW_NODE_ROUTE/$moduleId/$nextNodeId")
-                    },
-                    onActionClick = { actionNodeId, itemId ->
-                        navController.navigate("$WORKFLOW_ACTION_ROUTE/$moduleId/$actionNodeId/$itemId")
-                    },
-                )
-            }
+      composable(
+        route = "$WORKFLOW_NODE_ROUTE/{$WORKFLOW_MODULE_ID_ARG}/{$WORKFLOW_NODE_ID_ARG}",
+        arguments =
+          listOf(
+            navArgument(WORKFLOW_MODULE_ID_ARG) { type = NavType.StringType },
+            navArgument(WORKFLOW_NODE_ID_ARG) { type = NavType.StringType },
+          ),
+      ) { back ->
+        val moduleId = back.arguments?.read { getString(WORKFLOW_MODULE_ID_ARG) }.orEmpty()
+        val nodeId = back.arguments?.read { getString(WORKFLOW_NODE_ID_ARG) }.orEmpty()
+        WorkflowModuleScreen(
+          moduleId = moduleId,
+          nodeId = nodeId,
+          onBack = { navController.popBackStack() },
+          onNodeSelected = { nextNodeId ->
+            navController.navigate("$WORKFLOW_NODE_ROUTE/$moduleId/$nextNodeId")
+          },
+          onActionClick = { actionNodeId, itemId ->
+            navController.navigate("$WORKFLOW_ACTION_ROUTE/$moduleId/$actionNodeId/$itemId")
+          },
+        )
+      }
 
-            composable(
-                route =
-                    "$WORKFLOW_ACTION_ROUTE/{$WORKFLOW_MODULE_ID_ARG}/{$WORKFLOW_NODE_ID_ARG}/{$WORKFLOW_ITEM_ID_ARG}",
-                arguments =
-                    listOf(
-                        navArgument(WORKFLOW_MODULE_ID_ARG) { type = NavType.StringType },
-                        navArgument(WORKFLOW_NODE_ID_ARG) { type = NavType.StringType },
-                        navArgument(WORKFLOW_ITEM_ID_ARG) { type = NavType.StringType },
-                    ),
-            ) { back ->
-                val moduleId = back.arguments?.read { getString(WORKFLOW_MODULE_ID_ARG) }.orEmpty()
-                val nodeId = back.arguments?.read { getString(WORKFLOW_NODE_ID_ARG) }.orEmpty()
-                val itemId = back.arguments?.read { getString(WORKFLOW_ITEM_ID_ARG) }.orEmpty()
-                WorkflowActionHostScreen(
-                    moduleId = moduleId,
-                    nodeId = nodeId,
-                    itemId = itemId,
-                    onBack = { navController.popBackStack() },
-                )
-            }
+      composable(
+        route =
+          "$WORKFLOW_ACTION_ROUTE/{$WORKFLOW_MODULE_ID_ARG}/{$WORKFLOW_NODE_ID_ARG}/{$WORKFLOW_ITEM_ID_ARG}",
+        arguments =
+          listOf(
+            navArgument(WORKFLOW_MODULE_ID_ARG) { type = NavType.StringType },
+            navArgument(WORKFLOW_NODE_ID_ARG) { type = NavType.StringType },
+            navArgument(WORKFLOW_ITEM_ID_ARG) { type = NavType.StringType },
+          ),
+      ) { back ->
+        val moduleId = back.arguments?.read { getString(WORKFLOW_MODULE_ID_ARG) }.orEmpty()
+        val nodeId = back.arguments?.read { getString(WORKFLOW_NODE_ID_ARG) }.orEmpty()
+        val itemId = back.arguments?.read { getString(WORKFLOW_ITEM_ID_ARG) }.orEmpty()
+        WorkflowActionHostScreen(
+          moduleId = moduleId,
+          nodeId = nodeId,
+          itemId = itemId,
+          onBack = { navController.popBackStack() },
+        )
+      }
 
-            composable(
-                route = "$GROUP_PROFILE_ROUTE/{$GROUP_ID_ARG}",
-                arguments = listOf(navArgument(GROUP_ID_ARG) { type = NavType.StringType }),
-            ) { back ->
-                val groupId = back.arguments?.read { getString(GROUP_ID_ARG) }.orEmpty()
-                GroupProfileScreen(
-                    groupId = groupId,
-                    onBack = { navController.popBackStack() },
-                    onMemberClick = { id -> navController.navigate("$PATIENT_PROFILE_ROUTE/$id") },
-                )
-            }
+      composable(
+        route = "$GROUP_PROFILE_ROUTE/{$GROUP_ID_ARG}",
+        arguments = listOf(navArgument(GROUP_ID_ARG) { type = NavType.StringType }),
+      ) { back ->
+        val groupId = back.arguments?.read { getString(GROUP_ID_ARG) }.orEmpty()
+        GroupProfileScreen(
+          groupId = groupId,
+          onBack = { navController.popBackStack() },
+          onMemberClick = { id -> navController.navigate("$PATIENT_PROFILE_ROUTE/$id") },
+        )
+      }
 
-            composable(
-                route = "$PATIENT_PROFILE_ROUTE/{$PATIENT_ID_ARG}",
-                arguments = listOf(navArgument(PATIENT_ID_ARG) { type = NavType.StringType }),
-            ) { back ->
-                val patientId = back.arguments?.read { getString(PATIENT_ID_ARG) }.orEmpty()
-                PatientProfileScreen(
-                    patientId = patientId,
-                    onBack = { navController.popBackStack() })
-            }
-        }
+      composable(
+        route = "$PATIENT_PROFILE_ROUTE/{$PATIENT_ID_ARG}",
+        arguments = listOf(navArgument(PATIENT_ID_ARG) { type = NavType.StringType }),
+      ) { back ->
+        val patientId = back.arguments?.read { getString(PATIENT_ID_ARG) }.orEmpty()
+        PatientProfileScreen(patientId = patientId, onBack = { navController.popBackStack() })
+      }
     }
+  }
 }
 
 @Composable
 private fun ReferenceBottomBar(
-    homeSelected: Boolean,
-    profileSelected: Boolean,
-    onHomeClick: () -> Unit,
-    onProfileClick: () -> Unit,
+  homeSelected: Boolean,
+  profileSelected: Boolean,
+  onHomeClick: () -> Unit,
+  onProfileClick: () -> Unit,
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 22.dp,
-        tonalElevation = 10.dp,
-        shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp),
+  Surface(
+    color = MaterialTheme.colorScheme.surface,
+    shadowElevation = 22.dp,
+    tonalElevation = 10.dp,
+    shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp),
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
+      horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            BottomNavItem(
-                selected = homeSelected,
-                label = "Home",
-                icon = Icons.Default.Home,
-                modifier = Modifier.weight(1f),
-                onClick = onHomeClick,
-            )
-            BottomNavItem(
-                selected = profileSelected,
-                label = "Profile",
-                icon = Icons.Default.Person,
-                modifier = Modifier.weight(1f),
-                onClick = onProfileClick,
-            )
-        }
+      BottomNavItem(
+        selected = homeSelected,
+        label = "Home",
+        icon = Icons.Default.Home,
+        modifier = Modifier.weight(1f),
+        onClick = onHomeClick,
+      )
+      BottomNavItem(
+        selected = profileSelected,
+        label = "Profile",
+        icon = Icons.Default.Person,
+        modifier = Modifier.weight(1f),
+        onClick = onProfileClick,
+      )
     }
+  }
 }
 
 @Composable
 private fun BottomNavItem(
-    selected: Boolean,
-    label: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+  selected: Boolean,
+  label: String,
+  icon: androidx.compose.ui.graphics.vector.ImageVector,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
-    val selectedBrush =
-        Brush.horizontalGradient(
-            listOf(
-                MaterialTheme.colorScheme.primaryContainer,
-                MaterialTheme.colorScheme.tertiaryContainer,
-            )
-        )
+  val selectedBrush =
+    Brush.horizontalGradient(
+      listOf(
+        MaterialTheme.colorScheme.primaryContainer,
+        MaterialTheme.colorScheme.tertiaryContainer,
+      )
+    )
 
-    Surface(
-        modifier = modifier,
-        onClick = onClick,
-        shape = RoundedCornerShape(26.dp),
-        color = if (selected) Color.Transparent else MaterialTheme.colorScheme.surface,
-        border =
-            BorderStroke(
-                1.dp,
-                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-                else MaterialTheme.colorScheme.outline.copy(alpha = 0.08f),
-            ),
+  Surface(
+    modifier = modifier,
+    onClick = onClick,
+    shape = RoundedCornerShape(26.dp),
+    color = if (selected) Color.Transparent else MaterialTheme.colorScheme.surface,
+    border =
+      BorderStroke(
+        1.dp,
+        if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+        else MaterialTheme.colorScheme.outline.copy(alpha = 0.08f),
+      ),
+  ) {
+    Box(
+      modifier =
+        Modifier.fillMaxWidth()
+          .background(
+            if (selected) selectedBrush
+            else
+              Brush.horizontalGradient(
+                listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface)
+              )
+          )
+          .padding(horizontal = 18.dp, vertical = 14.dp)
     ) {
-        Box(
-            modifier =
-                Modifier.fillMaxWidth()
-                    .background(
-                        if (selected) selectedBrush
-                        else Brush.horizontalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.surface,
-                                MaterialTheme.colorScheme.surface,
-                            )
-                        )
-                    )
-                    .padding(horizontal = 18.dp, vertical = 14.dp),
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    tint =
-                        if (selected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color =
-                        if (selected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                )
-            }
-        }
+      Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+      ) {
+        Icon(
+          imageVector = icon,
+          contentDescription = label,
+          tint =
+            if (selected) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+          text = label,
+          style = MaterialTheme.typography.labelLarge,
+          color =
+            if (selected) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurfaceVariant,
+          fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+        )
+      }
     }
+  }
 }
