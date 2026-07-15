@@ -629,6 +629,132 @@
             "method": "POST",
             "url": "Observation"
           }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '670954892057').item.where(linkId = 'residence')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd034",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "residential-details"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "residence",
+                  "display": "Residence"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '670954892057').item.where(linkId = '442636360588')"
+            }
+          ],
+          "fullUrl": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd034",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "known-unknown-date"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "442636360588",
+                  "display": "Date of Birth Known/Unknown"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:6f6177d2-13ee-4d27-b0e8-3eaf663dd031"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
         }
       ]
     }
@@ -1375,7 +1501,13 @@
           "type": "string",
           "linkId": "992818778559",
           "text": "EPID No",
-          "readOnly": true
+          "readOnly": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ]
         }
       ],
       "type": "group",
