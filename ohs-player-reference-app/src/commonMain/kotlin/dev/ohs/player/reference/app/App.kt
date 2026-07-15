@@ -276,7 +276,7 @@ private fun ReferenceBottomBar(
     shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp),
   ) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 14.dp),
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
       horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
       BottomNavItem(
@@ -316,7 +316,7 @@ private fun BottomNavItem(
   Surface(
     modifier = modifier,
     onClick = onClick,
-    shape = RoundedCornerShape(26.dp),
+    shape = RoundedCornerShape(16.dp),
     color = if (selected) Color.Transparent else MaterialTheme.colorScheme.surface,
     border =
       BorderStroke(
@@ -335,12 +335,12 @@ private fun BottomNavItem(
                 listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface)
               )
           )
-          .padding(horizontal = 18.dp, vertical = 14.dp)
+          .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
       Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
       ) {
         Icon(
           imageVector = icon,

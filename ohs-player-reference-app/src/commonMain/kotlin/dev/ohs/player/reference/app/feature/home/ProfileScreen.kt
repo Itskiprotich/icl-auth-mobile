@@ -358,30 +358,6 @@ private fun ProfileAvatar(displayName: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ProfileOverviewValue(icon: ImageVector, value: String, modifier: Modifier = Modifier) {
-  Row(
-    modifier = modifier.fillMaxWidth(),
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(10.dp),
-  ) {
-    Icon(
-      imageVector = icon,
-      contentDescription = null,
-      tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.72f),
-      modifier = Modifier.size(18.dp),
-    )
-
-    Text(
-      text = value,
-      style = MaterialTheme.typography.bodyMedium,
-      color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.82f),
-      maxLines = 2,
-      overflow = TextOverflow.Ellipsis,
-    )
-  }
-}
-
-@Composable
 private fun ProfileSectionCard(
   title: String,
   modifier: Modifier = Modifier,

@@ -76,49 +76,40 @@ fun HomeScreen(
     modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
   ) {
     val layout = homeLayoutForWidth(maxWidth)
+    Column(modifier = Modifier.fillMaxSize()) {
+      HomeHeader(
+        displayName = uiState.displayName,
+        horizontalPadding = layout.horizontalPadding,
+        onNotificationsClick = onNotificationsClick,
+        onMoreClick = onMoreClick,
+      )
 
-    LazyVerticalGrid(
-      columns = GridCells.Fixed(layout.columns),
-      modifier = Modifier.fillMaxSize(),
-      contentPadding =
-        PaddingValues(
-          start = layout.horizontalPadding,
-          end = layout.horizontalPadding,
-          bottom = 32.dp,
-        ),
-      horizontalArrangement = Arrangement.spacedBy(layout.cardSpacing),
-      verticalArrangement = Arrangement.spacedBy(layout.cardSpacing),
-    ) {
-      item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
-        HomeHeader(
-          displayName = uiState.displayName,
-          horizontalPadding = layout.horizontalPadding,
-          onNotificationsClick = onNotificationsClick,
-          onMoreClick = onMoreClick,
-        )
-      }
+      LazyVerticalGrid(
+        columns = GridCells.Fixed(layout.columns),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding =
+          PaddingValues(
+            start = layout.horizontalPadding,
+            end = layout.horizontalPadding,
+            bottom = 32.dp,
+            top = 30.dp,
+          ),
+        horizontalArrangement = Arrangement.spacedBy(layout.cardSpacing),
+        verticalArrangement = Arrangement.spacedBy(layout.cardSpacing),
+      ) {
+        if (workflows.isEmpty()) {
+          item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
+            EmptyWorkflowCard()
+          }
+        } else {
 
-      item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
-        Text(
-          text = "Reporting Workflows",
-          modifier = Modifier.padding(top = 24.dp, bottom = 4.dp),
-          style = MaterialTheme.typography.headlineSmall,
-          color = MaterialTheme.colorScheme.onBackground,
-          fontWeight = FontWeight.Bold,
-        )
-      }
-
-      if (workflows.isEmpty()) {
-        item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
-          EmptyWorkflowCard()
-        }
-      } else {
-        items(items = workflows, key = WorkflowCardSpec::key) { workflow ->
-          WorkflowCard(
-            workflow = workflow,
-            onClick = { onWorkflowClick(workflow) },
-            compact = layout.compactCards,
-          )
+          items(items = workflows, key = WorkflowCardSpec::key) { workflow ->
+            WorkflowCard(
+              workflow = workflow,
+              onClick = { onWorkflowClick(workflow) },
+              compact = layout.compactCards,
+            )
+          }
         }
       }
     }
@@ -135,16 +126,16 @@ private data class HomeLayout(
 private fun homeLayoutForWidth(width: Dp): HomeLayout =
   when {
     width < 360.dp ->
-      HomeLayout(columns = 1, horizontalPadding = 0.dp, cardSpacing = 12.dp, compactCards = true)
+      HomeLayout(columns = 1, horizontalPadding = 15.dp, cardSpacing = 12.dp, compactCards = true)
 
     width < 600.dp ->
-      HomeLayout(columns = 2, horizontalPadding = 0.dp, cardSpacing = 12.dp, compactCards = true)
+      HomeLayout(columns = 2, horizontalPadding = 15.dp, cardSpacing = 12.dp, compactCards = true)
 
     width < 900.dp ->
-      HomeLayout(columns = 3, horizontalPadding = 0.dp, cardSpacing = 16.dp, compactCards = false)
+      HomeLayout(columns = 3, horizontalPadding = 15.dp, cardSpacing = 16.dp, compactCards = false)
 
     else ->
-      HomeLayout(columns = 4, horizontalPadding = 0.dp, cardSpacing = 18.dp, compactCards = false)
+      HomeLayout(columns = 4, horizontalPadding = 15.dp, cardSpacing = 18.dp, compactCards = false)
   }
 
 @Composable
@@ -160,7 +151,7 @@ private fun HomeHeader(
     modifier =
       Modifier.fillMaxWidth()
         .clip(headerShape)
-        .background(MaterialTheme.colorScheme.primary)
+        .background(MaterialTheme.colorScheme.primaryContainer)
         .padding(10.dp)
         .windowInsetsPadding(WindowInsets.statusBars)
   ) {
@@ -173,7 +164,7 @@ private fun HomeHeader(
         Icon(
           imageVector = Icons.Rounded.MoreVert,
           contentDescription = "More options",
-          tint = MaterialTheme.colorScheme.onPrimary,
+          tint = MaterialTheme.colorScheme.onPrimaryContainer,
         )
       }
     }
@@ -191,8 +182,8 @@ private fun HomeHeader(
       ) {
         Text(
           text = greetingForCurrentTime(),
-          style = MaterialTheme.typography.headlineLarge,
-          color = MaterialTheme.colorScheme.onPrimary,
+          style = MaterialTheme.typography.headlineSmall,
+          color = MaterialTheme.colorScheme.onPrimaryContainer,
           fontWeight = FontWeight.Bold,
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,
@@ -200,8 +191,8 @@ private fun HomeHeader(
 
         Text(
           text = displayName,
-          style = MaterialTheme.typography.titleLarge,
-          color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.84f),
+          style = MaterialTheme.typography.titleSmall,
+          color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.84f),
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,
         )
@@ -219,7 +210,7 @@ private fun NotificationButton(onClick: () -> Unit) {
       onClick = onClick,
       modifier = Modifier.size(58.dp),
       shape = RoundedCornerShape(20.dp),
-      color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.12f),
+      color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f),
       border =
         BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.55f)),
     ) {
@@ -228,7 +219,7 @@ private fun NotificationButton(onClick: () -> Unit) {
           imageVector = Icons.Rounded.Notifications,
           contentDescription = "Notifications",
           modifier = Modifier.size(27.dp),
-          tint = MaterialTheme.colorScheme.onPrimary,
+          tint = MaterialTheme.colorScheme.onPrimaryContainer,
         )
       }
     }
@@ -285,7 +276,7 @@ private fun WorkflowCard(workflow: WorkflowCardSpec, onClick: () -> Unit, compac
 
           Text(
             text = workflow.description,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = if (compact) 2 else 3,
             overflow = TextOverflow.Ellipsis,
