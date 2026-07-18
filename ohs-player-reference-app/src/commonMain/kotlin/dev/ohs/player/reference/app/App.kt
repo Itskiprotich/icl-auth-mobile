@@ -56,6 +56,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.savedstate.read
 import dev.ohs.player.library.registry.LocalViewRegistry
+import dev.ohs.player.reference.app.auth.initializeReferenceAuthIfNeeded
 import dev.ohs.player.reference.app.feature.group.list.GroupListScreen
 import dev.ohs.player.reference.app.feature.group.profile.GroupProfileScreen
 import dev.ohs.player.reference.app.feature.home.HomeScreen
@@ -65,16 +66,16 @@ import dev.ohs.player.reference.app.feature.patient.profile.PatientProfileScreen
 import dev.ohs.player.reference.app.feature.workflow.DefaultWorkflowCatalog
 import dev.ohs.player.reference.app.feature.workflow.WorkflowActionHostScreen
 import dev.ohs.player.reference.app.feature.workflow.WorkflowCatalogStore
-import dev.ohs.player.reference.app.feature.workflow.WorkflowFhirStore
 import dev.ohs.player.reference.app.feature.workflow.WorkflowModuleScreen
 import dev.ohs.player.reference.app.feature.workflow.toCardSpec
 import icl.ohs.libs.auth.IclAuth
-import icl.ohs.libs.auth.IclAuthConfig
+import icl.ohs.libs.auth.NotificationScreen
 import icl.ohs.libs.auth.SetNewPasswordScreen
 import icl.ohs.libs.auth.SetNewPasswordScreenConfig
 
 private const val HOME_ROUTE = "home"
 private const val PROFILE_ROUTE = "profile"
+private const val NOTIFICATIONS_ROUTE = "home/notifications"
 private const val CHANGE_PASSWORD_ROUTE = "profile/change-password"
 private const val CASE_MANAGEMENT_ROUTE = "workflow/case-management"
 private const val WORKFLOW_MODULE_ROUTE = "workflow/module"
@@ -87,14 +88,12 @@ private const val PATIENT_ID_ARG = "patientId"
 private const val WORKFLOW_MODULE_ID_ARG = "workflowModuleId"
 private const val WORKFLOW_NODE_ID_ARG = "workflowNodeId"
 private const val WORKFLOW_ITEM_ID_ARG = "workflowItemId"
-private val AUTH_CONFIG = IclAuthConfig(baseAuthUrl = "https://auth.nphiis.health.go.ke")
 private val CHANGE_PASSWORD_SCREEN_CONFIG = SetNewPasswordScreenConfig(showFooter = false)
 private val bottomBarRoutes = setOf(HOME_ROUTE, PROFILE_ROUTE)
 
 @Composable
-fun App(platformContext: Any = Unit) {
-  remember(AUTH_CONFIG) { IclAuth.initialize(AUTH_CONFIG) }
-  remember(platformContext) { WorkflowFhirStore.initialize(platformContext) }
+fun App() {
+  remember { initializeReferenceAuthIfNeeded() }
   val registry = remember { buildAppViewRegistry() }
 
   CompositionLocalProvider(LocalViewRegistry provides registry) {
@@ -102,7 +101,12 @@ fun App(platformContext: Any = Unit) {
       var isLoggedIn by rememberSaveable { mutableStateOf(IclAuth.hasValidAccessToken()) }
 
       if (isLoggedIn) {
-        ReferenceAppNavigation()
+        ReferenceAppNavigation(
+          onLogout = {
+            IclAuth.clearSession()
+            isLoggedIn = false
+          }
+        )
       } else {
         AuthNavigation(onAuthenticated = { isLoggedIn = true })
       }
@@ -111,7 +115,7 @@ fun App(platformContext: Any = Unit) {
 }
 
 @Composable
-private fun ReferenceAppNavigation() {
+private fun ReferenceAppNavigation(onLogout: () -> Unit) {
   val navController = rememberNavController()
   val shellViewModel: HomeShellViewModel = viewModel { HomeShellViewModel() }
   val uiState by shellViewModel.uiState.collectAsStateWithLifecycle()
@@ -161,6 +165,7 @@ private fun ReferenceAppNavigation() {
         HomeScreen(
           uiState = uiState,
           workflows = workflowCards,
+          onNotificationsClick = { navController.navigate(NOTIFICATIONS_ROUTE) },
           onWorkflowClick = { workflow ->
             if (workflow.key == "case-management") {
               navController.navigate(CASE_MANAGEMENT_ROUTE)
@@ -176,7 +181,12 @@ private fun ReferenceAppNavigation() {
           uiState = uiState,
           onRefreshClick = shellViewModel::refreshProviderProfile,
           onChangePasswordClick = { navController.navigate(CHANGE_PASSWORD_ROUTE) },
+          onLogoutClick = onLogout,
         )
+      }
+
+      composable(NOTIFICATIONS_ROUTE) {
+        NotificationScreen(onBackClick = { navController.popBackStack() })
       }
 
       composable(CHANGE_PASSWORD_ROUTE) {

@@ -20,18 +20,22 @@ import androidx.compose.ui.window.application
 import dev.ohs.fhir.FhirEngine
 import dev.ohs.fhir.FhirEngineConfiguration
 import dev.ohs.fhir.FhirEngineProvider
+import dev.ohs.player.reference.app.auth.FileAuthSessionStore
+import dev.ohs.player.reference.app.auth.defaultReferenceStorageDirectory
+import dev.ohs.player.reference.app.auth.initializeReferenceAuth
 import dev.ohs.player.reference.app.data.di.initKoin
 import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
 import dev.ohs.player.reference.app.data.repository.FhirRepository
 import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
-import java.io.File
 import org.koin.dsl.module
 
 fun main() = application {
-  val userHome = System.getProperty("user.home").orEmpty().ifBlank { "." }
-  val storageDirectory = File(userHome, ".icl-auth-reference").absolutePath
+  val storageDirectory = defaultReferenceStorageDirectory()
+  initializeReferenceAuth(FileAuthSessionStore(storageDirectory))
   if (FhirEngineProvider.isNotInitialized()) {
-    FhirEngineProvider.init(FhirEngineConfiguration(storageDirectory = storageDirectory))
+    FhirEngineProvider.init(
+      FhirEngineConfiguration(storageDirectory = storageDirectory.absolutePath)
+    )
   }
   initKoin(
     module {

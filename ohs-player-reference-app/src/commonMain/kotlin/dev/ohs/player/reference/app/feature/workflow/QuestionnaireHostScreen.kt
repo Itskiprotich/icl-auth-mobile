@@ -25,18 +25,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -51,10 +51,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import dev.ohs.fhir.datacapture.Questionnaire
+import dev.ohs.fhir.datacapture.Questionnaire as DataCaptureQuestionnaire
 import dev.ohs.fhir.datacapture.QuestionnaireConfig
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
-import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Condition
 import dev.ohs.fhir.model.r4.Encounter
 import dev.ohs.fhir.model.r4.Observation
@@ -63,6 +62,7 @@ import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Specimen
 import dev.ohs.fhir.model.r4.String as FhirString
+import dev.ohs.player.reference.app.components.ReferenceAppLoader
 import dev.ohs.player.reference.app.generateUuid
 import dev.ohs.player.reference.app.util.FhirJson
 import kotlin.time.Clock
@@ -107,6 +107,7 @@ fun QuestionnaireHostScreen(
   val snackbarHostState = remember { SnackbarHostState() }
   val scope = rememberCoroutineScope()
   var isSubmitting by remember(resource) { mutableStateOf(false) }
+  var submissionSuccessMessage by remember(resource) { mutableStateOf<String?>(null) }
   fun resolveCqfCalculatedToday(questionnaireJson: String): String {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault()).toString() // "2026-07-14"
     val root = Json.parseToJsonElement(questionnaireJson)
@@ -139,133 +140,158 @@ fun QuestionnaireHostScreen(
 
     return transform(root).toString()
   }
-  Scaffold(
-    modifier = modifier,
-    snackbarHost = { SnackbarHost(snackbarHostState) },
-    topBar = { QuestionnaireTopBar(title = title, onBack = onBack) },
-  ) { innerPadding ->
-    Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-      when (val state = screenState) {
-        QuestionnaireScreenState.Loading ->
-          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-          }
-
-        is QuestionnaireScreenState.Error ->
-          WorkflowCenteredMessage(title = "Questionnaire unavailable", message = state.message)
-
-        is QuestionnaireScreenState.Ready ->
-          Column(modifier = Modifier.fillMaxSize()) {
-            if (isSubmitting) {
-              LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+  Box(modifier = modifier.fillMaxSize()) {
+    Scaffold(
+      modifier = Modifier.fillMaxSize(),
+      snackbarHost = { SnackbarHost(snackbarHostState) },
+      topBar = {
+        QuestionnaireTopBar(
+          title = title,
+          onBack = {
+            if (!isSubmitting && submissionSuccessMessage == null) {
+              onBack()
             }
+          },
+        )
+      },
+    ) { innerPadding ->
+      Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        when (val state = screenState) {
+          QuestionnaireScreenState.Loading ->
+            ReferenceAppLoader(
+              message = "Loading questionnaire",
+              subtitle = "Preparing the form and pre-filling any available context.",
+            )
 
-            Box(modifier = Modifier.weight(1f)) {
-              Questionnaire(
-                questionnaireJson = resolveCqfCalculatedToday(state.questionnaireJson),
-                config =
-                  QuestionnaireConfig(
-                    showSubmitButton = true,
-                    showCancelButton = false,
-                    showReviewPage = true,
-                    submitButtonText = primaryActionLabel,
-                  ),
-                onSubmit = { getResponse ->
-                  scope.launch {
-                    isSubmitting = true
-                    try {
-                      val patientId = generateUuid()
-                      val encounterId = generateUuid()
-                      val patientReference = FhirString(value = "Patient/$patientId")
-                      val patientRef = Reference(reference = patientReference)
+          is QuestionnaireScreenState.Error ->
+            WorkflowCenteredMessage(title = "Questionnaire unavailable", message = state.message)
 
-                      val encounterReference = FhirString(value = "Encounter/$encounterId")
-                      val encounterRef = Reference(reference = encounterReference)
+          is QuestionnaireScreenState.Ready ->
+            Column(modifier = Modifier.fillMaxSize()) {
+              Box(modifier = Modifier.weight(1f)) {
+                DataCaptureQuestionnaire(
+                  questionnaireJson = resolveCqfCalculatedToday(state.questionnaireJson),
+                  config =
+                    QuestionnaireConfig(
+                      showSubmitButton = true,
+                      showCancelButton = false,
+                      showReviewPage = true,
+                      submitButtonText = primaryActionLabel,
+                    ),
+                  onSubmit = { getResponse ->
+                    scope.launch {
+                      isSubmitting = true
+                      try {
+                        val patientId = generateUuid()
+                        val encounterId = generateUuid()
+                        val patientReference = FhirString(value = "Patient/$patientId")
+                        val patientRef = Reference(reference = patientReference)
 
-                      val response = getResponse()
-                      val savedId =
-                        WorkflowFhirStore.saveQuestionnaireResponse(
+                        val encounterReference = FhirString(value = "Encounter/$encounterId")
+                        val encounterRef = Reference(reference = encounterReference)
+
+                        val response = getResponse()
+                        saveWorkflowQuestionnaireResponse(
                           response.copy(subject = patientRef, encounter = encounterRef)
                         )
-                      val questionnaire =
-                        fhirJson.decodeFromString(
-                          Questionnaire.serializer(),
-                          state.questionnaireJson,
+                        val questionnaire =
+                          fhirJson.decodeFromString(
+                            Questionnaire.serializer(),
+                            state.questionnaireJson,
+                          )
+                        val extractedBundle =
+                          TemplateExtractionEngine.extract(questionnaire, response)
+
+                        val bundle =
+                          extractedBundle.copy(
+                            entry =
+                              extractedBundle.entry.map { entry ->
+                                val updatedResource =
+                                  when (val resource = entry.resource) {
+                                    is Observation ->
+                                      resource.copy(
+                                        id = resource.id.orGeneratedId(),
+                                        subject = patientRef,
+                                        encounter = encounterRef,
+                                      )
+
+                                    is Condition ->
+                                      resource.copy(
+                                        id = resource.id.orGeneratedId(),
+                                        subject = patientRef,
+                                        encounter = encounterRef,
+                                      )
+
+                                    is Encounter ->
+                                      resource.copy(
+                                        id = resource.id.orGeneratedId(),
+                                        subject = patientRef,
+                                      )
+
+                                    is Specimen ->
+                                      resource.copy(
+                                        id = resource.id.orGeneratedId(),
+                                        subject = patientRef,
+                                      )
+
+                                    is Patient -> resource.copy(id = resource.id.orGeneratedId())
+
+                                    else -> resource
+                                  }
+
+                                entry.copy(resource = updatedResource)
+                              }
+                          )
+                        saveWorkflowBundle(bundle)
+                        submissionSuccessMessage =
+                          "Resources were extracted successfully and the questionnaire response is ready for review."
+                      } catch (_: CancellationException) {
+                        // Validation feedback is already shown by the data capture library.
+                      } catch (error: Throwable) {
+                        snackbarHostState.showSnackbar(
+                          error.message ?: "Unable to save the case locally."
                         )
-                      val extractedBundle =
-                        TemplateExtractionEngine.extract(questionnaire, response)
-                      val normalizedBundle =
-                        fhirJson.encodeToString(Bundle.serializer(), extractedBundle)
-
-                      val bundle =
-                        extractedBundle.copy(
-                          entry =
-                            extractedBundle.entry.map { entry ->
-                              val updatedResource =
-                                when (val resource = entry.resource) {
-                                  is Observation ->
-                                    resource.copy(
-                                      id = resource.id.orGeneratedId(),
-                                      subject = patientRef,
-                                      encounter = encounterRef,
-                                    )
-
-                                  is Condition ->
-                                    resource.copy(
-                                      id = resource.id.orGeneratedId(),
-                                      subject = patientRef,
-                                      encounter = encounterRef,
-                                    )
-
-                                  is Encounter ->
-                                    resource.copy(
-                                      id = resource.id.orGeneratedId(),
-                                      subject = patientRef,
-                                    )
-
-                                  is Specimen ->
-                                    resource.copy(
-                                      id = resource.id.orGeneratedId(),
-                                      subject = patientRef,
-                                    )
-
-                                  is Patient -> resource.copy(id = resource.id.orGeneratedId())
-
-                                  else -> resource
-                                }
-
-                              entry.copy(resource = updatedResource)
-                            }
-                        )
-                      WorkflowFhirStore.saveBundle(bundle)
-                      println(normalizedBundle)
-                      val message =
-                        if (WorkflowFhirStore.isPersistenceAvailable) {
-                          if (savedId != null) {
-                            "Case saved locally and ready for review."
-                          } else {
-                            "Case submission completed."
-                          }
-                        } else {
-                          "Case submission completed. Local FHIR storage is unavailable on this platform."
-                        }
-                      snackbarHostState.showSnackbar(message)
-                    } catch (_: CancellationException) {
-                      // Validation feedback is already shown by the data capture library.
-                    } catch (error: Throwable) {
-                      snackbarHostState.showSnackbar(
-                        error.message ?: "Unable to save the case locally."
-                      )
-                    } finally {
-                      isSubmitting = false
+                      } finally {
+                        isSubmitting = false
+                      }
                     }
-                  }
-                },
-                onCancel = onBack,
-              )
+                  },
+                  onCancel = {
+                    if (!isSubmitting && submissionSuccessMessage == null) {
+                      onBack()
+                    }
+                  },
+                )
+              }
             }
-          }
+        }
       }
+    }
+
+    if (isSubmitting) {
+      ReferenceAppLoader(
+        message = "Submitting questionnaire response",
+        subtitle = "Extracting and saving the generated resources.",
+        showScrim = true,
+      )
+    }
+
+    submissionSuccessMessage?.let { message ->
+      AlertDialog(
+        onDismissRequest = {},
+        title = { Text(text = "Submission complete") },
+        text = { Text(text = message) },
+        confirmButton = {
+          TextButton(
+            onClick = {
+              submissionSuccessMessage = null
+              onBack()
+            }
+          ) {
+            Text(text = "OK")
+          }
+        },
+      )
     }
   }
 }

@@ -43,7 +43,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -71,6 +70,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.ohs.player.reference.app.components.ReferenceAppLoader
 import dev.ohs.player.reference.app.feature.home.components.RecordListMessage
 import dev.ohs.player.reference.app.feature.home.components.RecordListTopBar
 import dev.ohs.player.reference.app.feature.workflow.models.RecordFilters
@@ -98,28 +98,14 @@ fun WorkflowRecordListScreen(
     ) {
       value =
         runCatching {
-            if (WorkflowFhirStore.isPersistenceAvailable) {
-              RecordListScreenState.Ready(
-                collection =
-                  buildStoredResponseCollection(
-                    title = title,
-                    subtitle = subtitle,
-                    responses = WorkflowFhirStore.listQuestionnaireResponses(),
-                  ),
-                sourceLabel = "Local FHIR Store",
-              )
-            } else {
-              val assetCollection = WorkflowRecordsStore.records(resource)
-
-              RecordListScreenState.Ready(
-                collection =
-                  assetCollection.copy(
-                    title = title.ifBlank { assetCollection.title },
-                    subtitle = subtitle.ifBlank { assetCollection.subtitle },
-                  ),
-                sourceLabel = "Sample Records",
-              )
-            }
+            RecordListScreenState.Ready(
+              collection =
+                loadWorkflowRecordCollection(
+                  resource = resource,
+                  title = title,
+                  subtitle = subtitle,
+                )
+            )
           }
           .getOrElse { error ->
             RecordListScreenState.Error(error.message ?: "The case list could not be loaded.")
@@ -141,9 +127,10 @@ fun WorkflowRecordListScreen(
     Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
       when (val state = screenState) {
         RecordListScreenState.Loading -> {
-          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-          }
+          ReferenceAppLoader(
+            message = "Loading saved cases",
+            subtitle = "Gathering locally stored questionnaire responses.",
+          )
         }
 
         is RecordListScreenState.Error -> {
@@ -198,8 +185,7 @@ fun WorkflowRecordListScreen(
 private sealed interface RecordListScreenState {
   data object Loading : RecordListScreenState
 
-  data class Ready(val collection: WorkflowRecordCollection, val sourceLabel: String) :
-    RecordListScreenState
+  data class Ready(val collection: WorkflowRecordCollection) : RecordListScreenState
 
   data class Error(val message: String) : RecordListScreenState
 }
@@ -441,7 +427,7 @@ private fun MeaslesCaseCard(record: WorkflowRecord, modifier: Modifier = Modifie
 
   val labResult = record.fieldValue("Lab Results", "Lab Result").orEmpty()
 
-  val finalClassification = record.fieldValue("Final Classification", "Classification").orEmpty()
+  val finalClassification = record.fieldValue("Final Classification").orEmpty()
 
   Card(
     modifier = modifier.fillMaxWidth(),
@@ -476,13 +462,11 @@ private fun MeaslesCaseCard(record: WorkflowRecord, modifier: Modifier = Modifie
         rightValueColor = labResultColor(labResult),
       )
 
-      if (finalClassification.isNotBlank()) {
-        CaseValue(
-          label = "Final Classification:",
-          value = finalClassification,
-          valueColor = classificationColor(finalClassification),
-        )
-      }
+      CaseValue(
+        label = "Final Classification:",
+        value = finalClassification,
+        valueColor = classificationColor(finalClassification),
+      )
     }
   }
 }

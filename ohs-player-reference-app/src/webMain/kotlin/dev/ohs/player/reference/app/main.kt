@@ -17,6 +17,8 @@ package dev.ohs.player.reference.app
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
+import dev.ohs.player.reference.app.auth.WebAuthSessionStore
+import dev.ohs.player.reference.app.auth.initializeReferenceAuth
 import dev.ohs.player.reference.app.data.di.initKoin
 import dev.ohs.player.reference.app.data.repository.FhirRepository
 import dev.ohs.player.reference.app.data.repository.InMemoryFhirRepository
@@ -25,6 +27,7 @@ import org.koin.dsl.module
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+  initializeReferenceAuth(WebAuthSessionStore())
   initKoin(module { single<FhirRepository> { SeededFhirRepository(InMemoryFhirRepository()) } })
   ComposeViewport { App() }
 }

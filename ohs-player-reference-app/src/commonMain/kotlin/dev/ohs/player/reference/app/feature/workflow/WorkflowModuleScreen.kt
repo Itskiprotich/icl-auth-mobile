@@ -92,7 +92,10 @@ fun WorkflowModuleScreen(
                     message = "This step is not configured yet.",
                   )
                 } else {
-                  WorkflowModuleScreenState.Ready(module = module, node = node)
+                  WorkflowModuleScreenState.Ready(
+                    module = module,
+                    node = node.withRuntimeSummaries(),
+                  )
                 }
               }
             }
@@ -114,7 +117,7 @@ fun WorkflowModuleScreen(
       modifier =
         Modifier.fillMaxSize()
           .background(MaterialTheme.colorScheme.background)
-          .padding(innerPadding),
+          .padding(innerPadding)
     ) {
       when (val state = screenState) {
         WorkflowModuleScreenState.Loading ->
@@ -138,39 +141,24 @@ fun WorkflowModuleScreen(
 private sealed interface WorkflowModuleScreenState {
   data object Loading : WorkflowModuleScreenState
 
-  data class Ready(
-    val module: WorkflowModule,
-    val node: WorkflowNode,
-  ) : WorkflowModuleScreenState
+  data class Ready(val module: WorkflowModule, val node: WorkflowNode) : WorkflowModuleScreenState
 
-  data class Missing(
-    val title: String,
-    val message: String,
-  ) : WorkflowModuleScreenState
+  data class Missing(val title: String, val message: String) : WorkflowModuleScreenState
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WorkflowTopBar(
-  onBack: () -> Unit,
-  onMenuClick: () -> Unit,
-) {
+private fun WorkflowTopBar(onBack: () -> Unit, onMenuClick: () -> Unit) {
   TopAppBar(
     title = {},
     navigationIcon = {
       IconButton(onClick = onBack) {
-        Icon(
-          imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-          contentDescription = "Back",
-        )
+        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
       }
     },
     actions = {
       IconButton(onClick = onMenuClick) {
-        Icon(
-          imageVector = Icons.Default.MoreVert,
-          contentDescription = "More options",
-        )
+        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More options")
       }
     },
     colors =
@@ -194,12 +182,7 @@ private fun WorkflowNodeContent(
     contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 24.dp),
     verticalArrangement = Arrangement.spacedBy(16.dp),
   ) {
-    item {
-      WorkflowSummaryCard(
-        module = module,
-        node = node,
-      )
-    }
+    item { WorkflowSummaryCard(module = module, node = node) }
 
     if (node.sectionTitle.isNotBlank()) {
       item {
@@ -252,10 +235,7 @@ private fun WorkflowNodeContent(
 }
 
 @Composable
-private fun WorkflowSummaryCard(
-  module: WorkflowModule,
-  node: WorkflowNode,
-) {
+private fun WorkflowSummaryCard(module: WorkflowModule, node: WorkflowNode) {
   Card(
     shape = RoundedCornerShape(20.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -270,10 +250,7 @@ private fun WorkflowSummaryCard(
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.primaryContainer,
       ) {
-        Box(
-          modifier = Modifier.size(56.dp),
-          contentAlignment = Alignment.Center,
-        ) {
+        Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
           Icon(
             imageVector = module.icon.toImageVector(),
             contentDescription = null,
@@ -282,10 +259,7 @@ private fun WorkflowSummaryCard(
         }
       }
 
-      Column(
-        modifier = Modifier.weight(1f),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-      ) {
+      Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
           text = module.title,
           style = MaterialTheme.typography.labelLarge,
@@ -336,10 +310,7 @@ private fun WorkflowGridCard(
           shape = RoundedCornerShape(14.dp),
           color = MaterialTheme.colorScheme.primaryContainer,
         ) {
-          Box(
-            modifier = Modifier.size(48.dp),
-            contentAlignment = Alignment.Center,
-          ) {
+          Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
             Icon(
               imageVector = item.icon?.toImageVector() ?: fallbackIcon,
               contentDescription = null,
@@ -389,10 +360,7 @@ private fun WorkflowGridCard(
 }
 
 @Composable
-private fun WorkflowActionCard(
-  item: WorkflowNodeItem,
-  onClick: () -> Unit,
-) {
+private fun WorkflowActionCard(item: WorkflowNodeItem, onClick: () -> Unit) {
   val isClickable = item.destinationNodeId != null || item.action != null
 
   Card(
@@ -412,10 +380,7 @@ private fun WorkflowActionCard(
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.primaryContainer,
       ) {
-        Box(
-          modifier = Modifier.size(48.dp),
-          contentAlignment = Alignment.Center,
-        ) {
+        Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
           Icon(
             imageVector = item.icon?.toImageVector() ?: Icons.Default.Info,
             contentDescription = null,
@@ -424,10 +389,7 @@ private fun WorkflowActionCard(
         }
       }
 
-      Column(
-        modifier = Modifier.weight(1f),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-      ) {
+      Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
           text = item.title,
           style = MaterialTheme.typography.titleMedium,
@@ -477,10 +439,7 @@ private fun WorkflowActionCard(
 }
 
 @Composable
-private fun WorkflowEmptyState(
-  title: String,
-  message: String,
-) {
+private fun WorkflowEmptyState(title: String, message: String) {
   Card(
     modifier = Modifier.fillMaxWidth(),
     shape = RoundedCornerShape(20.dp),
@@ -507,14 +466,8 @@ private fun WorkflowEmptyState(
 }
 
 @Composable
-private fun WorkflowMessageScreen(
-  title: String,
-  subtitle: String,
-) {
-  Box(
-    modifier = Modifier.fillMaxSize(),
-    contentAlignment = Alignment.Center,
-  ) {
+private fun WorkflowMessageScreen(title: String, subtitle: String) {
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     Column(
       modifier = Modifier.padding(24.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
@@ -544,6 +497,15 @@ private fun handleItemClick(
   onActionClick: (String, String) -> Unit,
 ) {
   item.destinationNodeId?.let(onNodeSelected) ?: item.action?.let { onActionClick(nodeId, item.id) }
+}
+
+private suspend fun WorkflowNode.withRuntimeSummaries(): WorkflowNode =
+  copy(items = items.map { it.withRuntimeSummary() })
+
+private suspend fun WorkflowNodeItem.withRuntimeSummary(): WorkflowNodeItem {
+  val recordListAction = action?.takeIf { it.type == WorkflowActionType.RECORD_LIST } ?: return this
+  val count = loadWorkflowRecordCount(recordListAction.resource)
+  return copy(trailingValue = count.toString(), trailingLabel = trailingLabel ?: "Cases")
 }
 
 private fun emptyMessageFor(layout: WorkflowNodeLayout, moduleTitle: String): String =

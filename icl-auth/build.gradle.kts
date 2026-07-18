@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.File
+import java.security.MessageDigest
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.io.File
-import java.security.MessageDigest
 
 abstract class GenerateMavenCentralChecksumsTask : DefaultTask() {
   @get:InputDirectory abstract val repositoryDirectory: DirectoryProperty
@@ -113,6 +113,8 @@ kotlin {
       implementation(libs.compose.ui)
       implementation(libs.compose.foundation)
       implementation(libs.compose.material3)
+      implementation(libs.compose.materialIconsCore)
+      implementation(libs.kotlinx.datetime)
       implementation(libs.kotlinx.serialization.json)
       implementation(libs.ktor.client.core)
       implementation(libs.ktor.client.cio)
@@ -244,9 +246,9 @@ val cleanMavenCentralStagingRepository =
     delete(mavenCentralStagingDirectory)
   }
 
-tasks.matching { it.name == "publishAllPublicationsToMavenCentralStagingRepository" }.configureEach {
-  dependsOn(cleanMavenCentralStagingRepository)
-}
+tasks
+  .matching { it.name == "publishAllPublicationsToMavenCentralStagingRepository" }
+  .configureEach { dependsOn(cleanMavenCentralStagingRepository) }
 
 val generateMavenCentralChecksums =
   tasks.register<GenerateMavenCentralChecksumsTask>("generateMavenCentralChecksums") {

@@ -19,6 +19,8 @@ import androidx.compose.ui.window.ComposeUIViewController
 import dev.ohs.fhir.FhirEngine
 import dev.ohs.fhir.FhirEngineConfiguration
 import dev.ohs.fhir.FhirEngineProvider
+import dev.ohs.player.reference.app.auth.AppleAuthSessionStore
+import dev.ohs.player.reference.app.auth.initializeReferenceAuth
 import dev.ohs.player.reference.app.data.di.initKoin
 import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
 import dev.ohs.player.reference.app.data.repository.FhirRepository
@@ -26,6 +28,7 @@ import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
 import org.koin.dsl.module
 
 fun MainViewController() = run {
+  initializeReferenceAuth(AppleAuthSessionStore())
   if (FhirEngineProvider.isNotInitialized()) {
     FhirEngineProvider.init(FhirEngineConfiguration())
   }

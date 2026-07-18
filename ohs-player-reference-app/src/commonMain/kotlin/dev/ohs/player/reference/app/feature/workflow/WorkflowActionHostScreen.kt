@@ -15,12 +15,11 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.ohs.player.reference.app.components.ReferenceAppLoader
 
 @Composable
 fun WorkflowActionHostScreen(
@@ -65,16 +65,18 @@ fun WorkflowActionHostScreen(
           }
           .getOrElse { error ->
             WorkflowActionState.Missing(
-              error.message ?: "This workflow action could not be resolved.",
+              error.message ?: "This workflow action could not be resolved."
             )
           }
     }
 
   when (val state = screenState) {
     WorkflowActionState.Loading ->
-      Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-      }
+      ReferenceAppLoader(
+        message = "Preparing workflow action",
+        subtitle = "Fetching the next screen for this workflow.",
+        modifier = modifier,
+      )
     is WorkflowActionState.Missing ->
       Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Card(
@@ -102,12 +104,12 @@ fun WorkflowActionHostScreen(
       when (state.action.type) {
         WorkflowActionType.QUESTIONNAIRE ->
           QuestionnaireHostScreen(
-              title = state.title,
-              subtitle = state.subtitle,
-              resource = state.action.resource,
-              onBack = onBack,
-              modifier = modifier,
-              primaryActionLabel = state.action.primaryActionLabel ?: "Submit Case",
+            title = state.title,
+            subtitle = state.subtitle,
+            resource = state.action.resource,
+            onBack = onBack,
+            modifier = modifier,
+            primaryActionLabel = state.action.primaryActionLabel ?: "Submit Case",
           )
         WorkflowActionType.RECORD_LIST ->
           WorkflowRecordListScreen(
@@ -124,13 +126,8 @@ fun WorkflowActionHostScreen(
 private sealed interface WorkflowActionState {
   data object Loading : WorkflowActionState
 
-  data class Ready(
-    val title: String,
-    val subtitle: String,
-    val action: WorkflowAction,
-  ) : WorkflowActionState
+  data class Ready(val title: String, val subtitle: String, val action: WorkflowAction) :
+    WorkflowActionState
 
-  data class Missing(
-    val message: String,
-  ) : WorkflowActionState
+  data class Missing(val message: String) : WorkflowActionState
 }

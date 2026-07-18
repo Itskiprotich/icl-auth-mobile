@@ -21,6 +21,8 @@ import dev.ohs.fhir.FhirEngineConfiguration
 import dev.ohs.fhir.FhirEngineProvider
 import dev.ohs.fhir.datacapture.DataCapture
 import dev.ohs.fhir.datacapture.DataCaptureConfig
+import dev.ohs.player.reference.app.auth.AndroidAuthSessionStore
+import dev.ohs.player.reference.app.auth.initializeReferenceAuth
 import dev.ohs.player.reference.app.data.di.initKoin
 import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
 import dev.ohs.player.reference.app.data.repository.FhirRepository
@@ -36,6 +38,7 @@ class ReferenceAppApplication : Application(), DataCaptureConfig.Provider {
 
   override fun onCreate() {
     super.onCreate()
+    initializeReferenceAuth(AndroidAuthSessionStore(this))
     if (FhirEngineProvider.isNotInitialized()) {
       FhirEngineProvider.init(FhirEngineConfiguration(), applicationContext)
     }

@@ -66,7 +66,8 @@ class WorkflowCatalogTest {
             }
           ]
         }
-        """.trimIndent(),
+        """
+          .trimIndent(),
       )
 
     val module = assertNotNull(catalog.findModule("notifiable-diseases"))
@@ -132,7 +133,6 @@ class WorkflowCatalogTest {
                         "resource": "records/measles-cases.json",
                         "title": "Measles Case List"
                       },
-                      "trailingValue": "25",
                       "trailingLabel": "Cases"
                     }
                   ]
@@ -141,7 +141,8 @@ class WorkflowCatalogTest {
             }
           ]
         }
-        """.trimIndent(),
+        """
+          .trimIndent(),
       )
 
     val module = assertNotNull(catalog.findModule("notifiable-diseases"))
@@ -153,7 +154,7 @@ class WorkflowCatalogTest {
     assertEquals("Submit Case", addCase.action?.primaryActionLabel)
     assertEquals(WorkflowActionType.RECORD_LIST, caseList.action?.type)
     assertEquals("records/measles-cases.json", caseList.action?.resource)
-    assertEquals("25", caseList.trailingValue)
+    assertEquals("Cases", caseList.trailingLabel)
     assertTrue(caseList.action != null)
   }
 }
