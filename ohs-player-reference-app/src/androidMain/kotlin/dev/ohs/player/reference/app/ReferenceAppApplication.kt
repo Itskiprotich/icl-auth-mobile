@@ -16,19 +16,35 @@
 package dev.ohs.player.reference.app
 
 import android.app.Application
+import dev.ohs.fhir.FhirEngine
+import dev.ohs.fhir.FhirEngineConfiguration
+import dev.ohs.fhir.FhirEngineProvider
 import dev.ohs.fhir.datacapture.DataCapture
 import dev.ohs.fhir.datacapture.DataCaptureConfig
+import dev.ohs.player.reference.app.data.di.initKoin
+import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
+import dev.ohs.player.reference.app.data.repository.FhirRepository
+import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
 import dev.ohs.player.reference.app.feature.workflow.AndroidAssetLocationQueryResolver
+import org.koin.dsl.module
 
 class ReferenceAppApplication : Application(), DataCaptureConfig.Provider {
-  private val appDataCaptureConfig by lazy(LazyThreadSafetyMode.NONE) {
-    DataCaptureConfig(
-      xFhirQueryResolver = AndroidAssetLocationQueryResolver(this),
-    )
-  }
+  private val appDataCaptureConfig by
+    lazy(LazyThreadSafetyMode.NONE) {
+      DataCaptureConfig(xFhirQueryResolver = AndroidAssetLocationQueryResolver(this))
+    }
 
   override fun onCreate() {
     super.onCreate()
+    if (FhirEngineProvider.isNotInitialized()) {
+      FhirEngineProvider.init(FhirEngineConfiguration(), applicationContext)
+    }
+    initKoin(
+      module {
+        single<FhirEngine> { FhirEngineProvider.getInstance(applicationContext) }
+        single<FhirRepository> { SeededFhirRepository(FhirEngineRepository(get())) }
+      }
+    )
     DataCapture.initialize(this)
   }
 

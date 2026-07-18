@@ -15,7 +15,6 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
-import dev.ohs.fhir.model.r4.String as FhirString
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,9 +62,14 @@ import dev.ohs.fhir.model.r4.Patient
 import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Specimen
+import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.player.reference.app.generateUuid
+import dev.ohs.player.reference.app.util.FhirJson
+import kotlin.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -73,352 +77,288 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlin.time.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
-
-
-object FhirJson {
-    val instance: Json = Json {
-        prettyPrint = true
-        explicitNulls = false
-        encodeDefaults = false
-        ignoreUnknownKeys = true
-    }
-}
 
 @Composable
 fun QuestionnaireHostScreen(
-    title: String,
-    subtitle: String,
-    resource: String,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    primaryActionLabel: String = "Submit Case",
+  title: String,
+  subtitle: String,
+  resource: String,
+  onBack: () -> Unit,
+  modifier: Modifier = Modifier,
+  primaryActionLabel: String = "Submit Case",
 ) {
-    val fhirJson = FhirJson.instance
-    fun String?.orGeneratedId(): String = takeUnless { it.isNullOrBlank() } ?: generateUuid()
+  val fhirJson = FhirJson.instance
+  fun String?.orGeneratedId(): String = takeUnless { it.isNullOrBlank() } ?: generateUuid()
 
-    val screenState by
+  val screenState by
     produceState<QuestionnaireScreenState>(
-        initialValue = QuestionnaireScreenState.Loading,
-        resource,
-    )
+      initialValue = QuestionnaireScreenState.Loading,
+      resource,
+    ) {
+      value =
+        runCatching { WorkflowQuestionnaireStore.questionnaireJson(resource) }
+          .fold(
+            onSuccess = QuestionnaireScreenState::Ready,
+            onFailure = {
+              QuestionnaireScreenState.Error(it.message ?: "The questionnaire could not be loaded.")
+            },
+          )
+    }
+  val snackbarHostState = remember { SnackbarHostState() }
+  val scope = rememberCoroutineScope()
+  var isSubmitting by remember(resource) { mutableStateOf(false) }
+  fun resolveCqfCalculatedToday(questionnaireJson: String): String {
+    val today = Clock.System.todayIn(TimeZone.currentSystemDefault()).toString() // "2026-07-14"
+    val root = Json.parseToJsonElement(questionnaireJson)
 
-    {
-        value =
-            runCatching { WorkflowQuestionnaireStore.questionnaireJson(resource) }
-                .fold(
-                    onSuccess = QuestionnaireScreenState::Ready,
-                    onFailure = {
-                        QuestionnaireScreenState.Error(
-                            it.message ?: "The questionnaire could not be loaded.",
+    fun transform(element: JsonElement): JsonElement =
+      when (element) {
+        is JsonObject -> {
+          val map = element.toMutableMap()
+          val underscoreValueDate = map["_valueDate"] as? JsonObject
+          val extensions = underscoreValueDate?.get("extension") as? JsonArray
+          val hasTodayExpr =
+            extensions?.any { ext ->
+              val extObj = ext as? JsonObject
+              extObj?.get("url")?.jsonPrimitive?.content ==
+                "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue" &&
+                extObj["valueExpression"]?.jsonObject?.get("expression")?.jsonPrimitive?.content in
+                  setOf("today()", "now()")
+            } == true
+
+          if (hasTodayExpr) {
+            map.remove("_valueDate")
+            map["valueDate"] = JsonPrimitive(today)
+          }
+          JsonObject(map.mapValues { (_, v) -> transform(v) })
+        }
+
+        is JsonArray -> JsonArray(element.map { transform(it) })
+        else -> element
+      }
+
+    return transform(root).toString()
+  }
+  Scaffold(
+    modifier = modifier,
+    snackbarHost = { SnackbarHost(snackbarHostState) },
+    topBar = { QuestionnaireTopBar(title = title, onBack = onBack) },
+  ) { innerPadding ->
+    Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+      when (val state = screenState) {
+        QuestionnaireScreenState.Loading ->
+          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+          }
+
+        is QuestionnaireScreenState.Error ->
+          WorkflowCenteredMessage(title = "Questionnaire unavailable", message = state.message)
+
+        is QuestionnaireScreenState.Ready ->
+          Column(modifier = Modifier.fillMaxSize()) {
+            if (isSubmitting) {
+              LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+
+            Box(modifier = Modifier.weight(1f)) {
+              Questionnaire(
+                questionnaireJson = resolveCqfCalculatedToday(state.questionnaireJson),
+                config =
+                  QuestionnaireConfig(
+                    showSubmitButton = true,
+                    showCancelButton = false,
+                    showReviewPage = true,
+                    submitButtonText = primaryActionLabel,
+                  ),
+                onSubmit = { getResponse ->
+                  scope.launch {
+                    isSubmitting = true
+                    try {
+                      val patientId = generateUuid()
+                      val encounterId = generateUuid()
+                      val patientReference = FhirString(value = "Patient/$patientId")
+                      val patientRef = Reference(reference = patientReference)
+
+                      val encounterReference = FhirString(value = "Encounter/$encounterId")
+                      val encounterRef = Reference(reference = encounterReference)
+
+                      val response = getResponse()
+                      val savedId =
+                        WorkflowFhirStore.saveQuestionnaireResponse(
+                          response.copy(subject = patientRef, encounter = encounterRef)
                         )
-                    },
-                )
-    }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    var isSubmitting by remember(resource) { mutableStateOf(false) }
-    fun resolveCqfCalculatedToday(questionnaireJson: String): String {
-        val today = Clock.System.todayIn(TimeZone.currentSystemDefault()).toString() // "2026-07-14"
-        val root = Json.parseToJsonElement(questionnaireJson)
+                      val questionnaire =
+                        fhirJson.decodeFromString(
+                          Questionnaire.serializer(),
+                          state.questionnaireJson,
+                        )
+                      val extractedBundle =
+                        TemplateExtractionEngine.extract(questionnaire, response)
+                      val normalizedBundle =
+                        fhirJson.encodeToString(Bundle.serializer(), extractedBundle)
 
-        fun transform(element: JsonElement): JsonElement = when (element) {
-            is JsonObject -> {
-                val map = element.toMutableMap()
-                val underscoreValueDate = map["_valueDate"] as? JsonObject
-                val extensions = underscoreValueDate?.get("extension") as? JsonArray
-                val hasTodayExpr = extensions?.any { ext ->
-                    val extObj = ext as? JsonObject
-                    extObj?.get("url")?.jsonPrimitive?.content ==
-                            "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue" &&
-                            extObj["valueExpression"]?.jsonObject
-                                ?.get("expression")?.jsonPrimitive?.content in setOf(
-                        "today()",
-                        "now()"
-                    )
-                } == true
+                      val bundle =
+                        extractedBundle.copy(
+                          entry =
+                            extractedBundle.entry.map { entry ->
+                              val updatedResource =
+                                when (val resource = entry.resource) {
+                                  is Observation ->
+                                    resource.copy(
+                                      id = resource.id.orGeneratedId(),
+                                      subject = patientRef,
+                                      encounter = encounterRef,
+                                    )
 
-                if (hasTodayExpr) {
-                    map.remove("_valueDate")
-                    map["valueDate"] = JsonPrimitive(today)
-                }
-                JsonObject(map.mapValues { (_, v) -> transform(v) })
-            }
+                                  is Condition ->
+                                    resource.copy(
+                                      id = resource.id.orGeneratedId(),
+                                      subject = patientRef,
+                                      encounter = encounterRef,
+                                    )
 
-            is JsonArray -> JsonArray(element.map { transform(it) })
-            else -> element
-        }
+                                  is Encounter ->
+                                    resource.copy(
+                                      id = resource.id.orGeneratedId(),
+                                      subject = patientRef,
+                                    )
 
-        return transform(root).toString()
-    }
-    Scaffold(
-        modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            QuestionnaireTopBar(
-                title = title,
-                onBack = onBack,
-            )
-        },
-    ) { innerPadding ->
-        Box(
-            modifier =
-                Modifier.fillMaxSize()
-                    .padding(innerPadding),
-        ) {
-            when (val state = screenState) {
-                QuestionnaireScreenState.Loading ->
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+                                  is Specimen ->
+                                    resource.copy(
+                                      id = resource.id.orGeneratedId(),
+                                      subject = patientRef,
+                                    )
 
-                is QuestionnaireScreenState.Error ->
-                    WorkflowCenteredMessage(
-                        title = "Questionnaire unavailable",
-                        message = state.message,
-                    )
+                                  is Patient -> resource.copy(id = resource.id.orGeneratedId())
 
-                is QuestionnaireScreenState.Ready ->
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        if (isSubmitting) {
-                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                                  else -> resource
+                                }
+
+                              entry.copy(resource = updatedResource)
+                            }
+                        )
+                      WorkflowFhirStore.saveBundle(bundle)
+                      println(normalizedBundle)
+                      val message =
+                        if (WorkflowFhirStore.isPersistenceAvailable) {
+                          if (savedId != null) {
+                            "Case saved locally and ready for review."
+                          } else {
+                            "Case submission completed."
+                          }
+                        } else {
+                          "Case submission completed. Local FHIR storage is unavailable on this platform."
                         }
-
-                        Box(modifier = Modifier.weight(1f)) {
-                            Questionnaire(
-                                questionnaireJson = resolveCqfCalculatedToday(state.questionnaireJson),
-                                config =
-                                    QuestionnaireConfig(
-                                        showSubmitButton = true,
-                                        showCancelButton = false,
-                                        showReviewPage = true,
-                                        submitButtonText = primaryActionLabel,
-                                    ),
-                                onSubmit = { getResponse ->
-                                    scope.launch {
-                                        isSubmitting = true
-                                        try {
-                                            val patientId = generateUuid()
-                                            val encounterId = generateUuid()
-                                            val patientReference =
-                                                FhirString(value = "Patient/$patientId")
-                                            val patientRef = Reference(reference = patientReference)
-
-                                            val encounterReference =
-                                                FhirString(value = "Encounter/$encounterId")
-                                            val encounterRef =
-                                                Reference(reference = encounterReference)
-
-                                            val response = getResponse()
-                                            val savedId =
-                                                WorkflowFhirStore.saveQuestionnaireResponse(
-                                                    response.copy(
-                                                        subject = patientRef,
-                                                        encounter = encounterRef
-                                                    )
-                                                )
-                                            val questionnaire = fhirJson.decodeFromString(
-                                                Questionnaire.serializer(),
-                                                state.questionnaireJson
-                                            )
-                                            val extractedBundle = TemplateExtractionEngine.extract(
-                                                questionnaire,
-                                                response
-                                            )
-                                            val normalizedBundle = fhirJson.encodeToString(
-                                                Bundle.serializer(),
-                                                extractedBundle
-                                            )
-
-                                            val bundle =
-                                                extractedBundle.copy(
-                                                    entry =
-                                                        extractedBundle.entry.map { entry ->
-                                                            val updatedResource =
-                                                                when (val resource =
-                                                                    entry.resource) {
-                                                                    is Observation ->
-                                                                        resource.copy(
-                                                                            id = resource.id.orGeneratedId(),
-                                                                            subject = patientRef,
-                                                                            encounter = encounterRef
-                                                                        )
-
-
-                                                                    is Condition ->
-                                                                        resource.copy(
-                                                                            id = resource.id.orGeneratedId(),
-                                                                            subject = patientRef,
-                                                                            encounter = encounterRef
-                                                                        )
-
-                                                                    is Encounter ->
-                                                                        resource.copy(
-                                                                            id = resource.id.orGeneratedId(),
-                                                                            subject = patientRef
-                                                                        )
-
-                                                                    is Specimen ->
-                                                                        resource.copy(
-                                                                            id = resource.id.orGeneratedId(),
-                                                                            subject = patientRef
-                                                                        )
-
-                                                                    is Patient ->
-                                                                        resource.copy(
-                                                                            id = resource.id.orGeneratedId()
-                                                                        )
-
-                                                                    else -> resource
-                                                                }
-
-                                                            entry.copy(resource = updatedResource)
-                                                        }
-                                                )
-                                            WorkflowFhirStore.saveBundle(bundle)
-                                            println(normalizedBundle)
-                                            val message =
-                                                if (WorkflowFhirStore.isPersistenceAvailable) {
-                                                    if (savedId != null) {
-                                                        "Case saved locally and ready for review."
-                                                    } else {
-                                                        "Case submission completed."
-                                                    }
-                                                } else {
-                                                    "Case submission completed. Local FHIR storage is unavailable on this platform."
-                                                }
-                                            snackbarHostState.showSnackbar(message)
-                                        } catch (_: CancellationException) {
-                                            // Validation feedback is already shown by the data capture library.
-                                        } catch (error: Throwable) {
-                                            snackbarHostState.showSnackbar(
-                                                error.message ?: "Unable to save the case locally.",
-                                            )
-                                        } finally {
-                                            isSubmitting = false
-                                        }
-                                    }
-                                },
-                                onCancel = onBack,
-                            )
-                        }
+                      snackbarHostState.showSnackbar(message)
+                    } catch (_: CancellationException) {
+                      // Validation feedback is already shown by the data capture library.
+                    } catch (error: Throwable) {
+                      snackbarHostState.showSnackbar(
+                        error.message ?: "Unable to save the case locally."
+                      )
+                    } finally {
+                      isSubmitting = false
                     }
+                  }
+                },
+                onCancel = onBack,
+              )
             }
-        }
+          }
+      }
     }
+  }
 }
 
 private sealed interface QuestionnaireScreenState {
-    data object Loading : QuestionnaireScreenState
+  data object Loading : QuestionnaireScreenState
 
-    data class Ready(val questionnaireJson: String) : QuestionnaireScreenState
+  data class Ready(val questionnaireJson: String) : QuestionnaireScreenState
 
-    data class Error(val message: String) : QuestionnaireScreenState
+  data class Error(val message: String) : QuestionnaireScreenState
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun QuestionnaireTopBar(
-    title: String,
-    onBack: () -> Unit,
-) {
-    TopAppBar(
-        title = {
-            Text(
-                text = title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        },
-        navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                )
-            }
-        },
-        colors =
-            TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-            ),
-    )
+private fun QuestionnaireTopBar(title: String, onBack: () -> Unit) {
+  TopAppBar(
+    title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+    navigationIcon = {
+      IconButton(onClick = onBack) {
+        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+      }
+    },
+    colors =
+      TopAppBarDefaults.topAppBarColors(
+        containerColor = MaterialTheme.colorScheme.primary,
+        titleContentColor = MaterialTheme.colorScheme.onPrimary,
+        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+      ),
+  )
 }
 
 @Composable
-private fun QuestionnaireIntroCard(
-    subtitle: String,
-    showPersistenceNotice: Boolean,
-) {
+private fun QuestionnaireIntroCard(subtitle: String, showPersistenceNotice: Boolean) {
+  Card(
+    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+    shape = RoundedCornerShape(20.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+  ) {
+    Column(
+      modifier = Modifier.fillMaxWidth().padding(16.dp),
+      verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+      if (subtitle.isNotBlank()) {
+        Text(
+          text = subtitle,
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+      }
+
+      if (showPersistenceNotice) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+          Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+          )
+          Text(
+            text =
+              "Responses can be filled on this platform, but local FHIR persistence is only enabled on Android, desktop JVM, and iOS in this app.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun WorkflowCenteredMessage(title: String, message: String) {
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+      modifier = Modifier.padding(24.dp),
+      shape = RoundedCornerShape(24.dp),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            if (subtitle.isNotBlank()) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            if (showPersistenceNotice) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(
-                        text = "Responses can be filled on this platform, but local FHIR persistence is only enabled on Android, desktop JVM, and iOS in this app.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
+      Column(
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+      ) {
+        Text(
+          text = title,
+          style = MaterialTheme.typography.headlineSmall,
+          color = MaterialTheme.colorScheme.onSurface,
+          fontWeight = FontWeight.Bold,
+        )
+        Text(
+          text = message,
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+      }
     }
-}
-
-@Composable
-private fun WorkflowCenteredMessage(
-    title: String,
-    message: String,
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Card(
-            modifier = Modifier.padding(24.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-    }
+  }
 }

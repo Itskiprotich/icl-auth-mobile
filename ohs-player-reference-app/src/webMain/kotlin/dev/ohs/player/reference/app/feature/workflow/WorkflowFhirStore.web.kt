@@ -15,6 +15,7 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
+import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
 
 actual object WorkflowFhirStore {
@@ -25,4 +26,6 @@ actual object WorkflowFhirStore {
   actual suspend fun saveQuestionnaireResponse(response: QuestionnaireResponse): String? = null
 
   actual suspend fun listQuestionnaireResponses(): List<QuestionnaireResponse> = emptyList()
+
+  actual suspend fun saveBundle(bundle: Bundle): List<String?> = emptyList()
 }

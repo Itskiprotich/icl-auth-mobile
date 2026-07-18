@@ -22,13 +22,14 @@ import dev.ohs.player.reference.app.data.repository.PatientRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class PatientListViewModel : ViewModel() {
+class PatientListViewModel(private val patientRepository: PatientRepository) : ViewModel() {
   private val _patients = MutableStateFlow<List<PatientSummaryState>?>(null)
   val patients: StateFlow<List<PatientSummaryState>?> = _patients.asStateFlow()
 
   init {
-    viewModelScope.launch { _patients.value = PatientRepository.getPatients() }
+    viewModelScope.launch { patientRepository.observePatients().collect { _patients.value = it } }
   }
 }

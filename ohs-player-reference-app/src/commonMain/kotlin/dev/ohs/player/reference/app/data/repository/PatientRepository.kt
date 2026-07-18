@@ -29,27 +29,36 @@ import dev.ohs.player.reference.app.data.datasource.patientProfileSearchResult
 import dev.ohs.player.reference.app.data.datasource.patientSummarySearchResult
 import dev.ohs.player.reference.app.feature.patient.profile.ProfileUiState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-object PatientRepository {
+class PatientRepository(private val fhirRepository: FhirRepository) {
 
   // FhirPathEvaluator holds mutable state is not concurrent-safe.
   // limitedParallelism(1) serializes all extraction on a single background thread without any
   // explicit locking.
   private val extractorDispatcher = Dispatchers.Default.limitedParallelism(1)
 
+  fun observePatients(): Flow<List<PatientSummaryState>> =
+    fhirRepository.revision.map { getPatients() }
+
   suspend fun getPatients(): List<PatientSummaryState> =
     withContext(extractorDispatcher) {
-      allPatientIds().mapNotNull { id ->
-        patientSummarySearchResult(id)?.let {
+      allPatientIds(fhirRepository).mapNotNull { id ->
+        patientSummarySearchResult(id, fhirRepository)?.let {
           extractor.extract<PatientSummaryState>(it).firstOrNull()
         }
       }
     }
 
+  fun observePatientProfile(patientId: String): Flow<ProfileUiState> =
+    fhirRepository.revision.map { getPatientProfile(patientId) }
+
   suspend fun getPatientProfile(patientId: String): ProfileUiState =
     withContext(extractorDispatcher) {
-      val result = patientProfileSearchResult(patientId) ?: return@withContext ProfileUiState()
+      val result =
+        patientProfileSearchResult(patientId, fhirRepository) ?: return@withContext ProfileUiState()
       ProfileUiState(
         patient = extractor.extract<PatientSummaryState>(result).firstOrNull(),
         allergies = extractor.extract<PatientAllergyState>(result),

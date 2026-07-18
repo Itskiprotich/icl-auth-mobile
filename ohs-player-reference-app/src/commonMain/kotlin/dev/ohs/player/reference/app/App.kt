@@ -70,9 +70,12 @@ import dev.ohs.player.reference.app.feature.workflow.WorkflowModuleScreen
 import dev.ohs.player.reference.app.feature.workflow.toCardSpec
 import icl.ohs.libs.auth.IclAuth
 import icl.ohs.libs.auth.IclAuthConfig
+import icl.ohs.libs.auth.SetNewPasswordScreen
+import icl.ohs.libs.auth.SetNewPasswordScreenConfig
 
 private const val HOME_ROUTE = "home"
 private const val PROFILE_ROUTE = "profile"
+private const val CHANGE_PASSWORD_ROUTE = "profile/change-password"
 private const val CASE_MANAGEMENT_ROUTE = "workflow/case-management"
 private const val WORKFLOW_MODULE_ROUTE = "workflow/module"
 private const val WORKFLOW_NODE_ROUTE = "workflow/node"
@@ -85,6 +88,7 @@ private const val WORKFLOW_MODULE_ID_ARG = "workflowModuleId"
 private const val WORKFLOW_NODE_ID_ARG = "workflowNodeId"
 private const val WORKFLOW_ITEM_ID_ARG = "workflowItemId"
 private val AUTH_CONFIG = IclAuthConfig(baseAuthUrl = "https://auth.nphiis.health.go.ke")
+private val CHANGE_PASSWORD_SCREEN_CONFIG = SetNewPasswordScreenConfig(showFooter = false)
 private val bottomBarRoutes = setOf(HOME_ROUTE, PROFILE_ROUTE)
 
 @Composable
@@ -168,7 +172,19 @@ private fun ReferenceAppNavigation() {
       }
 
       composable(PROFILE_ROUTE) {
-        ProfileScreen(uiState = uiState, onRefreshClick = shellViewModel::refreshProviderProfile)
+        ProfileScreen(
+          uiState = uiState,
+          onRefreshClick = shellViewModel::refreshProviderProfile,
+          onChangePasswordClick = { navController.navigate(CHANGE_PASSWORD_ROUTE) },
+        )
+      }
+
+      composable(CHANGE_PASSWORD_ROUTE) {
+        SetNewPasswordScreen(
+          config = CHANGE_PASSWORD_SCREEN_CONFIG,
+          initialIdNumber = uiState.user?.idNumber.orEmpty(),
+          onPasswordResetSuccess = { navController.popBackStack() },
+        )
       }
 
       composable(CASE_MANAGEMENT_ROUTE) {

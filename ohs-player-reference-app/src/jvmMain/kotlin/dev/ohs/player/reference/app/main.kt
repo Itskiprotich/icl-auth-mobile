@@ -17,7 +17,27 @@ package dev.ohs.player.reference.app
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import dev.ohs.fhir.FhirEngine
+import dev.ohs.fhir.FhirEngineConfiguration
+import dev.ohs.fhir.FhirEngineProvider
+import dev.ohs.player.reference.app.data.di.initKoin
+import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
+import dev.ohs.player.reference.app.data.repository.FhirRepository
+import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
+import java.io.File
+import org.koin.dsl.module
 
 fun main() = application {
+  val userHome = System.getProperty("user.home").orEmpty().ifBlank { "." }
+  val storageDirectory = File(userHome, ".icl-auth-reference").absolutePath
+  if (FhirEngineProvider.isNotInitialized()) {
+    FhirEngineProvider.init(FhirEngineConfiguration(storageDirectory = storageDirectory))
+  }
+  initKoin(
+    module {
+      single<FhirEngine> { FhirEngineProvider.getInstance() }
+      single<FhirRepository> { SeededFhirRepository(FhirEngineRepository(get())) }
+    }
+  )
   Window(onCloseRequest = ::exitApplication, title = "OHS Player Reference App") { App() }
 }

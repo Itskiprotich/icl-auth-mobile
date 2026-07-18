@@ -23,22 +23,31 @@ import dev.ohs.player.reference.app.data.datasource.groupListSearchResults
 import dev.ohs.player.reference.app.data.datasource.groupProfileSearchResult
 import dev.ohs.player.reference.app.feature.group.profile.GroupProfileUiState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-object GroupRepository {
+class GroupRepository(private val fhirRepository: FhirRepository) {
 
   // FhirPathEvaluator is not concurrent-safe. limitedParallelism(1) serializes all extraction on a
   // single background thread without any explicit locking.
   private val extractorDispatcher = Dispatchers.Default.limitedParallelism(1)
 
+  fun observeGroups(): Flow<List<GroupListState>> = fhirRepository.revision.map { getGroups() }
+
   suspend fun getGroups(): List<GroupListState> =
     withContext(extractorDispatcher) {
-      groupListSearchResults().flatMap { extractor.extract<GroupListState>(it) }
+      groupListSearchResults(fhirRepository).flatMap { extractor.extract<GroupListState>(it) }
     }
+
+  fun observeGroupProfile(groupId: String): Flow<GroupProfileUiState> =
+    fhirRepository.revision.map { getGroupProfile(groupId) }
 
   suspend fun getGroupProfile(groupId: String): GroupProfileUiState =
     withContext(extractorDispatcher) {
-      val result = groupProfileSearchResult(groupId) ?: return@withContext GroupProfileUiState()
+      val result =
+        groupProfileSearchResult(groupId, fhirRepository)
+          ?: return@withContext GroupProfileUiState()
       GroupProfileUiState(
         groupHeader = extractor.extract<GroupHeaderState>(result).firstOrNull(),
         members = extractor.extract<GroupMemberState>(result),

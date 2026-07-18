@@ -52,46 +52,62 @@ kotlin {
     binaries.executable()
   }
 
+  applyDefaultHierarchyTemplate()
+
   sourceSets {
-    androidMain.dependencies {
-      implementation(libs.compose.uiToolingPreview)
-      implementation(libs.androidx.activity.compose)
+    val commonMain by getting {
+      dependencies {
+        implementation(project(":icl-auth"))
+        implementation(project(":ohs-player-library"))
+        implementation(libs.compose.runtime)
+        implementation(libs.compose.foundation)
+        implementation(libs.compose.material)
+        implementation(libs.compose.material3)
+        implementation(libs.compose.materialIconsCore)
+        implementation(libs.compose.ui)
+        implementation(libs.compose.components.resources)
+        implementation(libs.compose.uiToolingPreview)
+        implementation(libs.androidx.lifecycle.viewmodelCompose)
+        implementation(libs.androidx.lifecycle.runtimeCompose)
+        implementation(libs.kermit)
+        implementation(project.dependencies.platform(libs.koin.bom))
+        implementation(libs.koin.core)
+        implementation(libs.koin.compose)
+        implementation(libs.koin.composeViewmodel)
+        implementation(libs.kotlinx.serialization.json)
+        implementation(libs.kotlinx.datetime)
+        implementation(libs.navigation.compose)
+        implementation(libs.ohs.fhir.data.capture)
+        implementation(libs.ohs.fhir.model)
+        implementation(libs.ohs.fhir.path)
+      }
     }
-    commonMain.dependencies {
-      implementation(project(":icl-auth"))
-      implementation(project(":ohs-player-library"))
-      implementation(libs.compose.runtime)
-      implementation(libs.compose.foundation)
-      implementation(libs.compose.material)
-      implementation(libs.compose.material3)
-      implementation(libs.compose.materialIconsCore)
-      implementation(libs.compose.ui)
-      implementation(libs.compose.components.resources)
-      implementation(libs.compose.uiToolingPreview)
-      implementation(libs.androidx.lifecycle.viewmodelCompose)
-      implementation(libs.androidx.lifecycle.runtimeCompose)
-      implementation(libs.kermit)
-      implementation(libs.kotlinx.serialization.json)
-      implementation(libs.kotlinx.datetime)
-      implementation(libs.navigation.compose)
-      implementation(libs.ohs.fhir.data.capture)
-      implementation(libs.ohs.fhir.model)
-      implementation(libs.ohs.fhir.path)
+    val commonTest by getting {
+      dependencies {
+        implementation(libs.kotlin.test)
+        implementation(libs.compose.uiTest)
+        implementation(libs.kotlinx.coroutines.test)
+      }
     }
-    commonTest.dependencies {
-      implementation(libs.kotlin.test)
-      implementation(libs.compose.uiTest)
-      implementation(libs.kotlinx.coroutines.test)
+    val fhirEngineMain by creating {
+      dependsOn(commonMain)
+      dependencies { implementation(libs.ohs.fhir.engine) }
     }
-    jvmMain.dependencies {
-      implementation(compose.desktop.currentOs)
-      implementation(libs.kotlinx.coroutinesSwing)
-      implementation(libs.ohs.fhir.engine)
+    val androidMain by getting {
+      dependsOn(fhirEngineMain)
+      dependencies {
+        implementation(libs.compose.uiToolingPreview)
+        implementation(libs.androidx.activity.compose)
+      }
     }
-    jvmTest.dependencies { implementation(compose.desktop.currentOs) }
-    named("androidMain") { dependencies { implementation(libs.ohs.fhir.engine) } }
-    named("iosArm64Main") { dependencies { implementation(libs.ohs.fhir.engine) } }
-    named("iosSimulatorArm64Main") { dependencies { implementation(libs.ohs.fhir.engine) } }
+    val iosMain by getting { dependsOn(fhirEngineMain) }
+    val jvmMain by getting {
+      dependsOn(fhirEngineMain)
+      dependencies {
+        implementation(compose.desktop.currentOs)
+        implementation(libs.kotlinx.coroutinesSwing)
+      }
+    }
   }
 }
 

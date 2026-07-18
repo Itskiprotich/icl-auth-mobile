@@ -22,13 +22,14 @@ import dev.ohs.player.reference.app.data.repository.GroupRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class GroupListViewModel : ViewModel() {
+class GroupListViewModel(private val groupRepository: GroupRepository) : ViewModel() {
   private val _groups = MutableStateFlow<List<GroupListState>?>(null)
   val groups: StateFlow<List<GroupListState>?> = _groups.asStateFlow()
 
   init {
-    viewModelScope.launch { _groups.value = GroupRepository.getGroups() }
+    viewModelScope.launch { groupRepository.observeGroups().collect { _groups.value = it } }
   }
 }

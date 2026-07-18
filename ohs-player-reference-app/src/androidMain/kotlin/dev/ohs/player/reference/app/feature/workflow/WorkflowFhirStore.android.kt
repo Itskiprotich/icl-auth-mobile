@@ -15,55 +15,34 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
-import dev.ohs.fhir.FhirEngine
-import dev.ohs.fhir.FhirEngineConfiguration
-import dev.ohs.fhir.FhirEngineProvider
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
-import dev.ohs.fhir.model.r4.terminologies.ResourceType
-import dev.ohs.fhir.search.Search
+import dev.ohs.player.reference.app.data.repository.FhirRepository
+import dev.ohs.player.reference.app.data.repository.resolveFhirRepository
+import dev.ohs.player.reference.app.generateUuid
 
 actual object WorkflowFhirStore {
-    private var platformContext: Any? = null
-    private var fhirEngine: FhirEngine? = null
+  actual val isPersistenceAvailable: Boolean = true
 
-    actual val isPersistenceAvailable: Boolean = true
+  actual fun initialize(platformContext: Any) = Unit
 
-    actual fun initialize(platformContext: Any) {
-        this.platformContext = platformContext
-        if (FhirEngineProvider.isNotInitialized()) {
-            FhirEngineProvider.init(FhirEngineConfiguration(), platformContext)
-        }
-        if (fhirEngine == null) {
-            fhirEngine = FhirEngineProvider.getInstance(platformContext)
-        }
-    }
+  actual suspend fun saveQuestionnaireResponse(response: QuestionnaireResponse): String? {
+    val storedResponse = response.withIdIfMissing()
+    repository().upsert(storedResponse)
+    return storedResponse.id
+  }
 
-    actual suspend fun saveQuestionnaireResponse(response: QuestionnaireResponse): String? {
-        return engine().create(response).firstOrNull()
-    }
+  actual suspend fun listQuestionnaireResponses(): List<QuestionnaireResponse> {
+    return repository().all("QuestionnaireResponse").filterIsInstance<QuestionnaireResponse>()
+  }
 
+  actual suspend fun saveBundle(bundle: Bundle): List<String?> {
+    repository().upsert(bundle)
+    return bundle.entry.map { it.resource?.id }
+  }
 
-    actual suspend fun listQuestionnaireResponses(): List<QuestionnaireResponse> {
-        return engine().search<QuestionnaireResponse>(Search(ResourceType.QuestionnaireResponse))
-            .map { it.resource }
-    }
+  private fun repository(): FhirRepository = resolveFhirRepository()
 
-    private fun engine(): FhirEngine {
-        val context =
-            checkNotNull(platformContext) {
-                "WorkflowFhirStore has not been initialized with an Android application context."
-            }
-        initialize(context)
-        return checkNotNull(fhirEngine)
-    }
-
-    actual suspend fun saveBundle(bundle: Bundle): List<String?> {
-//        TODO("Not yet implemented")
-        bundle.entry.forEach {
-            it.resource?.let { resource -> engine().create(resource) }
-        }
-
-        return emptyList()
-    }
+  private fun QuestionnaireResponse.withIdIfMissing(): QuestionnaireResponse =
+    if (id.isNullOrBlank()) copy(id = generateUuid()) else this
 }

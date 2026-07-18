@@ -16,5 +16,24 @@
 package dev.ohs.player.reference.app
 
 import androidx.compose.ui.window.ComposeUIViewController
+import dev.ohs.fhir.FhirEngine
+import dev.ohs.fhir.FhirEngineConfiguration
+import dev.ohs.fhir.FhirEngineProvider
+import dev.ohs.player.reference.app.data.di.initKoin
+import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
+import dev.ohs.player.reference.app.data.repository.FhirRepository
+import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
+import org.koin.dsl.module
 
-fun MainViewController() = ComposeUIViewController { App() }
+fun MainViewController() = run {
+  if (FhirEngineProvider.isNotInitialized()) {
+    FhirEngineProvider.init(FhirEngineConfiguration())
+  }
+  initKoin(
+    module {
+      single<FhirEngine> { FhirEngineProvider.getInstance() }
+      single<FhirRepository> { SeededFhirRepository(FhirEngineRepository(get())) }
+    }
+  )
+  ComposeUIViewController { App() }
+}

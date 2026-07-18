@@ -17,8 +17,14 @@ package dev.ohs.player.reference.app
 
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
+import dev.ohs.player.reference.app.data.di.initKoin
+import dev.ohs.player.reference.app.data.repository.FhirRepository
+import dev.ohs.player.reference.app.data.repository.InMemoryFhirRepository
+import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
+import org.koin.dsl.module
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+  initKoin(module { single<FhirRepository> { SeededFhirRepository(InMemoryFhirRepository()) } })
   ComposeViewport { App() }
 }

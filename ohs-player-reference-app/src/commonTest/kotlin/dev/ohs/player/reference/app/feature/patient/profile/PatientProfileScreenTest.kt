@@ -25,11 +25,32 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.runComposeUiTest
 import dev.ohs.player.library.registry.LocalViewRegistry
 import dev.ohs.player.reference.app.buildAppViewRegistry
+import dev.ohs.player.reference.app.data.datasource.loadSampleResourcesBundle
+import dev.ohs.player.reference.app.data.di.repositoryModule
+import dev.ohs.player.reference.app.data.di.viewModelModule
+import dev.ohs.player.reference.app.data.repository.FhirRepository
+import dev.ohs.player.reference.app.data.repository.InMemoryFhirRepository
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
+import kotlinx.coroutines.test.runTest
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 
 @OptIn(ExperimentalTestApi::class)
 class PatientProfileScreenTest {
+  @BeforeTest
+  fun setUp() = runTest {
+    val repository = InMemoryFhirRepository()
+    repository.upsert(loadSampleResourcesBundle())
+    startKoin {
+      modules(module { single<FhirRepository> { repository } }, repositoryModule, viewModelModule)
+    }
+  }
+
+  @AfterTest fun tearDown() = stopKoin()
 
   @Test
   fun knownPatient_rendersNameAndClinicalSections() = runComposeUiTest {

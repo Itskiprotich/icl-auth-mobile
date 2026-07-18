@@ -15,15 +15,15 @@
  */
 package dev.ohs.player.reference.app
 
-import kotlin.uuid.Uuid
 import icl.ohs.libs.auth.IclAuthConfig
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 internal const val REFERENCE_AUTH_BASE_URL = "https://dsrkeycloak.intellisoftkenya.com/auth"
 internal const val REFERENCE_FHIR_BASE_URL = "https://dsrkeycloak.intellisoftkenya.com/auth/fhir/"
 
 internal val REFERENCE_AUTH_CONFIG = IclAuthConfig(baseAuthUrl = REFERENCE_AUTH_BASE_URL)
 
+@OptIn(ExperimentalUuidApi::class) fun generateUuid(): String = Uuid.random().toString()
 
-@OptIn(ExperimentalUuidApi::class)
-fun generateUuid(): String = Uuid.random().toString()
+fun generateId(): String = generateUuid()
