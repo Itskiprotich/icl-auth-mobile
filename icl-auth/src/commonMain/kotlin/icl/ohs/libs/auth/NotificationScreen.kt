@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -101,6 +102,8 @@ private enum class NotificationSortOption(val label: String) {
   DueLatest("Due date latest"),
 }
 
+private data class NotificationCreatedMonthFilter(val key: String, val label: String)
+
 private val NotificationFilterActionIcon: ImageVector by lazy {
   ImageVector.Builder(
       name = "NotificationFilterActionIcon",
@@ -160,6 +163,7 @@ fun NotificationScreen(
   var isOverflowMenuExpanded by rememberSaveable { mutableStateOf(false) }
   var selectedStatusFilter by rememberSaveable { mutableStateOf(ALL_NOTIFICATION_FILTER) }
   var selectedTypeFilter by rememberSaveable { mutableStateOf(ALL_NOTIFICATION_FILTER) }
+  var selectedCreatedMonthFilter by rememberSaveable { mutableStateOf(ALL_NOTIFICATION_FILTER) }
   var selectedSortOptionName by rememberSaveable {
     mutableStateOf(NotificationSortOption.Newest.name)
   }
@@ -191,14 +195,26 @@ fun NotificationScreen(
 
   val statusOptions = notifications.distinctNotificationValues(AuthNotification::status)
   val typeOptions = notifications.distinctNotificationValues(AuthNotification::type)
+  val createdMonthOptions = notifications.distinctCreatedMonthFilters()
   val selectedSortOption =
     NotificationSortOption.entries.firstOrNull { it.name == selectedSortOptionName }
       ?: NotificationSortOption.Newest
+
+  LaunchedEffect(createdMonthOptions, selectedCreatedMonthFilter) {
+    if (
+      selectedCreatedMonthFilter != ALL_NOTIFICATION_FILTER &&
+        createdMonthOptions.none { option -> option.key == selectedCreatedMonthFilter }
+    ) {
+      selectedCreatedMonthFilter = ALL_NOTIFICATION_FILTER
+    }
+  }
+
   val visibleNotifications =
     notifications
       .asSequence()
       .filter { notification ->
         notification.matchesSearch(searchQuery) &&
+          notification.matchesCreatedMonthFilter(selectedCreatedMonthFilter) &&
           notification.matchesFilter(selectedStatusFilter, AuthNotification::status) &&
           notification.matchesFilter(selectedTypeFilter, AuthNotification::type)
       }
@@ -298,6 +314,14 @@ fun NotificationScreen(
             }
           },
         )
+
+        if (createdMonthOptions.isNotEmpty()) {
+          NotificationCreatedMonthFilterRow(
+            options = createdMonthOptions,
+            selectedKey = selectedCreatedMonthFilter,
+            onSelected = { selectedCreatedMonthFilter = it },
+          )
+        }
       }
     },
   ) { innerPadding ->
@@ -383,6 +407,34 @@ fun NotificationScreen(
         isFilterDialogVisible = false
       },
     )
+  }
+}
+
+@Composable
+private fun NotificationCreatedMonthFilterRow(
+  options: List<NotificationCreatedMonthFilter>,
+  selectedKey: String,
+  onSelected: (String) -> Unit,
+) {
+  LazyRow(
+    modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+    contentPadding = PaddingValues(horizontal = 16.dp),
+    horizontalArrangement = Arrangement.spacedBy(8.dp),
+  ) {
+    item(key = ALL_NOTIFICATION_FILTER) {
+      FilterChip(
+        selected = selectedKey == ALL_NOTIFICATION_FILTER,
+        onClick = { onSelected(ALL_NOTIFICATION_FILTER) },
+        label = { Text("All") },
+      )
+    }
+    items(items = options, key = NotificationCreatedMonthFilter::key) { option ->
+      FilterChip(
+        selected = selectedKey == option.key,
+        onClick = { onSelected(option.key) },
+        label = { Text(option.label) },
+      )
+    }
   }
 }
 
@@ -501,20 +553,8 @@ private fun NotificationDetailBlock(notification: AuthNotification) {
       value = notification.caseSubmissionEmailSentAt.toReadableTimestamp(),
     )
     NotificationKeyValueRow(
-      label = "Encounter ID",
-      value = notification.encounterId.displayOrFallback("Not available"),
-    )
-    NotificationKeyValueRow(
-      label = "Practitioner ID",
-      value = notification.practitionerId.displayOrFallback("Not available"),
-    )
-    NotificationKeyValueRow(
       label = "Failure reason",
       value = notification.failureReason.displayOrFallback("Not available"),
-    )
-    NotificationKeyValueRow(
-      label = "Notification ID",
-      value = notification.id.displayOrFallback("Not available"),
     )
   }
 }
@@ -686,7 +726,7 @@ private fun AuthNotification.matchesSearch(query: String): Boolean {
     return true
   }
 
-  return listOf(title, body, type, status, encounterId, practitionerId).any { value ->
+  return listOf(title, body, type, status, failureReason).any { value ->
     value?.lowercase()?.contains(normalizedQuery) == true
   }
 }
@@ -706,6 +746,14 @@ private fun AuthNotification.matchesFilter(
   }
 
   return selector(this)?.trim()?.equals(selectedValue, ignoreCase = true) == true
+}
+
+private fun AuthNotification.matchesCreatedMonthFilter(selectedMonthKey: String): Boolean {
+  if (selectedMonthKey == ALL_NOTIFICATION_FILTER) {
+    return true
+  }
+
+  return createdAt.toCreatedMonthFilter()?.key == selectedMonthKey
 }
 
 private fun Sequence<AuthNotification>.sortedBy(
@@ -777,24 +825,22 @@ private fun String?.toReadableTimestamp(): String {
     runCatching { Instant.parse(value).toLocalDateTime(TimeZone.currentSystemDefault()) }
       .getOrNull() ?: return value.replace('T', ' ').removeSuffix("Z")
 
-  val month =
-    when (localDateTime.month) {
-      kotlinx.datetime.Month.JANUARY -> "Jan"
-      kotlinx.datetime.Month.FEBRUARY -> "Feb"
-      kotlinx.datetime.Month.MARCH -> "Mar"
-      kotlinx.datetime.Month.APRIL -> "Apr"
-      kotlinx.datetime.Month.MAY -> "May"
-      kotlinx.datetime.Month.JUNE -> "Jun"
-      kotlinx.datetime.Month.JULY -> "Jul"
-      kotlinx.datetime.Month.AUGUST -> "Aug"
-      kotlinx.datetime.Month.SEPTEMBER -> "Sep"
-      kotlinx.datetime.Month.OCTOBER -> "Oct"
-      kotlinx.datetime.Month.NOVEMBER -> "Nov"
-      else -> "Dec"
-    }
+  val month = localDateTime.month.toShortMonthName()
   val minute = localDateTime.minute.toString().padStart(2, '0')
   val hour = localDateTime.hour.toString().padStart(2, '0')
   return "${localDateTime.day} $month ${localDateTime.year}, $hour:$minute"
+}
+
+private fun String?.toCreatedMonthFilter(): NotificationCreatedMonthFilter? {
+  val value = trimToMeaningfulValue() ?: return null
+  val localDateTime =
+    runCatching { Instant.parse(value).toLocalDateTime(TimeZone.currentSystemDefault()) }
+      .getOrNull() ?: return null
+  val monthNumber = (localDateTime.month.ordinal + 1).toString().padStart(2, '0')
+  return NotificationCreatedMonthFilter(
+    key = "${localDateTime.year}-$monthNumber",
+    label = "${localDateTime.month.toLongMonthName()} ${localDateTime.year}",
+  )
 }
 
 private fun String?.toRelativeTimestamp(now: Instant = Clock.System.now()): String {
@@ -821,6 +867,44 @@ private fun relativeTimeLabel(value: Long, unit: String, isPast: Boolean): Strin
   val amount = if (value <= 1L) "1 $unit" else "$value ${unit}s"
   return if (isPast) "$amount ago" else "in $amount"
 }
+
+private fun List<AuthNotification>.distinctCreatedMonthFilters():
+  List<NotificationCreatedMonthFilter> =
+  mapNotNull { notification -> notification.createdAt.toCreatedMonthFilter() }
+    .distinctBy(NotificationCreatedMonthFilter::key)
+    .sortedByDescending(NotificationCreatedMonthFilter::key)
+
+private fun kotlinx.datetime.Month.toShortMonthName(): String =
+  when (this) {
+    kotlinx.datetime.Month.JANUARY -> "Jan"
+    kotlinx.datetime.Month.FEBRUARY -> "Feb"
+    kotlinx.datetime.Month.MARCH -> "Mar"
+    kotlinx.datetime.Month.APRIL -> "Apr"
+    kotlinx.datetime.Month.MAY -> "May"
+    kotlinx.datetime.Month.JUNE -> "Jun"
+    kotlinx.datetime.Month.JULY -> "Jul"
+    kotlinx.datetime.Month.AUGUST -> "Aug"
+    kotlinx.datetime.Month.SEPTEMBER -> "Sep"
+    kotlinx.datetime.Month.OCTOBER -> "Oct"
+    kotlinx.datetime.Month.NOVEMBER -> "Nov"
+    kotlinx.datetime.Month.DECEMBER -> "Dec"
+  }
+
+private fun kotlinx.datetime.Month.toLongMonthName(): String =
+  when (this) {
+    kotlinx.datetime.Month.JANUARY -> "January"
+    kotlinx.datetime.Month.FEBRUARY -> "February"
+    kotlinx.datetime.Month.MARCH -> "March"
+    kotlinx.datetime.Month.APRIL -> "April"
+    kotlinx.datetime.Month.MAY -> "May"
+    kotlinx.datetime.Month.JUNE -> "June"
+    kotlinx.datetime.Month.JULY -> "July"
+    kotlinx.datetime.Month.AUGUST -> "August"
+    kotlinx.datetime.Month.SEPTEMBER -> "September"
+    kotlinx.datetime.Month.OCTOBER -> "October"
+    kotlinx.datetime.Month.NOVEMBER -> "November"
+    kotlinx.datetime.Month.DECEMBER -> "December"
+  }
 
 @Composable
 private fun AuthNotification.statusIndicatorColor(): Color =

@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,8 +34,45 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+
+private val RecordListFilterIcon: ImageVector by lazy {
+  ImageVector.Builder(
+      name = "RecordListFilterIcon",
+      defaultWidth = 24.dp,
+      defaultHeight = 24.dp,
+      viewportWidth = 24f,
+      viewportHeight = 24f,
+    )
+    .apply {
+      path(fill = SolidColor(Color.Black), pathFillType = PathFillType.NonZero) {
+        moveTo(4f, 6.5f)
+        lineTo(20f, 6.5f)
+        lineTo(20f, 8.5f)
+        lineTo(4f, 8.5f)
+        close()
+
+        moveTo(7f, 11f)
+        lineTo(17f, 11f)
+        lineTo(17f, 13f)
+        lineTo(7f, 13f)
+        close()
+
+        moveTo(10f, 15.5f)
+        lineTo(14f, 15.5f)
+        lineTo(14f, 17.5f)
+        lineTo(10f, 17.5f)
+        close()
+      }
+    }
+    .build()
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +81,7 @@ fun RecordListTopBar(
   onBack: () -> Unit,
   onFilterClick: () -> Unit,
   filtersActive: Boolean,
-  onMoreClick: () -> Unit = {},
+  onMoreClick: (() -> Unit)? = null,
 ) {
   TopAppBar(
     title = {
@@ -59,7 +95,7 @@ fun RecordListTopBar(
     actions = {
       Box {
         IconButton(onClick = onFilterClick) {
-          Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "Filter cases")
+          Icon(imageVector = RecordListFilterIcon, contentDescription = "Filter cases")
         }
 
         if (filtersActive) {
@@ -74,8 +110,10 @@ fun RecordListTopBar(
         }
       }
 
-      IconButton(onClick = onMoreClick) {
-        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More options")
+      onMoreClick?.let { moreClick ->
+        IconButton(onClick = moreClick) {
+          Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More options")
+        }
       }
     },
     colors =
