@@ -219,6 +219,9 @@ private fun WorkflowCaseDetailsContent(
 
 @Composable
 private fun WorkflowCaseOverviewCard(details: WorkflowCaseDetails, modifier: Modifier = Modifier) {
+  val overviewTitle = details.patientName.ifBlank { details.title.ifBlank { details.caseLabel } }
+  val epidemicNumber = details.epidemicNumber.orEmpty()
+
   Card(
     modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
     shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
@@ -231,7 +234,7 @@ private fun WorkflowCaseOverviewCard(details: WorkflowCaseDetails, modifier: Mod
       verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
       Text(
-        text = details.patientName,
+        text = overviewTitle,
         style = MaterialTheme.typography.headlineMedium,
         color = MaterialTheme.colorScheme.onSurface,
         fontWeight = FontWeight.Bold,
@@ -242,14 +245,16 @@ private fun WorkflowCaseOverviewCard(details: WorkflowCaseDetails, modifier: Mod
           label = "Case",
           value = details.caseLabel,
           icon = Icons.Default.Info,
-          modifier = Modifier.weight(1.3f),
+          modifier = Modifier.weight(if (epidemicNumber.isBlank()) 1f else 1.3f),
         )
-        OverviewStatCard(
-          label = "EPID No",
-          value = details.epidemicNumber.orEmpty(),
-          icon = Icons.Default.Search,
-          modifier = Modifier.weight(1f),
-        )
+        if (epidemicNumber.isNotBlank()) {
+          OverviewStatCard(
+            label = "EPID No",
+            value = epidemicNumber,
+            icon = Icons.Default.Search,
+            modifier = Modifier.weight(1f),
+          )
+        }
       }
     }
   }

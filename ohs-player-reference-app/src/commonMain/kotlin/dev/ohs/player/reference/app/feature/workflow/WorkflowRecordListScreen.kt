@@ -761,6 +761,10 @@ private fun WorkflowRecord.matchesFilter(filter: RecordFilterSelection?): Boolea
   filter == null || fieldValue(filter.label).equals(filter.value, ignoreCase = true)
 
 private fun WorkflowRecord.cardLayout(): WorkflowCaseCardLayout {
+  if (references?.questionnaireResource == MPOX_SUPERVISORY_CHECKLIST_RESOURCE) {
+    return supervisoryChecklistCardLayout()
+  }
+
   val titleValue =
     fieldValue("Name", "Patient Name", "Case Name", "Client Name")
       ?.takeIf(String::isNotBlank)
@@ -781,6 +785,27 @@ private fun WorkflowRecord.cardLayout(): WorkflowCaseCardLayout {
     titleLabel = "Patient Name",
     titleValue = titleValue,
     badge = null,
+    rows = detailFields.chunked(2).map { row -> row.first() to row.getOrNull(1) },
+  )
+}
+
+private fun WorkflowRecord.supervisoryChecklistCardLayout(): WorkflowCaseCardLayout {
+  val detailFields =
+    SUPERVISORY_CHECKLIST_FIELD_SPECS.map { spec ->
+      WorkflowCaseCardField(
+        label = spec.label,
+        value = fieldValue(*spec.aliases.toTypedArray()).orEmpty(),
+      )
+    }
+
+  return WorkflowCaseCardLayout(
+    titleLabel = "County",
+    titleValue = fieldValue("County", "User County").orEmpty(),
+    badge =
+      WorkflowCaseCardField(
+        label = "Sub County",
+        value = fieldValue("Sub County", "User Sub County").orEmpty(),
+      ),
     rows = detailFields.chunked(2).map { row -> row.first() to row.getOrNull(1) },
   )
 }
@@ -854,6 +879,23 @@ private val CASE_LIST_FIELD_SPECS =
     WorkflowCaseCardFieldSpec(
       label = "Final Classification",
       aliases = listOf("Final Classification", "Classification"),
+    ),
+  )
+
+private val SUPERVISORY_CHECKLIST_FIELD_SPECS =
+  listOf(
+    WorkflowCaseCardFieldSpec(label = "Date", aliases = listOf("Date")),
+    WorkflowCaseCardFieldSpec(
+      label = "Site name",
+      aliases = listOf("Vaccination Site Name", "Site Name"),
+    ),
+    WorkflowCaseCardFieldSpec(
+      label = "Site type",
+      aliases = listOf("Vaccination Site Type", "Site Type"),
+    ),
+    WorkflowCaseCardFieldSpec(
+      label = "Supervisor name",
+      aliases = listOf("Supervisor Name"),
     ),
   )
 

@@ -81,8 +81,11 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 
 @Composable
 internal fun QuestionnaireHostScreen(
@@ -211,6 +214,14 @@ internal fun QuestionnaireHostScreen(
                           }
 
                         val response = getResponse()
+                        if (resource == MPOX_SUPERVISORY_CHECKLIST_RESOURCE) {
+                          saveWorkflowQuestionnaireResponse(
+                            prepareSupervisorChecklistResponse(response = response, resource = resource)
+                          )
+                          submissionSuccessMessage = "Checklist saved successfully."
+                          return@launch
+                        }
+
                         saveWorkflowQuestionnaireResponse(
                           response.copy(
                             questionnaire = Canonical(value = resource),
@@ -459,6 +470,106 @@ private fun postProcessExtractedBundle(
 }
 
 private fun String?.orGeneratedId(): String = this?.takeIf(String::isNotBlank) ?: generateUuid()
+
+private fun prepareSupervisorChecklistResponse(
+  response: dev.ohs.fhir.model.r4.QuestionnaireResponse,
+  resource: String,
+): dev.ohs.fhir.model.r4.QuestionnaireResponse {
+  val fhirJson = FhirJson.instance
+  val timestamp = Clock.System.now().toString()
+  val responseJson =
+    fhirJson.encodeToJsonElement(
+      dev.ohs.fhir.model.r4.QuestionnaireResponse.serializer(),
+      response,
+    )
+      .jsonObject
+  val updatedResponse = responseJson.toMutableMap()
+  val existingExtensions =
+    responseJson["extension"]?.jsonArray?.toMutableList() ?: mutableListOf()
+
+  existingExtensions.add(
+    buildJsonObject {
+      put(
+        "url",
+        JsonPrimitive("http://github.com/google-android/questionnaire-lastLaunched-timestamp"),
+      )
+      put("valueDateTime", JsonPrimitive(timestamp))
+    }
+  )
+  existingExtensions.add(
+    buildJsonObject {
+      put("url", JsonPrimitive("supervisor_checklist"))
+      put("valueIdentifier", supervisorChecklistIdentifierJson())
+    }
+  )
+
+  updatedResponse["questionnaire"] = JsonPrimitive(resource)
+  updatedResponse["status"] = JsonPrimitive("in-progress")
+  updatedResponse["identifier"] = supervisorChecklistGeoLocationIdentifierJson()
+  updatedResponse["extension"] = JsonArray(existingExtensions)
+
+  if (responseJson["authored"] == null) {
+    updatedResponse["authored"] = JsonPrimitive(timestamp)
+  }
+
+  return fhirJson.decodeFromJsonElement(
+    dev.ohs.fhir.model.r4.QuestionnaireResponse.serializer(),
+    JsonObject(updatedResponse),
+  )
+}
+
+private fun supervisorChecklistIdentifierJson(): JsonObject =
+  buildJsonObject {
+    put("use", JsonPrimitive("official"))
+    put(
+      "type",
+      buildJsonObject {
+        put(
+          "coding",
+          JsonArray(
+            listOf(
+              buildJsonObject {
+                put("system", JsonPrimitive("supervisor_checklist"))
+                put("code", JsonPrimitive("supervisor_checklist"))
+                put("display", JsonPrimitive("Supervisor Checklist"))
+              }
+            )
+          ),
+        )
+        put("text", JsonPrimitive("Supervisor Checklist"))
+      },
+    )
+    put("system", JsonPrimitive("supervisor_checklist"))
+    put("value", JsonPrimitive("supervisor_checklist"))
+  }
+
+private fun supervisorChecklistGeoLocationIdentifierJson(): JsonObject =
+  buildJsonObject {
+    put("use", JsonPrimitive("official"))
+    put(
+      "type",
+      buildJsonObject {
+        put(
+          "coding",
+          JsonArray(
+            listOf(
+              buildJsonObject {
+                put("system", JsonPrimitive("geo-location-details"))
+                put("code", JsonPrimitive("geo-location"))
+                put(
+                  "display",
+                  JsonPrimitive("Latitude: -4.0206585, Longitude: 39.6799808"),
+                )
+              }
+            )
+          ),
+        )
+        put("text", JsonPrimitive("Latitude: -4.0206585, Longitude: 39.6799808"))
+      },
+    )
+    put("system", JsonPrimitive("geo-location-details"))
+    put("value", JsonPrimitive("lat:-4.0206585,lon:39.6799808"))
+  }
 
 private fun Observation.primaryCode(): String? =
   code.coding.firstOrNull()?.code?.value ?: code.text?.value

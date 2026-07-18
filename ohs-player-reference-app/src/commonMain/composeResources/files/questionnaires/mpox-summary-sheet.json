@@ -1,0 +1,12 @@
+{
+  "resourceType": "Questionnaire",
+  "status": "active",
+  "title": "Mpox Summary Sheet",
+  "item": [
+    {
+      "linkId": "placeholder-note",
+      "type": "display",
+      "text": "Temporary placeholder for the Mpox Summary Sheet questionnaire. Replace this file with the approved questionnaire when it is available."
+    }
+  ]
+}

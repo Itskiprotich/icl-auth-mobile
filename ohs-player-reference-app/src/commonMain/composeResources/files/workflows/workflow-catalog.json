@@ -131,9 +131,197 @@
         {
           "id": "mass-immunization-home",
           "title": "Mass Immunization",
-          "subtitle": "Forms for this workflow will appear here.",
+          "subtitle": "Select an immunization workflow to proceed.",
           "sectionTitle": "Available Forms",
           "layout": "grid",
+          "items": [
+            {
+              "id": "mpox-immunization",
+              "title": "Mpox Immunization",
+              "description": "Open Mpox campaign registers, summaries, and supervision tools.",
+              "icon": "warning",
+              "destinationNodeId": "mpox-immunization"
+            },
+            {
+              "id": "polio-immunization",
+              "title": "Polio Immunization",
+              "description": "Manage Polio immunization tools and reporting workflows.",
+              "icon": "info",
+              "destinationNodeId": "polio-immunization"
+            },
+            {
+              "id": "measles-immunization",
+              "title": "Measles Immunization",
+              "description": "Open Measles immunization campaign workflows and summaries.",
+              "icon": "favorite",
+              "destinationNodeId": "measles-immunization"
+            },
+            {
+              "id": "cholera-immunization",
+              "title": "Cholera Immunization",
+              "description": "Manage Cholera immunization registers, summaries, and field tools.",
+              "icon": "person",
+              "destinationNodeId": "cholera-immunization"
+            }
+          ]
+        },
+        {
+          "id": "mpox-immunization",
+          "title": "Mpox Immunization",
+          "subtitle": "Select a campaign tool",
+          "sectionTitle": "Mpox Actions",
+          "layout": "grid",
+          "items": [
+            {
+              "id": "mpox-register",
+              "title": "Mpox Register",
+              "description": "Open the Mpox immunization register workflow.",
+              "icon": "add",
+              "destinationNodeId": "mpox-register-actions"
+            },
+            {
+              "id": "mpox-summary-sheet",
+              "title": "Summary Sheet",
+              "description": "Open the Mpox summary sheet workflow.",
+              "icon": "info",
+              "destinationNodeId": "mpox-summary-sheet-actions"
+            },
+            {
+              "id": "mpox-supervisory-checklist",
+              "title": "Supervisory Checklist",
+              "description": "Open the Mpox supportive supervision checklist workflow.",
+              "icon": "check_circle",
+              "destinationNodeId": "mpox-supervisory-checklist-actions"
+            }
+          ]
+        },
+        {
+          "id": "mpox-register-actions",
+          "title": "Mpox Register",
+          "subtitle": "Select an action",
+          "sectionTitle": "Register Actions",
+          "layout": "actions",
+          "items": [
+            {
+              "id": "add-new-mpox-register",
+              "title": "Add New Mpox Register",
+              "description": "Capture a new Mpox immunization register entry.",
+              "icon": "add",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/mpox-register.json",
+                "title": "Mpox Register",
+                "subtitle": "Capture Mpox immunization register information.",
+                "primaryActionLabel": "Save Register"
+              }
+            },
+            {
+              "id": "mpox-register-list",
+              "title": "Mpox Register List",
+              "description": "Browse and review saved Mpox register entries.",
+              "icon": "person",
+              "action": {
+                "type": "record_list",
+                "resource": "questionnaires/mpox-register.json",
+                "title": "Mpox Register List",
+                "subtitle": "Track saved Mpox immunization register entries."
+              },
+              "trailingLabel": "Entries"
+            }
+          ]
+        },
+        {
+          "id": "mpox-summary-sheet-actions",
+          "title": "Summary Sheet",
+          "subtitle": "Select an action",
+          "sectionTitle": "Summary Actions",
+          "layout": "actions",
+          "items": [
+            {
+              "id": "add-new-mpox-summary-sheet",
+              "title": "Add New Summary Sheet",
+              "description": "Capture a new Mpox summary sheet submission.",
+              "icon": "add",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/mpox-summary-sheet.json",
+                "title": "Mpox Summary Sheet",
+                "subtitle": "Capture aggregated Mpox immunization summary data.",
+                "primaryActionLabel": "Save Summary"
+              }
+            },
+            {
+              "id": "mpox-summary-sheet-list",
+              "title": "Summary Sheet List",
+              "description": "Browse and review saved Mpox summary sheet submissions.",
+              "icon": "person",
+              "action": {
+                "type": "record_list",
+                "resource": "questionnaires/mpox-summary-sheet.json",
+                "title": "Mpox Summary Sheet List",
+                "subtitle": "Track saved Mpox campaign summary sheets."
+              },
+              "trailingLabel": "Entries"
+            }
+          ]
+        },
+        {
+          "id": "mpox-supervisory-checklist-actions",
+          "title": "Supervisory Checklist",
+          "subtitle": "Select an action",
+          "sectionTitle": "Checklist Actions",
+          "layout": "actions",
+          "items": [
+            {
+              "id": "add-new-mpox-supervisory-checklist",
+              "title": "Add New Supervisory Checklist",
+              "description": "Capture a new Mpox supervisory checklist submission.",
+              "icon": "add",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/mpox-supervisory-checklist.json",
+                "title": "Mpox Supervisory Checklist",
+                "subtitle": "Capture supervision findings for the Mpox campaign.",
+                "primaryActionLabel": "Save Checklist"
+              }
+            },
+            {
+              "id": "mpox-supervisory-checklist-list",
+              "title": "Supervisory Checklist List",
+              "description": "Browse and review saved Mpox supervisory checklist submissions.",
+              "icon": "person",
+              "action": {
+                "type": "record_list",
+                "resource": "questionnaires/mpox-supervisory-checklist.json",
+                "title": "Mpox Supervisory Checklist List",
+                "subtitle": "Track saved Mpox supervisory checklist submissions."
+              },
+              "trailingLabel": "Entries"
+            }
+          ]
+        },
+        {
+          "id": "polio-immunization",
+          "title": "Polio Immunization",
+          "subtitle": "Polio immunization workflows will appear here.",
+          "sectionTitle": "Polio Actions",
+          "layout": "actions",
+          "items": []
+        },
+        {
+          "id": "measles-immunization",
+          "title": "Measles Immunization",
+          "subtitle": "Measles immunization workflows will appear here.",
+          "sectionTitle": "Measles Actions",
+          "layout": "actions",
+          "items": []
+        },
+        {
+          "id": "cholera-immunization",
+          "title": "Cholera Immunization",
+          "subtitle": "Cholera immunization workflows will appear here.",
+          "sectionTitle": "Cholera Actions",
+          "layout": "actions",
           "items": []
         }
       ]
