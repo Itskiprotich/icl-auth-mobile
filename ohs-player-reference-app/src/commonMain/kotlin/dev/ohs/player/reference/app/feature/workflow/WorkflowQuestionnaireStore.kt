@@ -16,19 +16,17 @@
 package dev.ohs.player.reference.app.feature.workflow
 
 import dev.ohs.fhir.model.r4.Questionnaire
-import iclauth.ohs_player_reference_app.generated.resources.Res
 import icl.ohs.libs.auth.IclAuth
 import icl.ohs.libs.auth.ProviderLocationInfo
 import icl.ohs.libs.auth.ProviderUser
+import iclauth.ohs_player_reference_app.generated.resources.Res
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -39,10 +37,14 @@ object WorkflowQuestionnaireStore {
   private val cachedRawQuestionnaireJson = mutableMapOf<String, String>()
   private val cachedQuestionnaires = mutableMapOf<String, Questionnaire>()
 
-  suspend fun questionnaireJson(resource: String): String =
+  internal suspend fun questionnaireJson(
+    resource: String,
+    initialValues: Map<String, WorkflowQuestionnaireInitialValue> = emptyMap(),
+  ): String =
     personalizeQuestionnaireJson(
       questionnaireJson = rawQuestionnaireJson(resource),
-      providerUser = IclAuth.currentProviderUser(),
+      initialValues =
+        IclAuth.currentProviderUser().toHiddenQuestionnaireInitialValues() + initialValues,
     )
 
   suspend fun questionnaire(resource: String): Questionnaire =
@@ -70,9 +72,8 @@ object WorkflowQuestionnaireStore {
 
 internal fun personalizeQuestionnaireJson(
   questionnaireJson: String,
-  providerUser: ProviderUser?,
+  initialValues: Map<String, WorkflowQuestionnaireInitialValue>,
 ): String {
-  val initialValues = providerUser.toHiddenQuestionnaireInitialValues()
   if (initialValues.isEmpty()) {
     return questionnaireJson
   }
@@ -87,7 +88,8 @@ internal fun personalizeQuestionnaireJson(
   }
 }
 
-internal fun ProviderUser?.toHiddenQuestionnaireInitialValues(): Map<String, String> {
+internal fun ProviderUser?.toHiddenQuestionnaireInitialValues():
+  Map<String, WorkflowQuestionnaireInitialValue> {
   if (this == null) {
     return emptyMap()
   }
@@ -102,7 +104,7 @@ internal fun ProviderUser?.toHiddenQuestionnaireInitialValues(): Map<String, Str
 }
 
 private fun JsonElement.injectQuestionnaireInitialValues(
-  initialValues: Map<String, String>,
+  initialValues: Map<String, WorkflowQuestionnaireInitialValue>
 ): JsonElement =
   when (this) {
     is JsonArray -> JsonArray(map { it.injectQuestionnaireInitialValues(initialValues) })
@@ -123,27 +125,26 @@ private fun JsonElement.injectQuestionnaireInitialValues(
         JsonObject(updatedEntries)
       } else {
         JsonObject(
-          updatedEntries +
-            (
-              "initial" to
-                buildJsonArray {
-                  add(buildJsonObject { put("valueString", JsonPrimitive(initialValue)) })
-                }
-              ),
+          updatedEntries + ("initial" to buildJsonArray { add(initialValue.toJsonObject()) })
         )
       }
     }
     else -> this
   }
 
-private fun MutableMap<String, String>.putIfNotBlank(linkId: String, value: String?) {
-  value?.trim()?.takeIf(String::isNotBlank)?.let { put(linkId, it) }
+private fun MutableMap<String, WorkflowQuestionnaireInitialValue>.putIfNotBlank(
+  linkId: String,
+  value: String?,
+) {
+  value?.trim()?.takeIf(String::isNotBlank)?.let { put(linkId, workflowStringInitialValue(it)) }
 }
 
 private fun ProviderLocationInfo?.putIfNotBlank(
-  target: MutableMap<String, String>,
+  target: MutableMap<String, WorkflowQuestionnaireInitialValue>,
   linkId: String,
   selector: ProviderLocationInfo.() -> String?,
 ) {
-  this?.selector()?.trim()?.takeIf(String::isNotBlank)?.let { target[linkId] = it }
+  this?.selector()?.trim()?.takeIf(String::isNotBlank)?.let {
+    target[linkId] = workflowStringInitialValue(it)
+  }
 }

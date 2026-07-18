@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.ohs.player.reference.app.components.ReferenceAppLoader
 
 @Composable
 fun WorkflowActionHostScreen(
@@ -39,6 +39,7 @@ fun WorkflowActionHostScreen(
   nodeId: String,
   itemId: String,
   onBack: () -> Unit,
+  onRecordClick: (WorkflowRecord) -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
   val screenState by
@@ -72,10 +73,10 @@ fun WorkflowActionHostScreen(
 
   when (val state = screenState) {
     WorkflowActionState.Loading ->
-      ReferenceAppLoader(
-        message = "Preparing workflow action",
-        subtitle = "Fetching the next screen for this workflow.",
-        modifier = modifier,
+      CircularProgressIndicator(
+        strokeWidth = 4.dp,
+        color = MaterialTheme.colorScheme.primary,
+        trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
       )
     is WorkflowActionState.Missing ->
       Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -117,6 +118,7 @@ fun WorkflowActionHostScreen(
             subtitle = state.subtitle,
             resource = state.action.resource,
             onBack = onBack,
+            onRecordClick = onRecordClick,
             modifier = modifier,
           )
       }

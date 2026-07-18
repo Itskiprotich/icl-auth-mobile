@@ -16,12 +16,20 @@
 package dev.ohs.player.reference.app.data
 
 internal fun patientIdFromReference(reference: String?): String? {
+  return resourceIdFromReference(reference, resourceType = "Patient")
+}
+
+internal fun encounterIdFromReference(reference: String?): String? {
+  return resourceIdFromReference(reference, resourceType = "Encounter")
+}
+
+internal fun resourceIdFromReference(reference: String?, resourceType: String): String? {
   val value = reference?.trim().orEmpty()
   if (value.isBlank()) return null
 
   val patientSegment =
-    if ("Patient/" in value) {
-      value.substringAfter("Patient/")
+    if ("$resourceType/" in value) {
+      value.substringAfter("$resourceType/")
     } else {
       value.substringAfterLast('/')
     }

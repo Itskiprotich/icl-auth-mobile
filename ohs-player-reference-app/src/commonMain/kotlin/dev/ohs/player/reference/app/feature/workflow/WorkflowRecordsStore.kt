@@ -17,6 +17,8 @@ package dev.ohs.player.reference.app.feature.workflow
 
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.QuestionnaireResponse
+import dev.ohs.player.reference.app.data.encounterIdFromReference
+import dev.ohs.player.reference.app.data.patientIdFromReference
 import dev.ohs.player.reference.app.data.repository.FhirRepository
 import dev.ohs.player.reference.app.data.repository.resolveFhirRepository
 import dev.ohs.player.reference.app.generateUuid
@@ -50,9 +52,19 @@ data class WorkflowRecord(
   val statusTone: WorkflowRecordTone = WorkflowRecordTone.INFO,
   val meta: List<String> = emptyList(),
   val fields: List<WorkflowRecordField> = emptyList(),
+  val references: WorkflowRecordReferences? = null,
 )
 
 @Serializable data class WorkflowRecordField(val label: String, val value: String)
+
+@Serializable
+data class WorkflowRecordReferences(
+  val questionnaireResponseId: String? = null,
+  val patientId: String? = null,
+  val encounterId: String? = null,
+  val questionnaireResource: String? = null,
+  val recordResource: String? = null,
+)
 
 @Serializable
 enum class WorkflowRecordTone {
@@ -84,16 +96,22 @@ internal suspend fun loadWorkflowRecordCollection(
   title: String,
   subtitle: String,
 ): WorkflowRecordCollection =
-  buildStoredResponseCollection(
-    title = title,
-    subtitle = subtitle,
-    responses = listWorkflowQuestionnaireResponses(resource),
-  )
+  if (resource.startsWith("records/")) {
+    loadWorkflowCaseRecordCollection(resource = resource, title = title, subtitle = subtitle)
+  } else {
+    buildStoredResponseCollection(
+      resource = resource,
+      title = title,
+      subtitle = subtitle,
+      responses = listWorkflowQuestionnaireResponses(resource),
+    )
+  }
 
 internal suspend fun loadWorkflowRecordCount(resource: String): Int =
   listWorkflowQuestionnaireResponses(resource).size
 
 internal fun buildStoredResponseCollection(
+  resource: String? = null,
   title: String,
   subtitle: String,
   responses: List<QuestionnaireResponse>,
@@ -104,10 +122,13 @@ internal fun buildStoredResponseCollection(
     subtitle = subtitle.ifBlank { "Locally saved case records" },
     emptyMessage = "No locally saved cases are available yet.",
     pageSize = 10,
-    records = responses.sortedByDescending { it.authoredText() }.map { it.toWorkflowRecord() },
+    records =
+      responses.sortedByDescending { it.authoredText() }.map { it.toWorkflowRecord(resource) },
   )
 
-internal fun QuestionnaireResponse.toWorkflowRecord(): WorkflowRecord {
+internal fun QuestionnaireResponse.toWorkflowRecord(
+  recordResource: String? = null
+): WorkflowRecord {
   val resource =
     workflowResponseJson.encodeToJsonElement(QuestionnaireResponse.serializer(), this).jsonObject
   val fields = buildList { resource.responseItems().collectWorkflowFields(this) }
@@ -137,6 +158,14 @@ internal fun QuestionnaireResponse.toWorkflowRecord(): WorkflowRecord {
         questionnaireLabel?.takeIf(String::isNotBlank)?.let { "Questionnaire: $it" },
       ),
     fields = fields,
+    references =
+      WorkflowRecordReferences(
+        questionnaireResponseId = id,
+        patientId = patientIdFromReference(subject?.reference?.value),
+        encounterId = encounterIdFromReference(encounter?.reference?.value),
+        questionnaireResource = questionnaireReferenceValue()?.toQuestionnaireResource(),
+        recordResource = recordResource,
+      ),
   )
 }
 
@@ -145,8 +174,12 @@ private suspend fun listWorkflowQuestionnaireResponses(
 ): List<QuestionnaireResponse> {
   val responses =
     workflowRepository().all("QuestionnaireResponse").filterIsInstance<QuestionnaireResponse>()
-  val filtered = responses.filter { it.matchesRecordResource(resource) }
-  return filtered.ifEmpty { responses }
+
+  if (resource.startsWith("records/")) {
+    return responses.filter { it.matchesCaseRecordResource(resource) }
+  }
+
+  return responses.filter { it.matchesRecordResource(resource) }
 }
 
 private fun workflowRepository(): FhirRepository = resolveFhirRepository()
@@ -155,14 +188,22 @@ private fun QuestionnaireResponse.withIdIfMissing(): QuestionnaireResponse =
   if (id.isNullOrBlank()) copy(id = generateUuid()) else this
 
 private fun QuestionnaireResponse.matchesRecordResource(resource: String): Boolean =
-  when (resource) {
-    "records/measles-cases.json" -> {
-      val questionnaire = questionnaireReferenceValue().orEmpty()
-      questionnaire.contains("measles", ignoreCase = true) ||
-        questionnaire.contains("add-case", ignoreCase = true)
-    }
-    else -> true
-  }
+  WorkflowCasePresentationRegistry.matchesRecordResource(
+    resource = resource,
+    questionnaireResource = questionnaireReferenceValue()?.toQuestionnaireResource(),
+    questionnaireReference = questionnaireReferenceValue(),
+  )
+
+private fun QuestionnaireResponse.matchesCaseRecordResource(resource: String): Boolean {
+  val responseJson =
+    workflowResponseJson.encodeToJsonElement(QuestionnaireResponse.serializer(), this).jsonObject
+  return WorkflowCasePresentationRegistry.matchesRecordResponse(
+    resource = resource,
+    questionnaireResource = questionnaireReferenceValue()?.toQuestionnaireResource(),
+    questionnaireReference = questionnaireReferenceValue(),
+    answeredLinkIds = responseJson.answeredLinkIds(),
+  )
+}
 
 private fun QuestionnaireResponse.authoredText(): String? =
   workflowResponseJson
@@ -181,6 +222,24 @@ private fun JsonObject.responseItems(): JsonArray =
   this["item"]?.jsonArray ?: JsonArray(emptyList())
 
 private fun JsonObject.authoredText(): String? = this["authored"]?.jsonPrimitive?.contentOrNull
+
+private fun JsonObject.answeredLinkIds(): Set<String> {
+  val linkIds = linkedSetOf<String>()
+
+  fun collect(items: JsonArray) {
+    for (element in items) {
+      val item = element.jsonObject
+      val linkId = item["linkId"]?.jsonPrimitive?.contentOrNull
+      if (!linkId.isNullOrBlank() && item["answer"]?.jsonArray?.isNotEmpty() == true) {
+        linkIds += linkId
+      }
+      collect(item["item"]?.jsonArray ?: JsonArray(emptyList()))
+    }
+  }
+
+  collect(responseItems())
+  return linkIds
+}
 
 private fun JsonObject.questionnaireLabel(): String? =
   this["questionnaire"]?.jsonPrimitive?.contentOrNull?.substringAfterLast('/')?.toWorkflowTitle()
@@ -275,4 +334,27 @@ private fun String.toWorkflowTitle(): String =
   replace('-', ' ').replace('_', ' ').split(' ').filter(String::isNotBlank).joinToString(" ") {
     token ->
     token.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+  }
+
+internal fun String.toQuestionnaireResource(): String? =
+  trim()
+    .takeIf(String::isNotBlank)
+    ?.substringBefore('?')
+    ?.substringBefore('#')
+    ?.substringAfterLast('/')
+    ?.takeIf(String::isNotBlank)
+    ?.let { fileName ->
+      val normalizedFileName = fileName.toCanonicalQuestionnaireFileName()
+      if (normalizedFileName.endsWith(".json", ignoreCase = true)) {
+        "questionnaires/$normalizedFileName"
+      } else {
+        "questionnaires/$normalizedFileName.json"
+      }
+    }
+
+private fun String.toCanonicalQuestionnaireFileName(): String =
+  when (trim().lowercase().removeSuffix(".json")) {
+    "add-case",
+    "measles-case-intake" -> "measles-case.json"
+    else -> trim()
   }

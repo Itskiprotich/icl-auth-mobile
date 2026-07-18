@@ -15,7 +15,12 @@
  */
 package dev.ohs.player.reference.app.feature.workflow.models
 
-data class RecordFilters(val county: String? = null, val subCounty: String? = null) {
+data class RecordFilters(
+  val primary: RecordFilterSelection? = null,
+  val secondary: RecordFilterSelection? = null,
+) {
   val isActive: Boolean
-    get() = county != null || subCounty != null
+    get() = primary != null || secondary != null
 }
+
+data class RecordFilterSelection(val label: String, val value: String)

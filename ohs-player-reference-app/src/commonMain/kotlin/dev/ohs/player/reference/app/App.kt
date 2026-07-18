@@ -65,6 +65,8 @@ import dev.ohs.player.reference.app.feature.home.ProfileScreen
 import dev.ohs.player.reference.app.feature.patient.profile.PatientProfileScreen
 import dev.ohs.player.reference.app.feature.workflow.DefaultWorkflowCatalog
 import dev.ohs.player.reference.app.feature.workflow.WorkflowActionHostScreen
+import dev.ohs.player.reference.app.feature.workflow.WorkflowCaseDetailsScreen
+import dev.ohs.player.reference.app.feature.workflow.WorkflowCaseTabActionHostScreen
 import dev.ohs.player.reference.app.feature.workflow.WorkflowCatalogStore
 import dev.ohs.player.reference.app.feature.workflow.WorkflowModuleScreen
 import dev.ohs.player.reference.app.feature.workflow.toCardSpec
@@ -81,6 +83,8 @@ private const val CASE_MANAGEMENT_ROUTE = "workflow/case-management"
 private const val WORKFLOW_MODULE_ROUTE = "workflow/module"
 private const val WORKFLOW_NODE_ROUTE = "workflow/node"
 private const val WORKFLOW_ACTION_ROUTE = "workflow/action"
+private const val WORKFLOW_CASE_DETAILS_ROUTE = "workflow/case-details"
+private const val WORKFLOW_CASE_TAB_ACTION_ROUTE = "workflow/case-tab-action"
 private const val GROUP_PROFILE_ROUTE = "groupProfile"
 private const val PATIENT_PROFILE_ROUTE = "patientProfile"
 private const val GROUP_ID_ARG = "groupId"
@@ -88,6 +92,8 @@ private const val PATIENT_ID_ARG = "patientId"
 private const val WORKFLOW_MODULE_ID_ARG = "workflowModuleId"
 private const val WORKFLOW_NODE_ID_ARG = "workflowNodeId"
 private const val WORKFLOW_ITEM_ID_ARG = "workflowItemId"
+private const val WORKFLOW_RECORD_ID_ARG = "workflowRecordId"
+private const val WORKFLOW_CASE_TAB_ID_ARG = "workflowCaseTabId"
 private val CHANGE_PASSWORD_SCREEN_CONFIG = SetNewPasswordScreenConfig(showFooter = false)
 private val bottomBarRoutes = setOf(HOME_ROUTE, PROFILE_ROUTE)
 
@@ -261,6 +267,47 @@ private fun ReferenceAppNavigation(onLogout: () -> Unit) {
           moduleId = moduleId,
           nodeId = nodeId,
           itemId = itemId,
+          onBack = { navController.popBackStack() },
+          onRecordClick = { record ->
+            record.references?.questionnaireResponseId?.let { recordId ->
+              navController.navigate("$WORKFLOW_CASE_DETAILS_ROUTE/$recordId")
+            }
+          },
+        )
+      }
+
+      composable(
+        route = "$WORKFLOW_CASE_DETAILS_ROUTE/{$WORKFLOW_RECORD_ID_ARG}",
+        arguments = listOf(navArgument(WORKFLOW_RECORD_ID_ARG) { type = NavType.StringType }),
+      ) { back ->
+        val questionnaireResponseId =
+          back.arguments?.read { getString(WORKFLOW_RECORD_ID_ARG) }.orEmpty()
+        WorkflowCaseDetailsScreen(
+          questionnaireResponseId = questionnaireResponseId,
+          onBack = { navController.popBackStack() },
+          onTabActionClick = { request ->
+            navController.navigate(
+              "$WORKFLOW_CASE_TAB_ACTION_ROUTE/${request.questionnaireResponseId}/${request.tabId}"
+            )
+          },
+        )
+      }
+
+      composable(
+        route =
+          "$WORKFLOW_CASE_TAB_ACTION_ROUTE/{$WORKFLOW_RECORD_ID_ARG}/{$WORKFLOW_CASE_TAB_ID_ARG}",
+        arguments =
+          listOf(
+            navArgument(WORKFLOW_RECORD_ID_ARG) { type = NavType.StringType },
+            navArgument(WORKFLOW_CASE_TAB_ID_ARG) { type = NavType.StringType },
+          ),
+      ) { back ->
+        val questionnaireResponseId =
+          back.arguments?.read { getString(WORKFLOW_RECORD_ID_ARG) }.orEmpty()
+        val tabId = back.arguments?.read { getString(WORKFLOW_CASE_TAB_ID_ARG) }.orEmpty()
+        WorkflowCaseTabActionHostScreen(
+          questionnaireResponseId = questionnaireResponseId,
+          tabId = tabId,
           onBack = { navController.popBackStack() },
         )
       }

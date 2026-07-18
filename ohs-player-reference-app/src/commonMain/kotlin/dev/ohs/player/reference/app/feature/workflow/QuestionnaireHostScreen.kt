@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +55,11 @@ import androidx.compose.ui.unit.dp
 import dev.ohs.fhir.datacapture.Questionnaire as DataCaptureQuestionnaire
 import dev.ohs.fhir.datacapture.QuestionnaireConfig
 import dev.ohs.fhir.datacapture.extraction.template.TemplateExtractionEngine
+import dev.ohs.fhir.model.r4.Bundle
+import dev.ohs.fhir.model.r4.Canonical
+import dev.ohs.fhir.model.r4.Code
+import dev.ohs.fhir.model.r4.CodeableConcept
+import dev.ohs.fhir.model.r4.Coding
 import dev.ohs.fhir.model.r4.Condition
 import dev.ohs.fhir.model.r4.Encounter
 import dev.ohs.fhir.model.r4.Observation
@@ -62,7 +68,7 @@ import dev.ohs.fhir.model.r4.Questionnaire
 import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Specimen
 import dev.ohs.fhir.model.r4.String as FhirString
-import dev.ohs.player.reference.app.components.ReferenceAppLoader
+import dev.ohs.fhir.model.r4.Uri
 import dev.ohs.player.reference.app.generateUuid
 import dev.ohs.player.reference.app.util.FhirJson
 import kotlin.time.Clock
@@ -79,24 +85,33 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Composable
-fun QuestionnaireHostScreen(
+internal fun QuestionnaireHostScreen(
   title: String,
   subtitle: String,
   resource: String,
   onBack: () -> Unit,
   modifier: Modifier = Modifier,
   primaryActionLabel: String = "Submit Case",
+  launchContext: WorkflowQuestionnaireLaunchContext? = null,
 ) {
+  val questionnaireResourcePath = resource
   val fhirJson = FhirJson.instance
   fun String?.orGeneratedId(): String = takeUnless { it.isNullOrBlank() } ?: generateUuid()
+  fun String?.takeIfNotBlank(): String? = this?.trim()?.takeIf(String::isNotBlank)
 
   val screenState by
     produceState<QuestionnaireScreenState>(
       initialValue = QuestionnaireScreenState.Loading,
       resource,
+      launchContext,
     ) {
       value =
-        runCatching { WorkflowQuestionnaireStore.questionnaireJson(resource) }
+        runCatching {
+            WorkflowQuestionnaireStore.questionnaireJson(
+              resource = resource,
+              initialValues = launchContext?.initialValues.orEmpty(),
+            )
+          }
           .fold(
             onSuccess = QuestionnaireScreenState::Ready,
             onFailure = {
@@ -158,9 +173,10 @@ fun QuestionnaireHostScreen(
       Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
         when (val state = screenState) {
           QuestionnaireScreenState.Loading ->
-            ReferenceAppLoader(
-              message = "Loading questionnaire",
-              subtitle = "Preparing the form and pre-filling any available context.",
+            CircularProgressIndicator(
+              strokeWidth = 4.dp,
+              color = MaterialTheme.colorScheme.primary,
+              trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
             )
 
           is QuestionnaireScreenState.Error ->
@@ -182,17 +198,25 @@ fun QuestionnaireHostScreen(
                     scope.launch {
                       isSubmitting = true
                       try {
-                        val patientId = generateUuid()
+                        val patientId = launchContext?.patientId.takeIfNotBlank() ?: generateUuid()
                         val encounterId = generateUuid()
                         val patientReference = FhirString(value = "Patient/$patientId")
                         val patientRef = Reference(reference = patientReference)
 
                         val encounterReference = FhirString(value = "Encounter/$encounterId")
                         val encounterRef = Reference(reference = encounterReference)
+                        val parentEncounterRef =
+                          launchContext?.parentEncounterId.takeIfNotBlank()?.let { encounterId ->
+                            Reference(reference = FhirString(value = "Encounter/$encounterId"))
+                          }
 
                         val response = getResponse()
                         saveWorkflowQuestionnaireResponse(
-                          response.copy(subject = patientRef, encounter = encounterRef)
+                          response.copy(
+                            questionnaire = Canonical(value = resource),
+                            subject = patientRef,
+                            encounter = encounterRef,
+                          )
                         )
                         val questionnaire =
                           fhirJson.decodeFromString(
@@ -203,44 +227,14 @@ fun QuestionnaireHostScreen(
                           TemplateExtractionEngine.extract(questionnaire, response)
 
                         val bundle =
-                          extractedBundle.copy(
-                            entry =
-                              extractedBundle.entry.map { entry ->
-                                val updatedResource =
-                                  when (val resource = entry.resource) {
-                                    is Observation ->
-                                      resource.copy(
-                                        id = resource.id.orGeneratedId(),
-                                        subject = patientRef,
-                                        encounter = encounterRef,
-                                      )
-
-                                    is Condition ->
-                                      resource.copy(
-                                        id = resource.id.orGeneratedId(),
-                                        subject = patientRef,
-                                        encounter = encounterRef,
-                                      )
-
-                                    is Encounter ->
-                                      resource.copy(
-                                        id = resource.id.orGeneratedId(),
-                                        subject = patientRef,
-                                      )
-
-                                    is Specimen ->
-                                      resource.copy(
-                                        id = resource.id.orGeneratedId(),
-                                        subject = patientRef,
-                                      )
-
-                                    is Patient -> resource.copy(id = resource.id.orGeneratedId())
-
-                                    else -> resource
-                                  }
-
-                                entry.copy(resource = updatedResource)
-                              }
+                          postProcessExtractedBundle(
+                            questionnaireResourcePath = questionnaireResourcePath,
+                            extractedBundle = extractedBundle,
+                            patientId = patientId,
+                            encounterId = encounterId,
+                            patientRef = patientRef,
+                            encounterRef = encounterRef,
+                            parentEncounterRef = parentEncounterRef,
                           )
                         saveWorkflowBundle(bundle)
                         submissionSuccessMessage =
@@ -269,10 +263,10 @@ fun QuestionnaireHostScreen(
     }
 
     if (isSubmitting) {
-      ReferenceAppLoader(
-        message = "Submitting questionnaire response",
-        subtitle = "Extracting and saving the generated resources.",
-        showScrim = true,
+      CircularProgressIndicator(
+        strokeWidth = 4.dp,
+        color = MaterialTheme.colorScheme.primary,
+        trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
       )
     }
 
@@ -362,7 +356,7 @@ private fun QuestionnaireIntroCard(subtitle: String, showPersistenceNotice: Bool
 }
 
 @Composable
-private fun WorkflowCenteredMessage(title: String, message: String) {
+internal fun WorkflowCenteredMessage(title: String, message: String) {
   Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
     Card(
       modifier = Modifier.padding(24.dp),
@@ -388,3 +382,108 @@ private fun WorkflowCenteredMessage(title: String, message: String) {
     }
   }
 }
+
+private fun postProcessExtractedBundle(
+  questionnaireResourcePath: String,
+  extractedBundle: Bundle,
+  patientId: String,
+  encounterId: String,
+  patientRef: Reference,
+  encounterRef: Reference,
+  parentEncounterRef: Reference?,
+): Bundle {
+  val rewrittenEntries =
+    extractedBundle.entry.map { entry ->
+      val updatedResource =
+        when (val resource = entry.resource) {
+          is Observation ->
+            resource.copy(
+              id = resource.id.orGeneratedId(),
+              subject = patientRef,
+              encounter = encounterRef,
+            )
+
+          is Condition ->
+            resource.copy(
+              id = resource.id.orGeneratedId(),
+              subject = patientRef,
+              encounter = encounterRef,
+            )
+
+          is Encounter ->
+            resource.copy(
+              id = encounterId,
+              subject = patientRef,
+              partOf = parentEncounterRef ?: resource.partOf,
+            )
+
+          is Specimen -> resource.copy(id = resource.id.orGeneratedId(), subject = patientRef)
+
+          is Patient -> resource.copy(id = patientId)
+
+          else -> resource
+        }
+
+      entry.copy(resource = updatedResource)
+    }
+
+  if (questionnaireResourcePath != MEASLES_LAB_RESULTS_RESOURCE) {
+    return extractedBundle.copy(entry = rewrittenEntries)
+  }
+
+  val measlesIgmResult =
+    rewrittenEntries
+      .mapNotNull { entry -> entry.resource as? Observation }
+      .firstOrNull { observation -> observation.primaryCode() == MEASLES_IGM_CODE }
+      ?.codedValue()
+
+  val derivedClassification = deriveLabFinalClassification(measlesIgmResult)
+
+  val updatedEntries =
+    rewrittenEntries.map { entry ->
+      val observation = entry.resource as? Observation ?: return@map entry
+      if (observation.primaryCode() != FINAL_CLASSIFICATION_CODE || derivedClassification == null) {
+        entry
+      } else {
+        entry.copy(
+          resource =
+            observation.withCodeableValue(
+              codeValue = derivedClassification.code,
+              displayValue = derivedClassification.display,
+            )
+        )
+      }
+    }
+
+  return extractedBundle.copy(entry = updatedEntries)
+}
+
+private fun String?.orGeneratedId(): String = this?.takeIf(String::isNotBlank) ?: generateUuid()
+
+private fun Observation.primaryCode(): String? =
+  code.coding.firstOrNull()?.code?.value ?: code.text?.value
+
+private fun Observation.codedValue(): String? =
+  `value`?.asCodeableConcept()?.value?.let { codeableConcept ->
+    codeableConcept.coding.firstOrNull()?.display?.value
+      ?: codeableConcept.coding.firstOrNull()?.code?.value
+      ?: codeableConcept.text?.value
+  } ?: `value`?.asString()?.value?.value
+
+private fun Observation.withCodeableValue(codeValue: String, displayValue: String): Observation =
+  copy(
+    `value` =
+      Observation.Value.CodeableConcept(
+        CodeableConcept(
+          coding =
+            listOf(
+              Coding(
+                system = Uri(value = LAB_RESULTS_CODE_SYSTEM),
+                code = Code(value = codeValue),
+                display = FhirString(value = displayValue),
+              )
+            ),
+          text = FhirString(value = displayValue),
+        )
+      )
+  )

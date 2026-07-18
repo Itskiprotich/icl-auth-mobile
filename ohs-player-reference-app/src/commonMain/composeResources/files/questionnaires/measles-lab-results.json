@@ -1,0 +1,1182 @@
+{
+  "resourceType": "Questionnaire",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/4.0/StructureDefinition/Questionnaire"
+    ]
+  },
+  "subjectType": [
+    "Patient"
+  ],
+  "title": "Lab Information",
+  "status": "active",
+  "extension": [
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+      "valueReference": {
+        "reference": "#bunExtract"
+      }
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-launchContext",
+      "extension": [
+        {
+          "url": "name",
+          "valueCoding": {
+            "system": "http://hl7.org/fhir/uv/sdc/CodeSystem/launchContext",
+            "code": "client",
+            "display": "Client as a Patient"
+          }
+        },
+        {
+          "url": "type",
+          "valueCode": "Patient"
+        }
+      ]
+    },
+    {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
+      "valueCode": "prior-edit"
+    }
+  ],
+  "contained": [
+    {
+      "resourceType": "Bundle",
+      "id": "bunExtract",
+      "type": "transaction",
+      "entry": [
+        {
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c401",
+          "resource": {
+            "resourceType": "Encounter",
+            "status": "finished",
+            "class": {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+              "code": "AMB",
+              "display": "ambulatory"
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "reasonCode": [
+              {
+                "coding": [
+                  {
+                    "system": "http://example.org/CodeSystem/case-reason",
+                    "code": "measles-lab-information",
+                    "display": "Measles Lab Information"
+                  }
+                ]
+              }
+            ]
+          },
+          "request": {
+            "method": "POST",
+            "url": "Encounter"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = '8732404074721')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c402",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "8732404074721",
+                  "display": "Lab ID No"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = '718251724172')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c403",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "718251724172",
+                  "display": "Date specimen sent to lab"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'date-specimen-received')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c404",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "date-specimen-received",
+                  "display": "Date specimen received in lab"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'specimen-condition')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c405",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "specimen-condition",
+                  "display": "Specimen Condition"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'adequate_specimen').item.where(linkId = 'measles-igm')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c406",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "measles-igm",
+                  "display": "Measles IgM results"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'adequate_specimen').item.where(linkId = 'rubella-igm')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c407",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "rubella-igm",
+                  "display": "Rubella IgM results"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'adequate_specimen').item.where(linkId = 'date-lab-sent-results')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c408",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "date-lab-sent-results",
+                  "display": "Date lab sent out results to EPI/Surv Unit"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'adequate_specimen').item.where(linkId = '139172422437')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c409",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "139172422437",
+                  "display": "Was specimen sent to regional lab?"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'adequate_specimen').item.where(linkId = '655865451155')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c410",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "655865451155",
+                  "display": "Date Serum specimen was sent to regional lab for IgM confirmation"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'adequate_specimen').item.where(linkId = 'final-classification')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c411",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "final-classification",
+                  "display": "Final Classification. Case classification after investigation (e.g., confirmed, compatible, discarded)"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId = 'inadequate_specimen')"
+            }
+          ],
+          "fullUrl": "urn:uuid:1f59e1f8-c9b1-4540-8e17-2c3c6d31c412",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "laboratory"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "inadequate_specimen",
+                  "display": "Reasons"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "Patient"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        }
+      ]
+    }
+  ],
+  "item": [
+    {
+      "type": "string",
+      "linkId": "8732404074721",
+      "text": "Lab ID No",
+      "required": true
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "patient_id",
+      "type": "string",
+      "readOnly": true,
+      "text": "Patient ID"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "encounter_id",
+      "type": "string",
+      "readOnly": true,
+      "text": "Encounter ID"
+    },
+    {
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+          "valueBoolean": true
+        }
+      ],
+      "linkId": "718251724172",
+      "type": "date",
+      "readOnly": true,
+      "text": "Date specimen sent to lab"
+    },
+    {
+      "type": "date",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+          "valueString": "d/M/y"
+        },
+        {
+          "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+          "valueString": "Cannot be a date in the future"
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+          "_valueDate": {
+            "extension": [
+              {
+                "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                "valueExpression": {
+                  "language": "text/fhirpath",
+                  "expression": "today()"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+          "extension": [
+            {
+              "url": "key",
+              "valueId": "constraint-1"
+            },
+            {
+              "url": "requirements",
+              "valueString": "The date should be after the date the specimen was sent to the lab"
+            },
+            {
+              "url": "severity",
+              "valueCode": "error"
+            },
+            {
+              "url": "expression",
+              "valueString": "%context.answer.value >= %resource.descendants().where(linkId='718251724172').answer.value"
+            },
+            {
+              "url": "human",
+              "valueString": "The date should be after the date the specimen was sent to the lab"
+            },
+            {
+              "url": "location",
+              "valueString": "718251724172"
+            }
+          ]
+        }
+      ],
+      "linkId": "date-specimen-received",
+      "text": "Date specimen received in lab"
+    },
+    {
+      "type": "choice",
+      "extension": [
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+          "valueCodeableConcept": {
+            "coding": [
+              {
+                "system": "http://hl7.org/fhir/questionnaire-item-control",
+                "code": "radio-button",
+                "display": "Radio Button"
+              }
+            ]
+          }
+        },
+        {
+          "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+          "valueCode": "horizontal"
+        }
+      ],
+      "linkId": "specimen-condition",
+      "text": "Specimen Condition",
+      "answerOption": [
+        {
+          "valueCoding": {
+            "code": "Adequate",
+            "display": "Adequate"
+          }
+        },
+        {
+          "valueCoding": {
+            "code": "Inadequate",
+            "display": "Inadequate"
+          }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "linkId": "adequate_specimen",
+      "text": "",
+      "enableWhen": [
+        {
+          "question": "specimen-condition",
+          "operator": "=",
+          "answerCoding": {
+            "code": "Adequate",
+            "display": "Adequate"
+          }
+        }
+      ],
+      "item": [
+        {
+          "type": "display",
+          "linkId": "469240673826",
+          "text": "Lab Results"
+        },
+        {
+          "type": "choice",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ]
+              }
+            }
+          ],
+          "linkId": "measles-igm",
+          "text": "Measles IgM results",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "Positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Negative",
+                "display": "Negative"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Indeterminate",
+                "display": "Indeterminate"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Not Done",
+                "display": "Not Done"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Pending",
+                "display": "Pending"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Unknown",
+                "display": "Unknown"
+              }
+            }
+          ]
+        },
+        {
+          "type": "choice",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ]
+              }
+            }
+          ],
+          "linkId": "rubella-igm",
+          "text": "Rubella IgM results",
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "Positive",
+                "display": "Positive"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Negative",
+                "display": "Negative"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Indeterminate",
+                "display": "Indeterminate"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Not Done",
+                "display": "Not Done"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Pending",
+                "display": "Pending"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "Unknown",
+                "display": "Unknown"
+              }
+            }
+          ]
+        },
+        {
+          "type": "date",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+              "valueString": "d/M/y"
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+              "extension": [
+                {
+                  "url": "key",
+                  "valueId": "constraint-1"
+                },
+                {
+                  "url": "requirements",
+                  "valueString": "The date should be after the date the specimen was received at the lab"
+                },
+                {
+                  "url": "severity",
+                  "valueCode": "error"
+                },
+                {
+                  "url": "expression",
+                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='date-specimen-received').answer.value"
+                },
+                {
+                  "url": "human",
+                  "valueString": "The date should be after the date the specimen was received at the lab"
+                },
+                {
+                  "url": "location",
+                  "valueString": "date-specimen-received"
+                }
+              ]
+            }
+          ],
+          "linkId": "date-lab-sent-results",
+          "text": "Date lab sent out results to EPI/Surv Unit",
+          "required": true
+        },
+        {
+          "type": "choice",
+          "linkId": "139172422437",
+          "text": "Was specimen sent to regional lab?",
+          "required": true,
+          "answerOption": [
+            {
+              "valueCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            },
+            {
+              "valueCoding": {
+                "code": "no",
+                "display": "No"
+              }
+            }
+          ],
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "radio-button",
+                    "display": "Radio Button"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-choiceOrientation",
+              "valueCode": "horizontal"
+            }
+          ]
+        },
+        {
+          "type": "date",
+          "linkId": "655865451155",
+          "text": "Date Serum specimen was sent to regional lab for IgM confirmation",
+          "enableWhen": [
+            {
+              "question": "139172422437",
+              "operator": "=",
+              "answerCoding": {
+                "code": "yes",
+                "display": "Yes"
+              }
+            }
+          ],
+          "required": true,
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/entryFormat",
+              "valueString": "d/M/y"
+            },
+            {
+              "url": "http://ehelse.no/fhir/StructureDefinition/validationtext",
+              "valueString": "Cannot be a date in the future"
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+              "_valueDate": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
+                    "valueExpression": {
+                      "language": "text/fhirpath",
+                      "expression": "today()"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-constraint",
+              "extension": [
+                {
+                  "url": "key",
+                  "valueId": "constraint-1"
+                },
+                {
+                  "url": "requirements",
+                  "valueString": "The date should be after the date the specimen was received at the lab"
+                },
+                {
+                  "url": "severity",
+                  "valueCode": "error"
+                },
+                {
+                  "url": "expression",
+                  "valueString": "%context.answer.value >= %resource.descendants().where(linkId='date-specimen-received').answer.value"
+                },
+                {
+                  "url": "human",
+                  "valueString": "The date should be after the date the specimen was received at the lab"
+                },
+                {
+                  "url": "location",
+                  "valueString": "date-specimen-received"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "linkId": "final-classification",
+          "text": "Final Classification. Case classification after investigation (e.g., confirmed, compatible, discarded)",
+          "type": "choice",
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
+              "valueCodeableConcept": {
+                "coding": [
+                  {
+                    "system": "http://hl7.org/fhir/questionnaire-item-control",
+                    "code": "drop-down",
+                    "display": "Drop down"
+                  }
+                ]
+              }
+            },
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-hidden",
+              "valueBoolean": true
+            }
+          ],
+          "initial": [
+            {
+              "valueCoding": {
+                "code": "lab-results-pending",
+                "display": "Lab results pending"
+              }
+            }
+          ],
+          "enableWhen": [
+            {
+              "question": "measles-igm",
+              "operator": "!=",
+              "answerCoding": {
+                "code": "Positive",
+                "display": "Positive"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "linkId": "inadequate_specimen",
+      "text": "Reasons",
+      "required": true,
+      "enableWhen": [
+        {
+          "question": "specimen-condition",
+          "operator": "=",
+          "answerCoding": {
+            "code": "Inadequate",
+            "display": "Inadequate"
+          }
+        }
+      ]
+    }
+  ]
+}

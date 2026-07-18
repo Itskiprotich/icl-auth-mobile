@@ -17,6 +17,7 @@ package dev.ohs.player.reference.app.feature.workflow
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -43,6 +43,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -70,9 +71,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.ohs.player.reference.app.components.ReferenceAppLoader
 import dev.ohs.player.reference.app.feature.home.components.RecordListMessage
 import dev.ohs.player.reference.app.feature.home.components.RecordListTopBar
+import dev.ohs.player.reference.app.feature.workflow.models.RecordFilterSelection
 import dev.ohs.player.reference.app.feature.workflow.models.RecordFilters
 
 private const val RECORDS_PER_PAGE = 50
@@ -83,6 +84,7 @@ fun WorkflowRecordListScreen(
   subtitle: String,
   resource: String,
   onBack: () -> Unit,
+  onRecordClick: (WorkflowRecord) -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
   var showFilters by rememberSaveable { mutableStateOf(false) }
@@ -127,9 +129,10 @@ fun WorkflowRecordListScreen(
     Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
       when (val state = screenState) {
         RecordListScreenState.Loading -> {
-          ReferenceAppLoader(
-            message = "Loading saved cases",
-            subtitle = "Gathering locally stored questionnaire responses.",
+          CircularProgressIndicator(
+            strokeWidth = 4.dp,
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
           )
         }
 
@@ -140,30 +143,18 @@ fun WorkflowRecordListScreen(
         }
 
         is RecordListScreenState.Ready -> {
-          WorkflowRecordListContent(collection = state.collection, filters = filters)
+          WorkflowRecordListContent(
+            collection = state.collection,
+            filters = filters,
+            onRecordClick = onRecordClick,
+          )
 
           if (showFilters) {
-            val counties =
-              state.collection.records
-                .mapNotNull { it.fieldValue("County") }
-                .filter(String::isNotBlank)
-                .distinct()
-                .sorted()
-
-            val subCounties =
-              state.collection.records
-                .filter { record ->
-                  filters.county == null ||
-                    record.fieldValue("County").equals(filters.county, ignoreCase = true)
-                }
-                .mapNotNull { it.fieldValue("Sub County", "Sub-county", "Subcounty") }
-                .filter(String::isNotBlank)
-                .distinct()
-                .sorted()
+            val availableFilters = state.collection.records.availableFilterDescriptors()
 
             CaseFilterDialog(
-              counties = counties,
-              subCounties = subCounties,
+              records = state.collection.records,
+              availableFilters = availableFilters,
               initialFilters = filters,
               onDismiss = { showFilters = false },
               onApply = {
@@ -194,11 +185,19 @@ private sealed interface RecordListScreenState {
 private fun WorkflowRecordListContent(
   collection: WorkflowRecordCollection,
   filters: RecordFilters,
+  onRecordClick: (WorkflowRecord) -> Unit,
 ) {
   var query by rememberSaveable(collection.id) { mutableStateOf("") }
 
   var currentPage by
-    rememberSaveable(collection.id, query, filters.county, filters.subCounty) {
+    rememberSaveable(
+      collection.id,
+      query,
+      filters.primary?.label,
+      filters.primary?.value,
+      filters.secondary?.label,
+      filters.secondary?.value,
+    ) {
       mutableIntStateOf(0)
     }
 
@@ -216,17 +215,9 @@ private fun WorkflowRecordListContent(
                 field.value.contains(query, ignoreCase = true)
             }
 
-        val matchesCounty =
-          filters.county == null ||
-            record.fieldValue("County").equals(filters.county, ignoreCase = true)
-
-        val matchesSubCounty =
-          filters.subCounty == null ||
-            record
-              .fieldValue("Sub County", "Sub-county", "Subcounty")
-              .equals(filters.subCounty, ignoreCase = true)
-
-        matchesQuery && matchesCounty && matchesSubCounty
+        matchesQuery &&
+          record.matchesFilter(filters.primary) &&
+          record.matchesFilter(filters.secondary)
       }
     }
 
@@ -283,7 +274,7 @@ private fun WorkflowRecordListContent(
         }
       } else {
         items(items = pageRecords, key = WorkflowRecord::id) { record ->
-          MeaslesCaseCard(record = record)
+          WorkflowCaseCard(record = record, onClick = { onRecordClick(record) })
         }
       }
     }
@@ -414,23 +405,16 @@ private fun CaseSearchField(
 }
 
 @Composable
-private fun MeaslesCaseCard(record: WorkflowRecord, modifier: Modifier = Modifier) {
-  val name = record.fieldValue("Name")?.takeIf(String::isNotBlank) ?: record.title
-
-  val epidNumber = record.fieldValue("EPID No", "EPID No.", "EPID Number").orEmpty()
-
-  val county = record.fieldValue("County").orEmpty()
-
-  val subCounty = record.fieldValue("Sub County", "Sub-county", "Subcounty").orEmpty()
-
-  val onsetDate = record.fieldValue("Onset of illness", "Onset Date").orEmpty()
-
-  val labResult = record.fieldValue("Lab Results", "Lab Result").orEmpty()
-
-  val finalClassification = record.fieldValue("Final Classification").orEmpty()
+private fun WorkflowCaseCard(
+  record: WorkflowRecord,
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier,
+) {
+  val layout = record.cardLayout()
+  val isClickable = !record.references?.questionnaireResponseId.isNullOrBlank()
 
   Card(
-    modifier = modifier.fillMaxWidth(),
+    modifier = modifier.fillMaxWidth().clickable(enabled = isClickable, onClick = onClick),
     shape = RoundedCornerShape(20.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
@@ -440,33 +424,63 @@ private fun MeaslesCaseCard(record: WorkflowRecord, modifier: Modifier = Modifie
       modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
       verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-      TwoColumnCaseRow(
-        leftLabel = "Name",
-        leftValue = name,
-        rightLabel = "EPID No:",
-        rightValue = epidNumber,
-      )
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        CaseValue(
+          label = layout.titleLabel,
+          value = layout.titleValue,
+          modifier = Modifier.weight(1f),
+        )
 
-      TwoColumnCaseRow(
-        leftLabel = "County:",
-        leftValue = county,
-        rightLabel = "Sub County:",
-        rightValue = subCounty,
-      )
+        layout.badge?.let { badge ->
+          Column(
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+          ) {
+            Text(
+              text = badge.label,
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+              text = badge.value.ifBlank { "—" },
+              style = MaterialTheme.typography.titleMedium,
+              color = caseFieldColor(badge.label, badge.value),
+              fontWeight = FontWeight.Medium,
+            )
+          }
+        }
 
-      TwoColumnCaseRow(
-        leftLabel = "Onset of illness:",
-        leftValue = onsetDate,
-        rightLabel = "Lab Results:",
-        rightValue = labResult,
-        rightValueColor = labResultColor(labResult),
-      )
+        if (isClickable) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = "Open case summary",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+        }
+      }
 
-      CaseValue(
-        label = "Final Classification:",
-        value = finalClassification,
-        valueColor = classificationColor(finalClassification),
-      )
+      layout.rows.forEach { (leftField, rightField) ->
+        if (rightField == null) {
+          CaseValue(
+            label = leftField.label,
+            value = leftField.value,
+            valueColor = caseFieldColor(leftField.label, leftField.value),
+          )
+        } else {
+          TwoColumnCaseRow(
+            leftLabel = leftField.label,
+            leftValue = leftField.value,
+            rightLabel = rightField.label,
+            rightValue = rightField.value,
+            leftValueColor = caseFieldColor(leftField.label, leftField.value),
+            rightValueColor = caseFieldColor(rightField.label, rightField.value),
+          )
+        }
+      }
     }
   }
 }
@@ -517,7 +531,7 @@ private fun CaseValue(
     )
 
     Text(
-      text = value.ifBlank { "—" },
+      text = value,
       style = MaterialTheme.typography.titleMedium,
       color = valueColor,
       fontWeight = FontWeight.Medium,
@@ -550,6 +564,14 @@ private fun classificationColor(classification: String): Color =
     else -> MaterialTheme.colorScheme.onSurface
   }
 
+@Composable
+private fun caseFieldColor(label: String, value: String): Color =
+  when {
+    label.matchesAnyLabel("Lab Results", "Lab Result") -> labResultColor(value)
+    label.matchesAnyLabel("Final Classification", "Classification") -> classificationColor(value)
+    else -> MaterialTheme.colorScheme.onSurface
+  }
+
 private fun WorkflowRecord.fieldValue(vararg labels: String): String? =
   fields
     .firstOrNull { field ->
@@ -565,53 +587,102 @@ private fun WorkflowRecord.fieldValue(vararg labels: String): String? =
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CaseFilterDialog(
-  counties: List<String>,
-  subCounties: List<String>,
+  records: List<WorkflowRecord>,
+  availableFilters: List<WorkflowRecordFilterDescriptor>,
   initialFilters: RecordFilters,
   onDismiss: () -> Unit,
   onApply: (RecordFilters) -> Unit,
   onClear: () -> Unit,
 ) {
-  var selectedCounty by remember(initialFilters) { mutableStateOf(initialFilters.county) }
+  val primaryFilter = availableFilters.getOrNull(0)
+  val secondaryFilter = availableFilters.getOrNull(1)
+  var selectedPrimary by
+    remember(initialFilters, primaryFilter) {
+      mutableStateOf(initialFilters.primary?.takeIf { it.label == primaryFilter?.label }?.value)
+    }
+  var selectedSecondary by
+    remember(initialFilters, secondaryFilter) {
+      mutableStateOf(initialFilters.secondary?.takeIf { it.label == secondaryFilter?.label }?.value)
+    }
 
-  var selectedSubCounty by remember(initialFilters) { mutableStateOf(initialFilters.subCounty) }
+  val secondaryOptions =
+    remember(records, primaryFilter, secondaryFilter, selectedPrimary) {
+      if (secondaryFilter == null) {
+        emptyList()
+      } else {
+        val matchingRecords =
+          if (primaryFilter != null && !selectedPrimary.isNullOrBlank()) {
+            records.filter { record ->
+              record.fieldValue(primaryFilter.label).equals(selectedPrimary, ignoreCase = true)
+            }
+          } else {
+            records
+          }
+        matchingRecords.optionsForFilter(secondaryFilter.label)
+      }
+    }
 
   AlertDialog(
     onDismissRequest = onDismiss,
     title = {
       Text(
-        text = "Filter cases",
+        text = "Filter records",
         style = MaterialTheme.typography.headlineSmall,
         fontWeight = FontWeight.Bold,
       )
     },
     text = {
-      Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
-      ) {
-        FilterDropdown(
-          label = "County",
-          options = counties,
-          selectedValue = selectedCounty,
-          onValueSelected = {
-            selectedCounty = it
-            selectedSubCounty = null
-          },
+      if (availableFilters.isEmpty()) {
+        Text(
+          text = "No workflow-specific filters are available for this record list yet.",
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+      } else {
+        Column(
+          modifier = Modifier.fillMaxWidth(),
+          verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+          primaryFilter?.let { descriptor ->
+            FilterDropdown(
+              label = descriptor.label,
+              options = descriptor.options,
+              selectedValue = selectedPrimary,
+              onValueSelected = {
+                selectedPrimary = it
+                selectedSecondary = null
+              },
+            )
+          }
 
-        FilterDropdown(
-          label = "Sub-county",
-          options = subCounties,
-          selectedValue = selectedSubCounty,
-          enabled = selectedCounty != null,
-          onValueSelected = { selectedSubCounty = it },
-        )
+          secondaryFilter?.let { descriptor ->
+            FilterDropdown(
+              label = descriptor.label,
+              options = secondaryOptions,
+              selectedValue = selectedSecondary,
+              enabled = primaryFilter == null || selectedPrimary != null,
+              onValueSelected = { selectedSecondary = it },
+            )
+          }
+        }
       }
     },
     confirmButton = {
       TextButton(
-        onClick = { onApply(RecordFilters(county = selectedCounty, subCounty = selectedSubCounty)) }
+        onClick = {
+          onApply(
+            RecordFilters(
+              primary =
+                primaryFilter?.let { descriptor ->
+                  selectedPrimary?.let { RecordFilterSelection(descriptor.label, it) }
+                },
+              secondary =
+                secondaryFilter?.let { descriptor ->
+                  selectedSecondary?.let { RecordFilterSelection(descriptor.label, it) }
+                },
+            )
+          )
+        }
       ) {
         Text("Apply filters")
       }
@@ -625,6 +696,166 @@ private fun CaseFilterDialog(
     },
   )
 }
+
+private data class WorkflowRecordFilterDescriptor(val label: String, val options: List<String>)
+
+private data class WorkflowCaseCardField(val label: String, val value: String)
+
+private data class WorkflowCaseCardFieldSpec(val label: String, val aliases: List<String>)
+
+private data class WorkflowCaseCardLayout(
+  val titleLabel: String,
+  val titleValue: String,
+  val badge: WorkflowCaseCardField?,
+  val rows: List<Pair<WorkflowCaseCardField, WorkflowCaseCardField?>>,
+)
+
+private fun List<WorkflowRecord>.availableFilterDescriptors():
+  List<WorkflowRecordFilterDescriptor> {
+  val valuesByLabel = linkedMapOf<String, MutableSet<String>>()
+  val displayLabels = linkedMapOf<String, String>()
+
+  forEach { record ->
+    record.fields.forEach { field ->
+      val label = field.label.removeSuffix(":").trim()
+      val value = field.value.trim()
+      if (label.isBlank() || value.isBlank()) {
+        return@forEach
+      }
+      val key = label.normalizeCaseKey()
+      if (key !in displayLabels) {
+        displayLabels[key] = label
+      }
+      valuesByLabel.getOrPut(key) { linkedSetOf() }.add(value)
+    }
+  }
+
+  return valuesByLabel
+    .mapNotNull { (key, values) ->
+      if (values.size < 2) {
+        null
+      } else {
+        WorkflowRecordFilterDescriptor(
+          label = displayLabels.getValue(key),
+          options = values.sorted(),
+        )
+      }
+    }
+    .sortedWith(
+      compareBy<WorkflowRecordFilterDescriptor>(
+        { descriptor ->
+          FILTER_LABEL_PRIORITY.indexOf(descriptor.label.normalizeCaseKey()).let { index ->
+            if (index >= 0) index else Int.MAX_VALUE
+          }
+        },
+        { descriptor -> descriptor.label },
+      )
+    )
+    .take(2)
+}
+
+private fun List<WorkflowRecord>.optionsForFilter(label: String): List<String> =
+  mapNotNull { it.fieldValue(label) }.filter(String::isNotBlank).distinct().sorted()
+
+private fun WorkflowRecord.matchesFilter(filter: RecordFilterSelection?): Boolean =
+  filter == null || fieldValue(filter.label).equals(filter.value, ignoreCase = true)
+
+private fun WorkflowRecord.cardLayout(): WorkflowCaseCardLayout {
+  val titleValue =
+    fieldValue("Name", "Patient Name", "Case Name", "Client Name")
+      ?.takeIf(String::isNotBlank)
+      ?.takeUnless { candidate ->
+        candidate.equals("Submitted Case", ignoreCase = true) ||
+          candidate.endsWith(" Case", ignoreCase = true)
+      }
+      .orEmpty()
+  val detailFields =
+    CASE_LIST_FIELD_SPECS.map { spec ->
+      WorkflowCaseCardField(
+        label = spec.label,
+        value = fieldValue(*spec.aliases.toTypedArray()).orEmpty(),
+      )
+    }
+
+  return WorkflowCaseCardLayout(
+    titleLabel = "Patient Name",
+    titleValue = titleValue,
+    badge = null,
+    rows = detailFields.chunked(2).map { row -> row.first() to row.getOrNull(1) },
+  )
+}
+
+private fun String.matchesAnyLabel(vararg labels: String): Boolean =
+  labels.any { label ->
+    trim().removeSuffix(":").equals(label.trim().removeSuffix(":"), ignoreCase = true)
+  }
+
+private fun String.normalizeCaseKey(): String = trim().lowercase()
+
+private val FILTER_LABEL_PRIORITY =
+  listOf(
+    "county",
+    "sub county",
+    "sub-county",
+    "subcounty",
+    "status",
+    "outcome",
+    "lab results",
+    "final classification",
+    "reporting facility",
+  )
+
+private val CARD_FIELD_PRIORITY =
+  listOf(
+    listOf(
+      "EPID No",
+      "EPID No.",
+      "EPID Number",
+      "Case ID",
+      "Case Number",
+      "Identifier",
+      "Record ID",
+    ),
+    listOf("County", "District"),
+    listOf("Sub County", "Sub-county", "Subcounty"),
+    listOf("Onset of illness", "Onset Date", "Date of onset of illness"),
+    listOf("Lab Results", "Lab Result"),
+    listOf("Final Classification", "Classification"),
+    listOf("Outcome"),
+    listOf("Reporting Facility", "Health Facility", "Facility"),
+    listOf("Status"),
+  )
+
+private val CASE_LIST_FIELD_SPECS =
+  listOf(
+    WorkflowCaseCardFieldSpec(
+      label = "EPID No",
+      aliases =
+        listOf(
+          "EPID No",
+          "EPID No.",
+          "EPID Number",
+          "Case ID",
+          "Case Number",
+          "Identifier",
+          "Record ID",
+        ),
+    ),
+    WorkflowCaseCardFieldSpec(label = "County", aliases = listOf("County", "District")),
+    WorkflowCaseCardFieldSpec(
+      label = "Sub County",
+      aliases = listOf("Sub County", "Sub-county", "Subcounty"),
+    ),
+    WorkflowCaseCardFieldSpec(
+      label = "Onset of illness",
+      aliases = listOf("Onset of illness", "Onset Date", "Date of onset of illness"),
+    ),
+    WorkflowCaseCardFieldSpec(label = "Lab Results", aliases = listOf("Lab Results", "Lab Result")),
+    WorkflowCaseCardFieldSpec(
+      label = "Final Classification",
+      aliases = listOf("Final Classification", "Classification"),
+    ),
+  )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
