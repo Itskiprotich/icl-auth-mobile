@@ -146,7 +146,12 @@ internal object WorkflowCasePresentationRegistry {
               actionBuilder = WorkflowCaseContext::buildLabResultsQuestionnaireAction,
             )
           ),
-      )
+      ),
+      WorkflowCasePresentationSpec(
+        questionnaireResources = setOf(MPOX_SUPERVISORY_CHECKLIST_RESOURCE),
+        questionnaireKeywords = setOf("mpox", "supervisory", "checklist"),
+        emptyMessage = "No locally saved supervisory checklists are available yet.",
+      ),
     )
 
   fun matchesRecordResource(
@@ -183,13 +188,20 @@ internal object WorkflowCasePresentationRegistry {
     answersByLinkId: Map<String, List<JsonObject>>,
   ): WorkflowCasePresentationSpec =
     specs.firstOrNull { it.matchesQuestionnaire(questionnaireResource, questionnaireReference) }
-      ?: specs
-        .maxByOrNull { spec -> spec.indicatorMatchCount(answersByLinkId) }
-        ?.takeIf { spec -> spec.indicatorMatchCount(answersByLinkId) > 0 }
-      ?: derivedSpec(
-        questionnaireResource = questionnaireResource,
-        questionnaireReference = questionnaireReference,
-      )
+      ?: if (!questionnaireResource.isNullOrBlank() || !questionnaireReference.isNullOrBlank()) {
+        derivedSpec(
+          questionnaireResource = questionnaireResource,
+          questionnaireReference = questionnaireReference,
+        )
+      } else {
+        specs
+          .maxByOrNull { spec -> spec.indicatorMatchCount(answersByLinkId) }
+          ?.takeIf { spec -> spec.indicatorMatchCount(answersByLinkId) > 0 }
+          ?: derivedSpec(
+            questionnaireResource = questionnaireResource,
+            questionnaireReference = questionnaireReference,
+          )
+      }
 
   internal fun matchesRecordResponse(
     resource: String,

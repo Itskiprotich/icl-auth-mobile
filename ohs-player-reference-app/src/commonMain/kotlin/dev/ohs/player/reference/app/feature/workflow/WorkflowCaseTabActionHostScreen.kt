@@ -70,7 +70,7 @@ fun WorkflowCaseTabActionHostScreen(
         is WorkflowCaseTabAction.Questionnaire ->
           QuestionnaireHostScreen(
             title = action.title,
-            subtitle = action.subtitle,
+            subtitle = "",
             resource = action.resource,
             onBack = onBack,
             modifier = modifier,

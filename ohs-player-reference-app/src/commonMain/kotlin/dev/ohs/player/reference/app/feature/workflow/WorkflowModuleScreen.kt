@@ -274,13 +274,6 @@ private fun WorkflowSummaryCard(module: WorkflowModule, node: WorkflowNode) {
           color = MaterialTheme.colorScheme.onSurface,
           fontWeight = FontWeight.Bold,
         )
-        if (node.subtitle.isNotBlank()) {
-          Text(
-            text = node.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-          )
-        }
       }
     }
   }
@@ -304,8 +297,8 @@ private fun WorkflowGridCard(
     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().height(188.dp).padding(16.dp),
-      verticalArrangement = Arrangement.SpaceBetween,
+      modifier = Modifier.fillMaxWidth().height(120.dp).padding(16.dp),
+      verticalArrangement = Arrangement.Center,
     ) {
       Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Surface(
@@ -330,32 +323,7 @@ private fun WorkflowGridCard(
             maxLines = 3,
             overflow = TextOverflow.Ellipsis,
           )
-          Text(
-            text = item.description.ifBlank { "Open this workflow step to continue." },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-          )
         }
-      }
-
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-      ) {
-        Text(
-          text = if (item.action != null) "Open" else "Continue",
-          style = MaterialTheme.typography.labelLarge,
-          color = MaterialTheme.colorScheme.primary,
-          fontWeight = FontWeight.Bold,
-        )
-        Icon(
-          imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-          contentDescription = null,
-          tint = MaterialTheme.colorScheme.primary,
-        )
       }
     }
   }

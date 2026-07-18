@@ -2803,7 +2803,7 @@
         {
           "linkId": "recommendations_for_next_phase",
           "text": "Recommendations for next phase",
-          "type": "string",
+          "type": "text",
           "required": true
         }
       ]

@@ -59,7 +59,7 @@ fun WorkflowActionHostScreen(
             } else {
               WorkflowActionState.Ready(
                 title = action.title ?: item.title,
-                subtitle = action.subtitle.ifBlank { item.description },
+                subtitle = "",
                 action = action,
               )
             }
@@ -106,7 +106,7 @@ fun WorkflowActionHostScreen(
         WorkflowActionType.QUESTIONNAIRE ->
           QuestionnaireHostScreen(
             title = state.title,
-            subtitle = state.subtitle,
+            subtitle = "",
             resource = state.action.resource,
             onBack = onBack,
             modifier = modifier,
@@ -115,7 +115,7 @@ fun WorkflowActionHostScreen(
         WorkflowActionType.RECORD_LIST ->
           WorkflowRecordListScreen(
             title = state.title,
-            subtitle = state.subtitle,
+            subtitle = "",
             resource = state.action.resource,
             onBack = onBack,
             onRecordClick = onRecordClick,
