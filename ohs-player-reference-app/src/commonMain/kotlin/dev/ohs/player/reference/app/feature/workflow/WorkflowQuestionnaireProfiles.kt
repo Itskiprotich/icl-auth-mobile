@@ -17,3 +17,5 @@ package dev.ohs.player.reference.app.feature.workflow
 
 internal const val MPOX_SUPERVISORY_CHECKLIST_RESOURCE =
   "questionnaires/mpox-supervisory-checklist.json"
+
+internal const val MPOX_SUMMARY_SHEET_RESOURCE = "questionnaires/mpox-summary-sheet.json"

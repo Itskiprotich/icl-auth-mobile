@@ -75,6 +75,7 @@ import kotlin.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -82,10 +83,21 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+
+private const val MPOX_SUMMARY_SHEET_MEASURE_REFERENCE = "Measure/mpox-summary-sheet"
+private const val MPOX_SUMMARY_SHEET_OBSERVATION_CODE_SYSTEM =
+  "https://open-health-stack.org/fhir/CodeSystem/mpox-summary-sheet-observation"
+private const val MPOX_SUMMARY_SHEET_SECTION_CODE_SYSTEM =
+  "https://open-health-stack.org/fhir/CodeSystem/mpox-summary-sheet-section"
+private const val SYSTEM_CREATION_IDENTIFIER_SYSTEM = "system-creation"
+
+private val MPOX_SUMMARY_SHEET_OBSERVATION_SECTION_LINK_IDS =
+  setOf("target_population", "utilization_aefi_mpox_surveilance")
 
 @Composable
 internal fun QuestionnaireHostScreen(
@@ -185,11 +197,20 @@ internal fun QuestionnaireHostScreen(
           is QuestionnaireScreenState.Error ->
             WorkflowCenteredMessage(title = "Questionnaire unavailable", message = state.message)
 
-          is QuestionnaireScreenState.Ready ->
+          is QuestionnaireScreenState.Ready -> {
+            val preparedQuestionnaireJson =
+              remember(resource, state.questionnaireJson) {
+                resolveCqfCalculatedToday(
+                  augmentQuestionnaireJsonForWorkflow(
+                    resource = resource,
+                    questionnaireJson = state.questionnaireJson,
+                  )
+                )
+              }
             Column(modifier = Modifier.fillMaxSize()) {
               Box(modifier = Modifier.weight(1f)) {
                 DataCaptureQuestionnaire(
-                  questionnaireJson = resolveCqfCalculatedToday(state.questionnaireJson),
+                  questionnaireJson = preparedQuestionnaireJson,
                   config =
                     QuestionnaireConfig(
                       showSubmitButton = true,
@@ -216,7 +237,10 @@ internal fun QuestionnaireHostScreen(
                         val response = getResponse()
                         if (resource == MPOX_SUPERVISORY_CHECKLIST_RESOURCE) {
                           saveWorkflowQuestionnaireResponse(
-                            prepareSupervisorChecklistResponse(response = response, resource = resource)
+                            prepareSupervisorChecklistResponse(
+                              response = response,
+                              resource = resource,
+                            )
                           )
                           submissionSuccessMessage = "Checklist saved successfully."
                           return@launch
@@ -232,7 +256,7 @@ internal fun QuestionnaireHostScreen(
                         val questionnaire =
                           fhirJson.decodeFromString(
                             Questionnaire.serializer(),
-                            state.questionnaireJson,
+                            preparedQuestionnaireJson,
                           )
                         val extractedBundle =
                           TemplateExtractionEngine.extract(questionnaire, response)
@@ -269,6 +293,7 @@ internal fun QuestionnaireHostScreen(
                 )
               }
             }
+          }
         }
       }
     }
@@ -403,6 +428,8 @@ private fun postProcessExtractedBundle(
   encounterRef: Reference,
   parentEncounterRef: Reference?,
 ): Bundle {
+  val workflowTrackingSystem =
+    extractedBundle.workflowTrackingIdentifierSystem(questionnaireResourcePath)
   val rewrittenEntries =
     extractedBundle.entry.map { entry ->
       val updatedResource =
@@ -430,7 +457,12 @@ private fun postProcessExtractedBundle(
 
           is Specimen -> resource.copy(id = resource.id.orGeneratedId(), subject = patientRef)
 
-          is Patient -> resource.copy(id = patientId)
+          is Patient ->
+            resource.withWorkflowTrackingIdentifiers(
+              patientId = patientId,
+              encounterId = encounterId,
+              workflowTrackingSystem = workflowTrackingSystem,
+            )
 
           else -> resource
         }
@@ -478,14 +510,11 @@ private fun prepareSupervisorChecklistResponse(
   val fhirJson = FhirJson.instance
   val timestamp = Clock.System.now().toString()
   val responseJson =
-    fhirJson.encodeToJsonElement(
-      dev.ohs.fhir.model.r4.QuestionnaireResponse.serializer(),
-      response,
-    )
+    fhirJson
+      .encodeToJsonElement(dev.ohs.fhir.model.r4.QuestionnaireResponse.serializer(), response)
       .jsonObject
   val updatedResponse = responseJson.toMutableMap()
-  val existingExtensions =
-    responseJson["extension"]?.jsonArray?.toMutableList() ?: mutableListOf()
+  val existingExtensions = responseJson["extension"]?.jsonArray?.toMutableList() ?: mutableListOf()
 
   existingExtensions.add(
     buildJsonObject {
@@ -518,58 +547,516 @@ private fun prepareSupervisorChecklistResponse(
   )
 }
 
-private fun supervisorChecklistIdentifierJson(): JsonObject =
-  buildJsonObject {
-    put("use", JsonPrimitive("official"))
-    put(
-      "type",
-      buildJsonObject {
-        put(
-          "coding",
-          JsonArray(
-            listOf(
-              buildJsonObject {
-                put("system", JsonPrimitive("supervisor_checklist"))
-                put("code", JsonPrimitive("supervisor_checklist"))
-                put("display", JsonPrimitive("Supervisor Checklist"))
-              }
-            )
-          ),
-        )
-        put("text", JsonPrimitive("Supervisor Checklist"))
-      },
-    )
-    put("system", JsonPrimitive("supervisor_checklist"))
-    put("value", JsonPrimitive("supervisor_checklist"))
+private fun supervisorChecklistIdentifierJson(): JsonObject = buildJsonObject {
+  put("use", JsonPrimitive("official"))
+  put(
+    "type",
+    buildJsonObject {
+      put(
+        "coding",
+        JsonArray(
+          listOf(
+            buildJsonObject {
+              put("system", JsonPrimitive("supervisor_checklist"))
+              put("code", JsonPrimitive("supervisor_checklist"))
+              put("display", JsonPrimitive("Supervisor Checklist"))
+            }
+          )
+        ),
+      )
+      put("text", JsonPrimitive("Supervisor Checklist"))
+    },
+  )
+  put("system", JsonPrimitive("supervisor_checklist"))
+  put("value", JsonPrimitive("supervisor_checklist"))
+}
+
+private fun supervisorChecklistGeoLocationIdentifierJson(): JsonObject = buildJsonObject {
+  put("use", JsonPrimitive("official"))
+  put(
+    "type",
+    buildJsonObject {
+      put(
+        "coding",
+        JsonArray(
+          listOf(
+            buildJsonObject {
+              put("system", JsonPrimitive("geo-location-details"))
+              put("code", JsonPrimitive("geo-location"))
+              put("display", JsonPrimitive("Latitude: -4.0206585, Longitude: 39.6799808"))
+            }
+          )
+        ),
+      )
+      put("text", JsonPrimitive("Latitude: -4.0206585, Longitude: 39.6799808"))
+    },
+  )
+  put("system", JsonPrimitive("geo-location-details"))
+  put("value", JsonPrimitive("lat:-4.0206585,lon:39.6799808"))
+}
+
+private fun augmentQuestionnaireJsonForWorkflow(
+  resource: String,
+  questionnaireJson: String,
+): String =
+  when (resource) {
+    MPOX_SUMMARY_SHEET_RESOURCE -> questionnaireJson.withMpoxSummarySheetTemplateExtractBundle()
+    else -> questionnaireJson
   }
 
-private fun supervisorChecklistGeoLocationIdentifierJson(): JsonObject =
-  buildJsonObject {
-    put("use", JsonPrimitive("official"))
-    put(
-      "type",
+private fun String.withMpoxSummarySheetTemplateExtractBundle(): String {
+  val root = Json.parseToJsonElement(this).jsonObject
+  val extensions = root["extension"]?.jsonArray.orEmpty()
+  val hasTemplateExtractBundle =
+    extensions.any { extension ->
+      extension.jsonObject["url"]?.jsonPrimitive?.contentOrNull ==
+        "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle"
+    }
+
+  if (hasTemplateExtractBundle) {
+    return this
+  }
+
+  val updatedRoot = root.toMutableMap()
+  updatedRoot["subjectType"] = JsonArray(listOf(JsonPrimitive("Patient")))
+  updatedRoot["extension"] =
+    JsonArray(
+      listOf(
+        buildJsonObject {
+          put(
+            "url",
+            JsonPrimitive(
+              "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle"
+            ),
+          )
+          put("valueReference", buildJsonObject { put("reference", JsonPrimitive("#bunExtract")) })
+        }
+      ) + extensions
+    )
+  updatedRoot["contained"] =
+    JsonArray(
+      (root["contained"]?.jsonArray.orEmpty()) + listOf(buildMpoxSummarySheetTemplateBundle(root))
+    )
+
+  return JsonObject(updatedRoot).toString()
+}
+
+private fun buildMpoxSummarySheetTemplateBundle(questionnaireJson: JsonObject): JsonObject {
+  val patientFullUrl = "urn:uuid:mpox-summary-sheet-patient"
+  val encounterFullUrl = "urn:uuid:mpox-summary-sheet-encounter"
+  val measureReportFullUrl = "urn:uuid:mpox-summary-sheet-measure-report"
+  val entries =
+    mutableListOf(
       buildJsonObject {
+        put("fullUrl", JsonPrimitive(patientFullUrl))
         put(
-          "coding",
-          JsonArray(
-            listOf(
-              buildJsonObject {
-                put("system", JsonPrimitive("geo-location-details"))
-                put("code", JsonPrimitive("geo-location"))
-                put(
-                  "display",
-                  JsonPrimitive("Latitude: -4.0206585, Longitude: 39.6799808"),
-                )
-              }
-            )
-          ),
+          "resource",
+          buildJsonObject {
+            put("resourceType", JsonPrimitive("Patient"))
+            put("active", JsonPrimitive(true))
+          },
         )
-        put("text", JsonPrimitive("Latitude: -4.0206585, Longitude: 39.6799808"))
+        put("request", questionnaireTemplateRequestJson("Patient"))
+      },
+      buildJsonObject {
+        put("fullUrl", JsonPrimitive(encounterFullUrl))
+        put(
+          "resource",
+          buildJsonObject {
+            put("resourceType", JsonPrimitive("Encounter"))
+            put("status", JsonPrimitive("finished"))
+            put(
+              "class",
+              buildJsonObject {
+                put("system", JsonPrimitive("http://terminology.hl7.org/CodeSystem/v3-ActCode"))
+                put("code", JsonPrimitive("AMB"))
+                put("display", JsonPrimitive("ambulatory"))
+              },
+            )
+            put("subject", referenceJson(patientFullUrl))
+            put(
+              "reasonCode",
+              JsonArray(
+                listOf(
+                  buildJsonObject {
+                    put(
+                      "coding",
+                      JsonArray(
+                        listOf(
+                          buildJsonObject {
+                            put(
+                              "system",
+                              JsonPrimitive("http://example.org/CodeSystem/case-reason"),
+                            )
+                            put(
+                              "code",
+                              JsonPrimitive(
+                                workflowTrackingIdentifierSystem(MPOX_SUMMARY_SHEET_RESOURCE)
+                              ),
+                            )
+                            put("display", JsonPrimitive("Mpox Summary Sheet"))
+                          }
+                        )
+                      ),
+                    )
+                  }
+                )
+              ),
+            )
+          },
+        )
+        put("request", questionnaireTemplateRequestJson("Encounter"))
+      },
+      buildJsonObject {
+        put("fullUrl", JsonPrimitive(measureReportFullUrl))
+        put(
+          "resource",
+          buildJsonObject {
+            put("resourceType", JsonPrimitive("MeasureReport"))
+            put("status", JsonPrimitive("complete"))
+            put("type", JsonPrimitive("summary"))
+            put("measure", JsonPrimitive(MPOX_SUMMARY_SHEET_MEASURE_REFERENCE))
+            put("subject", referenceJson(patientFullUrl))
+          },
+        )
+        put("request", questionnaireTemplateRequestJson("MeasureReport"))
       },
     )
-    put("system", JsonPrimitive("geo-location-details"))
-    put("value", JsonPrimitive("lat:-4.0206585,lon:39.6799808"))
+
+  questionnaireJson.responseItems().forEach { itemElement ->
+    val item = itemElement.jsonObject
+    val linkId = item["linkId"]?.jsonPrimitive?.contentOrNull ?: return@forEach
+    val title = item["text"]?.jsonPrimitive?.contentOrNull.orEmpty()
+    if (linkId in MPOX_SUMMARY_SHEET_OBSERVATION_SECTION_LINK_IDS) {
+      entries +=
+        item.buildMpoxSummarySheetObservationTemplateEntries(
+          sectionLinkId = linkId,
+          sectionTitle = title,
+          patientFullUrl = patientFullUrl,
+          encounterFullUrl = encounterFullUrl,
+        )
+    }
   }
+
+  return buildJsonObject {
+    put("resourceType", JsonPrimitive("Bundle"))
+    put("id", JsonPrimitive("bunExtract"))
+    put("type", JsonPrimitive("transaction"))
+    put("entry", JsonArray(entries))
+  }
+}
+
+private fun JsonObject.buildMpoxSummarySheetObservationTemplateEntries(
+  sectionLinkId: String,
+  sectionTitle: String,
+  patientFullUrl: String,
+  encounterFullUrl: String,
+): List<JsonObject> {
+  val entries = mutableListOf<JsonObject>()
+
+  fun collect(items: JsonArray) {
+    for (element in items) {
+      val item = element.jsonObject
+      val type = item["type"]?.jsonPrimitive?.contentOrNull.orEmpty()
+      val linkId = item["linkId"]?.jsonPrimitive?.contentOrNull.orEmpty()
+      val text =
+        item["text"]?.jsonPrimitive?.contentOrNull?.trim()?.takeIf(String::isNotBlank) ?: linkId
+
+      questionnaireObservationValueTemplate(type)?.let { valueTemplate ->
+        entries += buildJsonObject {
+          put(
+            "extension",
+            JsonArray(
+              listOf(
+                buildJsonObject {
+                  put(
+                    "url",
+                    JsonPrimitive(
+                      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext"
+                    ),
+                  )
+                  put(
+                    "valueString",
+                    JsonPrimitive("%resource.descendants().where(linkId = '$linkId')"),
+                  )
+                }
+              )
+            ),
+          )
+          put("fullUrl", JsonPrimitive("urn:uuid:mpox-summary-sheet-observation-$linkId"))
+          put(
+            "resource",
+            buildJsonObject {
+              put("resourceType", JsonPrimitive("Observation"))
+              put("status", JsonPrimitive("final"))
+              put("subject", referenceJson(patientFullUrl))
+              put("encounter", referenceJson(encounterFullUrl))
+              put(
+                "category",
+                JsonArray(
+                  listOf(
+                    buildJsonObject {
+                      put(
+                        "coding",
+                        JsonArray(
+                          listOf(
+                            buildJsonObject {
+                              put("system", JsonPrimitive(MPOX_SUMMARY_SHEET_SECTION_CODE_SYSTEM))
+                              put("code", JsonPrimitive(sectionLinkId))
+                              put("display", JsonPrimitive(sectionTitle))
+                            }
+                          )
+                        ),
+                      )
+                    }
+                  )
+                ),
+              )
+              put(
+                "code",
+                buildJsonObject {
+                  put(
+                    "coding",
+                    JsonArray(
+                      listOf(
+                        buildJsonObject {
+                          put("system", JsonPrimitive(MPOX_SUMMARY_SHEET_OBSERVATION_CODE_SYSTEM))
+                          put("code", JsonPrimitive(linkId))
+                          put("display", JsonPrimitive(text))
+                        }
+                      )
+                    ),
+                  )
+                  put("text", JsonPrimitive(text))
+                },
+              )
+              valueTemplate(this, text)
+            },
+          )
+          put("request", questionnaireTemplateRequestJson("Observation"))
+        }
+      }
+      collect(item.responseItems())
+    }
+  }
+
+  collect(responseItems())
+  return entries
+}
+
+private fun questionnaireObservationValueTemplate(
+  type: String
+): ((kotlinx.serialization.json.JsonObjectBuilder, String) -> Unit)? =
+  when (type) {
+    "integer" -> { builder, _ ->
+        builder.put(
+          "_valueInteger",
+          questionnaireTemplateExtractPrimitiveValue(extensionValue = "answer.value"),
+        )
+      }
+
+    "string" -> { builder, _ ->
+        builder.put(
+          "_valueString",
+          questionnaireTemplateExtractPrimitiveValue(extensionValue = "answer.value"),
+        )
+      }
+
+    "choice" -> { builder, _ ->
+        builder.put(
+          "valueCodeableConcept",
+          buildJsonObject {
+            put(
+              "coding",
+              JsonArray(
+                listOf(
+                  buildJsonObject {
+                    put("system", JsonPrimitive(MPOX_SUMMARY_SHEET_OBSERVATION_CODE_SYSTEM))
+                    put(
+                      "_code",
+                      questionnaireTemplateExtractPrimitiveValue(
+                        extensionValue = "answer.value.code"
+                      ),
+                    )
+                    put(
+                      "_display",
+                      questionnaireTemplateExtractPrimitiveValue(
+                        extensionValue = "answer.value.display"
+                      ),
+                    )
+                  }
+                )
+              ),
+            )
+          },
+        )
+      }
+
+    else -> null
+  }
+
+private fun questionnaireTemplateExtractPrimitiveValue(extensionValue: String): JsonObject =
+  buildJsonObject {
+    put(
+      "extension",
+      JsonArray(
+        listOf(
+          buildJsonObject {
+            put(
+              "url",
+              JsonPrimitive(
+                "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue"
+              ),
+            )
+            put("valueString", JsonPrimitive(extensionValue))
+          }
+        )
+      ),
+    )
+  }
+
+private fun questionnaireTemplateRequestJson(resourceType: String): JsonObject = buildJsonObject {
+  put("method", JsonPrimitive("POST"))
+  put("url", JsonPrimitive(resourceType))
+}
+
+private fun bundleEntryJson(resource: JsonObject): JsonObject = buildJsonObject {
+  put("resource", resource)
+}
+
+private fun referenceJson(reference: String): JsonObject = buildJsonObject {
+  put("reference", JsonPrimitive(reference))
+}
+
+private fun JsonObject.responseItems(): JsonArray =
+  this["item"]?.jsonArray ?: JsonArray(emptyList())
+
+private fun Patient.withWorkflowTrackingIdentifiers(
+  patientId: String,
+  encounterId: String,
+  workflowTrackingSystem: String,
+): Patient {
+  val fhirJson = FhirJson.instance
+  val patientJson =
+    fhirJson.encodeToJsonElement(Patient.serializer(), this).jsonObject.toMutableMap()
+  patientJson["id"] = JsonPrimitive(patientId)
+  patientJson["identifier"] =
+    workflowPatientIdentifiersJson(
+      existingIdentifiers = patientJson["identifier"]?.jsonArray,
+      workflowTrackingSystem = workflowTrackingSystem,
+      encounterId = encounterId,
+      systemCreationTimestamp = currentWorkflowIdentifierTimestamp(),
+    )
+  return fhirJson.decodeFromJsonElement(Patient.serializer(), JsonObject(patientJson))
+}
+
+private fun workflowPatientIdentifiersJson(
+  existingIdentifiers: JsonArray?,
+  workflowTrackingSystem: String,
+  encounterId: String,
+  systemCreationTimestamp: String,
+): JsonArray {
+  val retainedIdentifiers =
+    existingIdentifiers
+      ?.filterNot { identifier ->
+        val identifierSystem = identifier.jsonObject["system"]?.jsonPrimitive?.contentOrNull
+        identifierSystem == SYSTEM_CREATION_IDENTIFIER_SYSTEM ||
+          identifierSystem == workflowTrackingSystem
+      }
+      .orEmpty()
+
+  return JsonArray(
+    retainedIdentifiers +
+      listOf(
+        workflowSystemCreationIdentifierJson(systemCreationTimestamp),
+        workflowRegistrationIdentifierJson(
+          workflowTrackingSystem = workflowTrackingSystem,
+          encounterId = encounterId,
+        ),
+      )
+  )
+}
+
+private fun workflowSystemCreationIdentifierJson(timestamp: String): JsonObject = buildJsonObject {
+  put(
+    "type",
+    buildJsonObject {
+      put(
+        "coding",
+        JsonArray(
+          listOf(
+            buildJsonObject {
+              put("system", JsonPrimitive(SYSTEM_CREATION_IDENTIFIER_SYSTEM))
+              put("code", JsonPrimitive("system_creation"))
+              put("display", JsonPrimitive("System Creation"))
+            }
+          )
+        ),
+      )
+      put("text", JsonPrimitive(timestamp))
+    },
+  )
+  put("system", JsonPrimitive(SYSTEM_CREATION_IDENTIFIER_SYSTEM))
+  put("value", JsonPrimitive(timestamp))
+}
+
+private fun workflowRegistrationIdentifierJson(
+  workflowTrackingSystem: String,
+  encounterId: String,
+): JsonObject = buildJsonObject {
+  put(
+    "type",
+    buildJsonObject {
+      put(
+        "coding",
+        JsonArray(
+          listOf(
+            buildJsonObject {
+              put("system", JsonPrimitive(workflowTrackingSystem))
+              put("code", JsonPrimitive(workflowTrackingSystem))
+              put("display", JsonPrimitive(workflowTrackingSystem))
+            }
+          )
+        ),
+      )
+      put("text", JsonPrimitive(encounterId))
+    },
+  )
+  put("system", JsonPrimitive(workflowTrackingSystem))
+  put("value", JsonPrimitive(encounterId))
+}
+
+private fun Bundle.workflowTrackingIdentifierSystem(questionnaireResourcePath: String): String =
+  entry
+    .mapNotNull { entry -> entry.resource as? Encounter }
+    .firstNotNullOfOrNull { encounter ->
+      encounter.reasonCode.firstOrNull()?.coding?.firstOrNull()?.code?.value
+    } ?: workflowTrackingIdentifierSystem(questionnaireResourcePath)
+
+private fun workflowTrackingIdentifierSystem(resource: String): String =
+  when (resource) {
+    MPOX_SUPERVISORY_CHECKLIST_RESOURCE -> "supervisor_checklist"
+    else -> resource.substringAfterLast('/').substringBeforeLast('.')
+  }
+
+private fun currentWorkflowIdentifierTimestamp(): String {
+  val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+  fun Int.twoDigits(): String = toString().padStart(2, '0')
+
+  return buildString {
+    append(now.date.year)
+    append('-')
+    append(now.date.monthNumber.twoDigits())
+    append('-')
+    append(now.date.dayOfMonth.twoDigits())
+    append(' ')
+    append(now.hour.twoDigits())
+    append(':')
+    append(now.minute.twoDigits())
+    append(':')
+    append(now.second.twoDigits())
+  }
+}
 
 private fun Observation.primaryCode(): String? =
   code.coding.firstOrNull()?.code?.value ?: code.text?.value

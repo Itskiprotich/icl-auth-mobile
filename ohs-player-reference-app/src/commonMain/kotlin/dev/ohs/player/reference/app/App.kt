@@ -15,23 +15,10 @@
  */
 package dev.ohs.player.reference.app
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -40,12 +27,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -57,6 +39,7 @@ import androidx.navigation.navArgument
 import androidx.savedstate.read
 import dev.ohs.player.library.registry.LocalViewRegistry
 import dev.ohs.player.reference.app.auth.initializeReferenceAuthIfNeeded
+import dev.ohs.player.reference.app.components.ReferenceBottomBar
 import dev.ohs.player.reference.app.feature.group.list.GroupListScreen
 import dev.ohs.player.reference.app.feature.group.profile.GroupProfileScreen
 import dev.ohs.player.reference.app.feature.home.HomeScreen
@@ -330,106 +313,6 @@ private fun ReferenceAppNavigation(onLogout: () -> Unit) {
       ) { back ->
         val patientId = back.arguments?.read { getString(PATIENT_ID_ARG) }.orEmpty()
         PatientProfileScreen(patientId = patientId, onBack = { navController.popBackStack() })
-      }
-    }
-  }
-}
-
-@Composable
-private fun ReferenceBottomBar(
-  homeSelected: Boolean,
-  profileSelected: Boolean,
-  onHomeClick: () -> Unit,
-  onProfileClick: () -> Unit,
-) {
-  Surface(
-    color = MaterialTheme.colorScheme.surface,
-    shadowElevation = 22.dp,
-    tonalElevation = 10.dp,
-    shape = RoundedCornerShape(topStart = 34.dp, topEnd = 34.dp),
-  ) {
-    Row(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
-      horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-      BottomNavItem(
-        selected = homeSelected,
-        label = "Home",
-        icon = Icons.Default.Home,
-        modifier = Modifier.weight(1f),
-        onClick = onHomeClick,
-      )
-      BottomNavItem(
-        selected = profileSelected,
-        label = "Profile",
-        icon = Icons.Default.Person,
-        modifier = Modifier.weight(1f),
-        onClick = onProfileClick,
-      )
-    }
-  }
-}
-
-@Composable
-private fun BottomNavItem(
-  selected: Boolean,
-  label: String,
-  icon: androidx.compose.ui.graphics.vector.ImageVector,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier,
-) {
-  val selectedBrush =
-    Brush.horizontalGradient(
-      listOf(
-        MaterialTheme.colorScheme.primaryContainer,
-        MaterialTheme.colorScheme.tertiaryContainer,
-      )
-    )
-
-  Surface(
-    modifier = modifier,
-    onClick = onClick,
-    shape = RoundedCornerShape(16.dp),
-    color = if (selected) Color.Transparent else MaterialTheme.colorScheme.surface,
-    border =
-      BorderStroke(
-        1.dp,
-        if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
-        else MaterialTheme.colorScheme.outline.copy(alpha = 0.08f),
-      ),
-  ) {
-    Box(
-      modifier =
-        Modifier.fillMaxWidth()
-          .background(
-            if (selected) selectedBrush
-            else
-              Brush.horizontalGradient(
-                listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface)
-              )
-          )
-          .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-      Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-      ) {
-        Icon(
-          imageVector = icon,
-          contentDescription = label,
-          tint =
-            if (selected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-          text = label,
-          style = MaterialTheme.typography.labelLarge,
-          color =
-            if (selected) MaterialTheme.colorScheme.primary
-            else MaterialTheme.colorScheme.onSurfaceVariant,
-          fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-        )
       }
     }
   }
