@@ -101,7 +101,34 @@
           "subtitle": "Select Case Type",
           "sectionTitle": "Case Actions",
           "layout": "actions",
-          "items": []
+          "items": [
+            {
+              "id": "add-new-afp-case",
+              "title": "Add New AFP Case",
+              "icon": "add",
+              "description": "Open a structured case questionnaire for rapid reporting.",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/afp-case.json",
+                "title": "New AFP Case",
+                "subtitle": "Capture patient, clinical, and surveillance details.",
+                "primaryActionLabel": "Submit Case"
+              }
+            },
+            {
+              "id": "afp-case-list",
+              "title": "AFP Case List",
+              "icon": "person",
+              "description": "Browse, search, and paginate AFP case records.",
+              "action": {
+                "type": "record_list",
+                "resource": "records/afp-cases.json",
+                "title": "AFP Case List",
+                "subtitle": "Track draft, submitted, and reviewed case investigations."
+              },
+              "trailingLabel": "Cases"
+            }
+          ]
         },
         {
           "id": "weekly-reportable-diseases",
@@ -109,6 +136,22 @@
           "subtitle": "Select a weekly reporting form.",
           "sectionTitle": "Available Forms",
           "layout": "grid",
+          "items": [
+            {
+              "id": "moh-505",
+              "title": "MOH 505",
+              "description": "Weekly epidemiological surveillance reporting form.",
+              "icon": "info",
+              "destinationNodeId": "moh-505"
+            }
+          ]
+        },
+        {
+          "id": "moh-505",
+          "title": "MOH 505",
+          "subtitle": "Coming soon",
+          "sectionTitle": "Case Actions",
+          "layout": "actions",
           "items": []
         },
         {
@@ -339,7 +382,50 @@
           "subtitle": "Existing household and patient screens continue from here.",
           "sectionTitle": "Available Forms",
           "layout": "grid",
-          "items": []
+          "items": [
+            {
+              "id": "visceral-leishmaniasis",
+              "title": "Visceral Leishmaniasis",
+              "description": "Manage visceral leishmaniasis case investigation and follow-up.",
+              "icon": "favorite",
+              "destinationNodeId": "visceral-leishmaniasis"
+            }
+          ]
+        },
+        {
+          "id": "visceral-leishmaniasis",
+          "title": "Visceral Leishmaniasis",
+          "subtitle": "Select Case Type",
+          "sectionTitle": "Case Actions",
+          "layout": "actions",
+          "items": [
+            {
+              "id": "add-new-visceral-leishmaniasis-case",
+              "title": "Add New Visceral Leishmaniasis Case",
+              "icon": "add",
+              "description": "Open a structured case questionnaire for rapid reporting.",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/visceral-leishmaniasis-case.json",
+                "title": "New Visceral Leishmaniasis Case",
+                "subtitle": "Capture patient, clinical, and surveillance details.",
+                "primaryActionLabel": "Submit Case"
+              }
+            },
+            {
+              "id": "visceral-leishmaniasis-case-list",
+              "title": "Visceral Leishmaniasis Case List",
+              "icon": "person",
+              "description": "Browse, search, and paginate visceral leishmaniasis case records.",
+              "action": {
+                "type": "record_list",
+                "resource": "records/visceral-leishmaniasis-cases.json",
+                "title": "Visceral Leishmaniasis Case List",
+                "subtitle": "Track draft, submitted, and reviewed case investigations."
+              },
+              "trailingLabel": "Cases"
+            }
+          ]
         }
       ]
     },
@@ -356,6 +442,124 @@
           "subtitle": "Forms for this workflow will appear here.",
           "sectionTitle": "Available Forms",
           "layout": "grid",
+          "items": [
+            {
+              "id": "rumor-tracking-tool",
+              "title": "Rumor Tracking Tool",
+              "description": "Log and follow up on reported rumors.",
+              "icon": "warning",
+              "destinationNodeId": "rumor-tracking-tool"
+            },
+            {
+              "id": "social-investigation-form",
+              "title": "Social Investigation Form",
+              "description": "Capture and review social investigation questionnaires.",
+              "icon": "person",
+              "destinationNodeId": "social-investigation-form"
+            }
+          ]
+        },
+        {
+          "id": "rumor-tracking-tool",
+          "title": "Rumor Tracking Tool",
+          "subtitle": "Select Case Type",
+          "sectionTitle": "Case Actions",
+          "layout": "actions",
+          "items": [
+            {
+              "id": "add-new-rumor",
+              "title": "Add New Rumor",
+              "icon": "add",
+              "description": "Open a structured rumor questionnaire for rapid reporting.",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/rumor-tracking.json",
+                "title": "New Rumor",
+                "subtitle": "Capture rumor details, source, and verification status.",
+                "primaryActionLabel": "Submit Rumor"
+              }
+            },
+            {
+              "id": "rumor-list",
+              "title": "Rumor List",
+              "icon": "person",
+              "description": "Browse, search, and paginate reported rumors.",
+              "action": {
+                "type": "record_list",
+                "resource": "records/rumors.json",
+                "title": "Rumor List",
+                "subtitle": "Track draft, submitted, and reviewed rumors."
+              },
+              "trailingLabel": "Rumors"
+            }
+          ]
+        },
+        {
+          "id": "social-investigation-form",
+          "title": "Social Investigation Form",
+          "subtitle": "Select an action",
+          "sectionTitle": "Investigation Actions",
+          "layout": "actions",
+          "items": [
+            {
+              "id": "add-social-investigation",
+              "title": "Add",
+              "icon": "add",
+              "description": "Choose a questionnaire type to capture a new social investigation.",
+              "destinationNodeId": "social-investigation-add"
+            },
+            {
+              "id": "social-investigation-list",
+              "title": "View",
+              "icon": "person",
+              "description": "Browse, search, and paginate social investigation submissions.",
+              "action": {
+                "type": "record_list",
+                "resource": "records/social-investigation-forms.json",
+                "title": "Social Investigation List",
+                "subtitle": "Track draft, submitted, and reviewed investigations."
+              },
+              "trailingLabel": "Entries"
+            }
+          ]
+        },
+        {
+          "id": "social-investigation-add",
+          "title": "Add",
+          "subtitle": "Select Questionnaire Type",
+          "sectionTitle": "Available Forms",
+          "layout": "grid",
+          "items": [
+            {
+              "id": "county-sub-county-questionnaire",
+              "title": "County/Sub County Questionnaire",
+              "description": "Social investigation questionnaire for county and sub-county level reporting.",
+              "icon": "info",
+              "destinationNodeId": "county-sub-county-questionnaire"
+            },
+            {
+              "id": "community-questionnaire",
+              "title": "Community Questionnaire",
+              "description": "Social investigation questionnaire for community level reporting.",
+              "icon": "favorite",
+              "destinationNodeId": "community-questionnaire"
+            }
+          ]
+        },
+        {
+          "id": "county-sub-county-questionnaire",
+          "title": "County/Sub County Questionnaire",
+          "subtitle": "Coming soon",
+          "sectionTitle": "Case Actions",
+          "layout": "actions",
+          "items": []
+        },
+        {
+          "id": "community-questionnaire",
+          "title": "Community Questionnaire",
+          "subtitle": "Coming soon",
+          "sectionTitle": "Case Actions",
+          "layout": "actions",
           "items": []
         }
       ]
