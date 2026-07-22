@@ -9,6 +9,12 @@
   "status": "draft",
   "extension": [
     {
+      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractBundle",
+      "valueReference": {
+        "reference": "#bunExtract"
+      }
+    },
+    {
       "extension": [
         {
           "url": "name",
@@ -187,6 +193,2439 @@
     {
       "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-entryMode",
       "valueCode": "prior-edit"
+    }
+  ],
+  "contained": [
+    {
+      "resourceType": "Bundle",
+      "id": "bunExtract",
+      "type": "transaction",
+      "entry": [
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '359809652429')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f",
+          "resource": {
+            "resourceType": "Patient",
+            "language": "en",
+            "name": [
+              {
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='873240407472' or linkId='246751846436' or linkId='486402457213').answer.value.join(' ')"
+                    }
+                  ]
+                },
+                "_family": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = '486402457213').answer.value.first()"
+                    }
+                  ]
+                },
+                "_given": [
+                  {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "item.where(linkId = '873240407472' or linkId='246751846436').answer.value"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "gender": "unknown",
+            "_gender": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "item.where(linkId = '929966324957').answer.value.first().code"
+                }
+              ]
+            },
+            "birthDate": "1900-01-01",
+            "_birthDate": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "item.where(linkId = '257830485990').answer.value.first()"
+                }
+              ]
+            },
+            "telecom": [
+              {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+                    "valueString": "item.where(linkId = '576318206363').answer.value"
+                  }
+                ],
+                "system": "phone",
+                "_value": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "first()"
+                    }
+                  ]
+                },
+                "use": "mobile"
+              }
+            ],
+            "address": [
+              {
+                "use": "home",
+                "_city": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = 'a2-ward').answer.value.display"
+                    }
+                  ]
+                },
+                "_district": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = 'a3-sub-county').answer.value.display"
+                    }
+                  ]
+                },
+                "_state": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId = 'a4-county').answer.value.display"
+                    }
+                  ]
+                },
+                "_text": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='residence-details').answer.value + ', ' + item.where(linkId='946232932304').answer.value + ', ' + item.where(linkId='a2-ward').answer.value.display + ', ' + item.where(linkId='a3-sub-county').answer.value.display + ', ' + item.where(linkId='a4-county').answer.value.display"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "request": {
+            "method": "POST",
+            "url": "Patient",
+            "ifMatch": "Patient?_name=urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+          }
+        },
+        {
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e4f",
+          "resource": {
+            "resourceType": "Encounter",
+            "status": "finished",
+            "class": {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+              "code": "AMB",
+              "display": "ambulatory"
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "reasonCode": [
+              {
+                "coding": [
+                  {
+                    "system": "http://example.org/CodeSystem/case-reason",
+                    "code": "afp-case-information",
+                    "display": "AFP Case Information"
+                  }
+                ]
+              }
+            ]
+          },
+          "request": {
+            "method": "POST",
+            "url": "Encounter"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '359809652429')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e5f",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vital-signs"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "EPID",
+                  "display": "EPID Number"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "'KEN-' + item.where(linkId='a4-county').answer.value.display + '-' + item.where(linkId='a3-sub-county').answer.value.display + '-' + 'AFP-'"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '294367770999_national' or linkId = '294367770999_county' or linkId = '294367770999_sub_county' or linkId = '294367770999')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e6f",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "294367770999",
+                  "display": "Reporting County"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '819946803642_national' or linkId = '819946803642_county' or linkId = '819946803642_sub_county' or linkId = '819946803642')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e7f",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819946803642",
+                  "display": "Reporting Sub County"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '819943434_national' or linkId = '819943434_county' or linkId = '819943434_sub_county' or linkId = '819943434')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e8f",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819943434",
+                  "display": "Reporting Ward"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '819946803677_national' or linkId = '819946803677_county' or linkId = '819946803677_sub_county' or linkId = '819946803677')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e9f",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819946803677",
+                  "display": "Reporting Facility"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '151479012557').item.where(linkId = 'national_level' or linkId = 'county_level' or linkId = 'sub_county_level' or linkId = 'facility_level').item.where(linkId = '438862163919_national' or linkId = '438862163919_county' or linkId = '438862163919_sub_county' or linkId = '438862163919')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0eaf",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vital-signs"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "438862163919",
+                  "display": "Type of health facility"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '359809652429').item.where(linkId = '442636360588')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ebf",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "known-unknown-date"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "442636360588",
+                  "display": "Date of Birth Known/Unknown"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '451840456960').item.where(linkId = '502488184403')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ecf",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "case-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "502488184403",
+                  "display": "Date of Investigation"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '451840456960').item.where(linkId = '426321975477')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0edf",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "case-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "426321975477",
+                  "display": "Date of Notification"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '451840456960').item.where(linkId = '171292274939')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0eef",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "case-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "171292274939",
+                  "display": "Notified By"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '451840456960').item.where(linkId = '336643888536')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff0",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "hospitalized"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "336643888536",
+                  "display": "Was Patient Admitted"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '451840456960').item.where(linkId = '507199621281')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff1",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "case-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "507199621281",
+                  "display": "Date of Admission"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '451840456960').item.where(linkId = '525996604810')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff2",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "case-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "525996604810",
+                  "display": "IP/OP Number"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '728034137219')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff3",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "728034137219",
+                  "display": "Date of Onset of Paralysis"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '932108244312')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff4",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "932108244312",
+                  "display": "Fever at Onset of Paralysis"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '396371836778')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff5",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "396371836778",
+                  "display": "Paralysis of Sudden Onset"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '917680711879')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff6",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "917680711879",
+                  "display": "Progressive Paralysis Less Than 3 Days"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '776980947995')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff7",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "776980947995",
+                  "display": "Paralysis Flaccid"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '679475123276')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff8",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "679475123276",
+                  "display": "Paralysis Asymmetric"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '828001350323')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0ff9",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "828001350323",
+                  "display": "Site of Paralysis"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '249388449455')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff0",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "249388449455",
+                  "display": "Paralyzed Limb Sensitive to Pain"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '638592165160')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff1",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "638592165160",
+                  "display": "Injection Before Onset of Paralysis"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '701518392602')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff2",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "701518392602",
+                  "display": "Site of Injection"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '564450145870')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff3",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "clinical-information"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "564450145870",
+                  "display": "True AFP After Investigation"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '735342695013').item.where(linkId = '212304573462')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff4",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "outcome"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "212304573462",
+                  "display": "Outcome"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '970455623029')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff5",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "970455623029",
+                  "display": "Vaccinated Against Illness"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '886125589225')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff6",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "886125589225",
+                  "display": "Number of OPV Doses Administered"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueInteger": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '413372430071')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff7",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "413372430071",
+                  "display": "Date of OPV Dose at Birth"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '671158128551')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff8",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "671158128551",
+                  "display": "Date of 1st OPV Dose"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '286826008175')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d1ff9",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "286826008175",
+                  "display": "Date of 2nd OPV Dose"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '705067672267')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff0",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "705067672267",
+                  "display": "Date of 3rd OPV Dose"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '974686716540')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff1",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "974686716540",
+                  "display": "Date of 4th OPV Dose"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '910678978959')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff2",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "910678978959",
+                  "display": "Date of Last OPV Dose via SIA"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '774679982525')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff3",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "774679982525",
+                  "display": "Total OPV Doses via SIA"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueInteger": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '440401067645')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff4",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "440401067645",
+                  "display": "Total OPV Doses via RI"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueInteger": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '799376740588')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff5",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "799376740588",
+                  "display": "Total IPV Doses via SIA"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueInteger": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '999346763880')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff6",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "999346763880",
+                  "display": "Total IPV Doses via RI"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueInteger": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '766122504504')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff7",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "766122504504",
+                  "display": "Date of Last IPV Dose via RI or SIA"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '446305443608').item.where(linkId = '511517897367')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff8",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "vaccination-history"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "511517897367",
+                  "display": "Immunocompromised Status"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "answer.value.display"
+                      }
+                    ]
+                  },
+                  "system": "http://loinc.org"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '350784256533').item.where(linkId = '737703942433')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d2ff9",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "specimen"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "737703942433",
+                  "display": "Date 1st Stool Specimen Collected"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '350784256533').item.where(linkId = '711388438654')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d3ff0",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "specimen"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "711388438654",
+                  "display": "Date 2nd Stool Specimen Collected"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "item.where(linkId = '350784256533').item.where(linkId = '808177332790')"
+            }
+          ],
+          "fullUrl": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d3ff1",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "specimen"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "808177332790",
+                  "display": "Date Specimen Sent to National Level"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:7e3c9d5f-a1b2-4c6d-8e0f-2a4b6c8d0e3f"
+            },
+            "_valueDateTime": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "answer.value.first()"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        }
+      ]
     }
   ],
   "item": [
@@ -1013,28 +3452,6 @@
                 "display": "Female"
               }
             }
-          ],
-          "item": [
-            {
-              "linkId": "262588607153_helpText",
-              "type": "display",
-              "text": " What is the sex of the patient?",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
           ]
         },
         {
@@ -1072,28 +3489,6 @@
                 "code": "unknown",
                 "display": "Unknown"
               }
-            }
-          ],
-          "item": [
-            {
-              "linkId": "258271896621_helpText",
-              "type": "display",
-              "text": "Date of birth of the patient (DD/MM/YYYY)",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
             }
           ]
         },
@@ -1378,29 +3773,7 @@
           "type": "string",
           "linkId": "110761799063",
           "text": "Town/City/Location.",
-          "required": true,
-          "item": [
-            {
-              "linkId": "509826995484_helpText",
-              "type": "display",
-              "text": " The specific town, city, or geographical location of residence.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         }
       ],
       "type": "group",
@@ -1450,28 +3823,6 @@
                   }
                 ]
               }
-            }
-          ],
-          "item": [
-            {
-              "linkId": "502488184403_helpText",
-              "type": "display",
-              "text": "The date when the affected individual first sought medical care.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
             }
           ]
         },
@@ -1529,28 +3880,6 @@
                 {
                   "url": "location",
                   "valueString": "502488184403"
-                }
-              ]
-            }
-          ],
-          "item": [
-            {
-              "linkId": "426321975477_helpText",
-              "type": "display",
-              "text": "The date when the health facility reported the case to the sub-county and national health authorities.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
                 }
               ]
             }
@@ -1634,28 +3963,6 @@
                 "display": "No"
               }
             }
-          ],
-          "item": [
-            {
-              "linkId": "336643888536_helpText",
-              "type": "display",
-              "text": "Was the patient hospitalized?",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
           ]
         },
         {
@@ -1696,57 +4003,13 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "507199621281_helpText",
-              "type": "display",
-              "text": "The date when the patient was admitted to a healthcare facility.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "string",
           "linkId": "525996604810",
           "text": "IP/OP No.",
-          "required": true,
-          "item": [
-            {
-              "linkId": "525996604810_helpText",
-              "type": "display",
-              "text": "Inpatient (IP) or Outpatient (OP) number assigned by the health facility.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         }
       ],
       "type": "group",
@@ -1939,28 +4202,6 @@
                 "code": "no",
                 "display": "No"
               }
-            }
-          ],
-          "item": [
-            {
-              "linkId": "917680711879_helpText",
-              "type": "display",
-              "text": "Was the progression of paralysis less than 3 days?",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
             }
           ]
         },
@@ -2414,28 +4655,6 @@
                 "display": "Unknown"
               }
             }
-          ],
-          "item": [
-            {
-              "linkId": "970455623029_helpText",
-              "type": "display",
-              "text": "Was the patient vaccinated against illness (including campaign)? ",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
           ]
         },
         {
@@ -2452,29 +4671,7 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "886125589225_helpText",
-              "type": "display",
-              "text": "The total number of polio vaccines administered (excluding birth OPV)",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "date",
@@ -2818,29 +5015,7 @@
               "answerInteger": 4
             }
           ],
-          "enableBehavior": "all",
-          "item": [
-            {
-              "linkId": "597572769623_helpText",
-              "type": "display",
-              "text": "If more than 4 doses, date of last dose.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "enableBehavior": "all"
         },
         {
           "type": "choice",
@@ -2892,28 +5067,6 @@
                 "code": "unknown",
                 "display": "Unknown"
               }
-            }
-          ],
-          "item": [
-            {
-              "linkId": "610048088023_helpText",
-              "type": "display",
-              "text": "Were there any vaccines given in the last 30 days?",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
             }
           ]
         },
@@ -2971,29 +5124,7 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "910678978959_helpText",
-              "type": "display",
-              "text": "Date of last OPV dose administered during Supplementary Immunization Activity (SIA) e.g. vaccination campaigns.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "integer",
@@ -3009,29 +5140,7 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "774679982525_helpText",
-              "type": "display",
-              "text": "Total number of OPV doses administered during Supplementary Immunization Activity (SIA) e.g. vaccination campaigns.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "integer",
@@ -3047,29 +5156,7 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "440401067645_helpText",
-              "type": "display",
-              "text": "Total number of OPV doses administered during Routine Immunization (RI).",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "integer",
@@ -3085,29 +5172,7 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "799376740588_helpText",
-              "type": "display",
-              "text": "Total number of IPV doses administered during Supplementary Immunization Activity (SIA) e.g. vaccination campaigns.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "integer",
@@ -3123,29 +5188,7 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "999346763880_helpText",
-              "type": "display",
-              "text": "Total number of IPV doses administered during Routine Immunization (RI).",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "date",
@@ -3185,29 +5228,7 @@
               }
             }
           ],
-          "required": true,
-          "item": [
-            {
-              "linkId": "766122504504_helpText",
-              "type": "display",
-              "text": "Date of last IPV dose administered during Routine Immunization (RI) OR Supplementary Immunization Activity (SIA) e.g. vaccination campaigns.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
-            }
-          ]
+          "required": true
         },
         {
           "type": "choice",
@@ -3260,28 +5281,6 @@
                 "code": "unknown",
                 "display": "Unknown"
               }
-            }
-          ],
-          "item": [
-            {
-              "linkId": "650080600932_helpText",
-              "type": "display",
-              "text": "What is the source of Routine Vaccination Information.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
-                }
-              ]
             }
           ]
         },
@@ -3403,28 +5402,6 @@
                 {
                   "url": "location",
                   "valueString": "502488184403"
-                }
-              ]
-            }
-          ],
-          "item": [
-            {
-              "linkId": "737703942433_helpText",
-              "type": "display",
-              "text": "Collect the first date when the case is investigated.",
-              "extension": [
-                {
-                  "url": "http://hl7.org/fhir/StructureDefinition/questionnaire-itemControl",
-                  "valueCodeableConcept": {
-                    "coding": [
-                      {
-                        "system": "http://hl7.org/fhir/questionnaire-item-control",
-                        "code": "help",
-                        "display": "Help-Button"
-                      }
-                    ],
-                    "text": "Help-Button"
-                  }
                 }
               ]
             }

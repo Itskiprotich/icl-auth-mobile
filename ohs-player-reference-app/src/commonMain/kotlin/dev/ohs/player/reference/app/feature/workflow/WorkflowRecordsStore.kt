@@ -107,8 +107,24 @@ internal suspend fun loadWorkflowRecordCollection(
     )
   }
 
-internal suspend fun loadWorkflowRecordCount(resource: String): Int =
-  listWorkflowQuestionnaireResponses(resource).size
+internal suspend fun loadWorkflowRecordCount(resource: String): Int {
+  if (resource.startsWith("records/")) {
+    val identifierSystem =
+      WorkflowCasePresentationRegistry.specForRecordResource(resource).identifierSystem
+    if (!identifierSystem.isNullOrBlank()) {
+      val patientIds = patientIdsForIdentifierSystem(identifierSystem)
+      if (patientIds.isEmpty()) return 0
+      return workflowRepository()
+        .all("QuestionnaireResponse")
+        .filterIsInstance<QuestionnaireResponse>()
+        .count { response ->
+          val patientId = patientIdFromReference(response.subject?.reference?.value)
+          patientId != null && patientId in patientIds
+        }
+    }
+  }
+  return listWorkflowQuestionnaireResponses(resource).size
+}
 
 internal fun buildStoredResponseCollection(
   resource: String? = null,

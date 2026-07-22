@@ -110,7 +110,7 @@ fun WorkflowModuleScreen(
     // Gradient header — same design language as HomeScreen
     val headerTitle =
       when (val s = screenState) {
-        is WorkflowModuleScreenState.Ready -> s.module.title
+        is WorkflowModuleScreenState.Ready -> s.node.title.ifBlank { s.module.title }
         is WorkflowModuleScreenState.Missing -> s.title
         WorkflowModuleScreenState.Loading -> ""
       }

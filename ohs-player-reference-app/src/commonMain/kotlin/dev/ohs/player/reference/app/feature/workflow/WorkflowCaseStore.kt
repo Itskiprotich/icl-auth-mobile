@@ -99,6 +99,7 @@ internal data class WorkflowCaseSupplementalTab(
 
 internal data class WorkflowCasePresentationSpec(
   val recordResource: String? = null,
+  val identifierSystem: String? = null,
   val questionnaireResources: Set<String> = emptySet(),
   val questionnaireAliases: Set<String> = emptySet(),
   val questionnaireKeywords: Set<String> = emptySet(),
@@ -113,6 +114,7 @@ internal object WorkflowCasePresentationRegistry {
     listOf(
       WorkflowCasePresentationSpec(
         recordResource = "records/measles-cases.json",
+        identifierSystem = "measles-case-information",
         questionnaireResources = setOf("questionnaires/measles-case.json"),
         questionnaireAliases =
           setOf(
@@ -146,6 +148,23 @@ internal object WorkflowCasePresentationRegistry {
               actionBuilder = WorkflowCaseContext::buildLabResultsQuestionnaireAction,
             )
           ),
+      ),
+      WorkflowCasePresentationSpec(
+        recordResource = "records/afp-cases.json",
+        identifierSystem = "afp-case-information",
+        questionnaireResources = setOf("questionnaires/afp-case.json"),
+        questionnaireKeywords = setOf("afp-case"),
+        indicatorLinkIds =
+          setOf(
+            "929966324957",
+            "257830485990",
+            "728034137219",
+            "776980947995",
+            "679475123276",
+            "970455623029",
+          ),
+        emptyMessage = "No locally saved AFP cases are available yet.",
+        defaultFieldValues = linkedMapOf("Outcome" to "Pending"),
       ),
       WorkflowCasePresentationSpec(
         questionnaireResources = setOf(MPOX_SUPERVISORY_CHECKLIST_RESOURCE),
@@ -374,18 +393,29 @@ private suspend fun loadWorkflowCaseContexts(
         allResponses.filter { it.id == questionnaireResponseId }
 
       !recordResource.isNullOrBlank() -> {
-        allResponses.filter { response ->
-          val responseJson =
-            workflowCaseJson
-              .encodeToJsonElement(QuestionnaireResponse.serializer(), response)
-              .jsonObject
-          WorkflowCasePresentationRegistry.matchesRecordResponse(
-            resource = recordResource,
-            questionnaireResource =
-              response.questionnaireReferenceValue()?.toQuestionnaireResource(),
-            questionnaireReference = response.questionnaireReferenceValue(),
-            answeredLinkIds = responseJson.answersByLinkId().keys,
-          )
+        val spec = WorkflowCasePresentationRegistry.specForRecordResource(recordResource)
+        val identifierSystem = spec.identifierSystem
+
+        if (!identifierSystem.isNullOrBlank()) {
+          val patientIds = patientIdsForIdentifierSystem(identifierSystem)
+          allResponses.filter { response ->
+            val patientId = patientIdFromReference(response.subject?.reference?.value)
+            patientId != null && patientId in patientIds
+          }
+        } else {
+          allResponses.filter { response ->
+            val responseJson =
+              workflowCaseJson
+                .encodeToJsonElement(QuestionnaireResponse.serializer(), response)
+                .jsonObject
+            WorkflowCasePresentationRegistry.matchesRecordResponse(
+              resource = recordResource,
+              questionnaireResource =
+                response.questionnaireReferenceValue()?.toQuestionnaireResource(),
+              questionnaireReference = response.questionnaireReferenceValue(),
+              answeredLinkIds = responseJson.answersByLinkId().keys,
+            )
+          }
         }
       }
 
@@ -1093,6 +1123,18 @@ private fun QuestionnaireResponse.questionnaireReferenceValue(): String? =
 
 private fun Resource.asJsonObject(): JsonObject =
   workflowCaseJson.encodeToJsonElement(Resource.serializer(), this).jsonObject
+
+internal suspend fun patientIdsForIdentifierSystem(identifierSystem: String): Set<String> =
+  resolveFhirRepository()
+    .all("Patient")
+    .filter { it.asJsonObject().hasIdentifierWithSystem(identifierSystem) }
+    .mapNotNull { it.id }
+    .toSet()
+
+private fun JsonObject.hasIdentifierWithSystem(system: String): Boolean =
+  this["identifier"]?.jsonArray.orEmpty().any { identifier ->
+    identifier.jsonObject["system"]?.jsonPrimitive?.contentOrNull == system
+  }
 
 private fun JsonObject?.patientName(): String? {
   val patientName = this?.get("name")?.jsonArray.orEmpty().firstOrNull()?.jsonObject ?: return null
