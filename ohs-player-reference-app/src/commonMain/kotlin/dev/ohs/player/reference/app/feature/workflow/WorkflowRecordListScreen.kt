@@ -15,17 +15,19 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -33,6 +35,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -40,7 +43,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,10 +50,11 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -68,9 +71,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import dev.ohs.player.reference.app.feature.component.common.Chip
 import dev.ohs.player.reference.app.feature.home.components.RecordListMessage
 import dev.ohs.player.reference.app.feature.home.components.RecordListTopBar
 import dev.ohs.player.reference.app.feature.workflow.models.RecordFilterSelection
@@ -343,7 +348,11 @@ private fun PaginationControls(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    OutlinedButton(onClick = onPreviousClick, enabled = currentPage > 0) {
+    FilledTonalButton(
+      onClick = onPreviousClick,
+      enabled = currentPage > 0,
+      shape = RoundedCornerShape(16.dp),
+    ) {
       Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = null)
 
       Spacer(modifier = Modifier.width(4.dp))
@@ -357,7 +366,11 @@ private fun PaginationControls(
       color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
-    Button(onClick = onNextClick, enabled = currentPage < totalPages - 1) {
+    FilledTonalButton(
+      onClick = onNextClick,
+      enabled = currentPage < totalPages - 1,
+      shape = RoundedCornerShape(16.dp),
+    ) {
       Text("Next")
 
       Spacer(modifier = Modifier.width(4.dp))
@@ -376,15 +389,22 @@ private fun CaseSearchField(
   OutlinedTextField(
     value = query,
     onValueChange = onQueryChange,
-    modifier = modifier.fillMaxWidth().heightIn(min = 64.dp),
-    shape = RoundedCornerShape(24.dp),
+    modifier = modifier.fillMaxWidth().heightIn(min = 60.dp),
+    shape = RoundedCornerShape(28.dp),
     singleLine = true,
-    placeholder = { Text(text = "Search for case", style = MaterialTheme.typography.titleMedium) },
+    placeholder = {
+      Text(
+        text = "Search for case",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    },
     leadingIcon = {
       Icon(
         imageVector = Icons.Default.Search,
         contentDescription = null,
-        modifier = Modifier.size(28.dp),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(22.dp),
       )
     },
     trailingIcon = {
@@ -396,10 +416,10 @@ private fun CaseSearchField(
     },
     colors =
       OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = MaterialTheme.colorScheme.surface,
-        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-        focusedBorderColor = MaterialTheme.colorScheme.outline,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = Color.Transparent,
       ),
   )
 }
@@ -412,73 +432,89 @@ private fun WorkflowCaseCard(
 ) {
   val layout = record.cardLayout()
   val isClickable = !record.references?.questionnaireResponseId.isNullOrBlank()
+  val accentColor = record.statusTone.color()
+  val initials = layout.titleValue.trim().firstOrNull()?.uppercaseChar()?.toString() ?: "?"
 
   Card(
     modifier = modifier.fillMaxWidth().clickable(enabled = isClickable, onClick = onClick),
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
-    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    shape = RoundedCornerShape(24.dp),
+    colors =
+      CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
   ) {
-    Column(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
-      verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-      ) {
-        CaseValue(
-          label = layout.titleLabel,
-          value = layout.titleValue,
-          modifier = Modifier.weight(1f),
-        )
+    Row(modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+      Box(modifier = Modifier.width(5.dp).fillMaxHeight().background(accentColor))
 
-        layout.badge?.let { badge ->
-          Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+      Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(12.dp),
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Box(
+            modifier =
+              Modifier.size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center,
           ) {
             Text(
-              text = badge.label,
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              text = initials,
+              style = MaterialTheme.typography.titleMedium,
+              color = MaterialTheme.colorScheme.onPrimaryContainer,
+              fontWeight = FontWeight.Bold,
+            )
+          }
+
+          Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+              text = layout.titleValue.ifBlank { "—" },
+              style = MaterialTheme.typography.titleLarge,
+              color = MaterialTheme.colorScheme.onSurface,
+              fontWeight = FontWeight.Bold,
             )
             Text(
-              text = badge.value.ifBlank { "—" },
-              style = MaterialTheme.typography.titleMedium,
-              color = caseFieldColor(badge.label, badge.value),
-              fontWeight = FontWeight.Medium,
+              text = layout.titleLabel,
+              style = MaterialTheme.typography.bodySmall,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+          }
+
+          layout.badge?.let { badge ->
+            Chip(
+              label = badge.value.ifBlank { "—" },
+              containerColor = accentColor.copy(alpha = 0.12f),
+              contentColor = accentColor,
+            )
+          }
+
+          if (isClickable) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+              contentDescription = "Open case summary",
+              tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
           }
         }
 
-        if (isClickable) {
-          Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = "Open case summary",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-          )
+        if (layout.rows.isNotEmpty()) {
+          HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         }
-      }
 
-      layout.rows.forEach { (leftField, rightField) ->
-        if (rightField == null) {
-          CaseValue(
-            label = leftField.label,
-            value = leftField.value,
-            valueColor = caseFieldColor(leftField.label, leftField.value),
-          )
-        } else {
-          TwoColumnCaseRow(
-            leftLabel = leftField.label,
-            leftValue = leftField.value,
-            rightLabel = rightField.label,
-            rightValue = rightField.value,
-            leftValueColor = caseFieldColor(leftField.label, leftField.value),
-            rightValueColor = caseFieldColor(rightField.label, rightField.value),
-          )
+        layout.rows.forEach { (leftField, rightField) ->
+          if (rightField == null) {
+            CaseValue(label = leftField.label, value = leftField.value)
+          } else {
+            TwoColumnCaseRow(
+              leftLabel = leftField.label,
+              leftValue = leftField.value,
+              rightLabel = rightField.label,
+              rightValue = rightField.value,
+            )
+          }
         }
       }
     }
@@ -492,84 +528,80 @@ private fun TwoColumnCaseRow(
   rightLabel: String,
   rightValue: String,
   modifier: Modifier = Modifier,
-  leftValueColor: Color = MaterialTheme.colorScheme.onSurface,
-  rightValueColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
   Row(
     modifier = modifier.fillMaxWidth(),
     horizontalArrangement = Arrangement.spacedBy(16.dp),
     verticalAlignment = Alignment.Top,
   ) {
-    CaseValue(
-      label = leftLabel,
-      value = leftValue,
-      valueColor = leftValueColor,
-      modifier = Modifier.weight(1f),
-    )
+    CaseValue(label = leftLabel, value = leftValue, modifier = Modifier.weight(1f))
 
-    CaseValue(
-      label = rightLabel,
-      value = rightValue,
-      valueColor = rightValueColor,
-      modifier = Modifier.weight(1f),
-    )
+    CaseValue(label = rightLabel, value = rightValue, modifier = Modifier.weight(1f))
   }
 }
 
 @Composable
-private fun CaseValue(
-  label: String,
-  value: String,
-  modifier: Modifier = Modifier,
-  valueColor: Color = MaterialTheme.colorScheme.onSurface,
-) {
+private fun CaseValue(label: String, value: String, modifier: Modifier = Modifier) {
   Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
     Text(
       text = label,
-      style = MaterialTheme.typography.bodyMedium,
+      style = MaterialTheme.typography.labelMedium,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
 
-    Text(
-      text = value,
-      style = MaterialTheme.typography.titleMedium,
-      color = valueColor,
-      fontWeight = FontWeight.Medium,
-    )
+    val pillColor = caseFieldTone(label, value)
+    if (pillColor != null) {
+      Chip(
+        label = value.ifBlank { "—" },
+        containerColor = pillColor.copy(alpha = 0.12f),
+        contentColor = pillColor,
+      )
+    } else {
+      Text(
+        text = value.ifBlank { "—" },
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+        fontWeight = FontWeight.Medium,
+      )
+    }
   }
 }
 
 @Composable
-private fun labResultColor(result: String): Color =
+private fun WorkflowRecordTone.color(): Color =
+  when (this) {
+    WorkflowRecordTone.SUCCESS -> MaterialTheme.colorScheme.primary
+    WorkflowRecordTone.WARNING -> Color(0xFFB8860B)
+    WorkflowRecordTone.CRITICAL -> MaterialTheme.colorScheme.error
+    WorkflowRecordTone.INFO -> MaterialTheme.colorScheme.tertiary
+    WorkflowRecordTone.NEUTRAL -> MaterialTheme.colorScheme.outline
+  }
+
+@Composable
+private fun labResultColor(result: String): Color? =
   when {
     result.contains("positive", ignoreCase = true) -> MaterialTheme.colorScheme.error
-
-    result.contains("negative", ignoreCase = true) -> MaterialTheme.colorScheme.onSurface
-
-    result.contains("pending", ignoreCase = true) -> MaterialTheme.colorScheme.onSurfaceVariant
-
-    else -> MaterialTheme.colorScheme.onSurface
+    result.contains("negative", ignoreCase = true) -> MaterialTheme.colorScheme.primary
+    result.contains("pending", ignoreCase = true) -> MaterialTheme.colorScheme.outline
+    else -> null
   }
 
 @Composable
-private fun classificationColor(classification: String): Color =
+private fun classificationColor(classification: String): Color? =
   when {
-    classification.contains("discarded", ignoreCase = true) -> MaterialTheme.colorScheme.tertiary
-
+    classification.contains("discarded", ignoreCase = true) -> MaterialTheme.colorScheme.outline
     classification.contains("confirmed", ignoreCase = true) -> MaterialTheme.colorScheme.error
-
-    classification.contains("pending", ignoreCase = true) ->
-      MaterialTheme.colorScheme.onSurfaceVariant
-
-    else -> MaterialTheme.colorScheme.onSurface
+    classification.contains("pending", ignoreCase = true) -> Color(0xFFB8860B)
+    else -> null
   }
 
 @Composable
-private fun caseFieldColor(label: String, value: String): Color =
+private fun caseFieldTone(label: String, value: String): Color? =
   when {
+    value.isBlank() -> null
     label.matchesAnyLabel("Lab Results", "Lab Result") -> labResultColor(value)
     label.matchesAnyLabel("Final Classification", "Classification") -> classificationColor(value)
-    else -> MaterialTheme.colorScheme.onSurface
+    else -> null
   }
 
 private fun WorkflowRecord.fieldValue(vararg labels: String): String? =
@@ -893,10 +925,7 @@ private val SUPERVISORY_CHECKLIST_FIELD_SPECS =
       label = "Site type",
       aliases = listOf("Vaccination Site Type", "Site Type"),
     ),
-    WorkflowCaseCardFieldSpec(
-      label = "Supervisor name",
-      aliases = listOf("Supervisor Name"),
-    ),
+    WorkflowCaseCardFieldSpec(label = "Supervisor name", aliases = listOf("Supervisor Name")),
   )
 
 @OptIn(ExperimentalMaterial3Api::class)
