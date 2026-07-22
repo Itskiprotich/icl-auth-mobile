@@ -15,8 +15,6 @@
  */
 package dev.ohs.player.reference.app.feature.home.components
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
@@ -31,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,17 +51,11 @@ fun ProfileTopBar(
       )
     },
     actions = {
-      Box(modifier = Modifier.padding(4.dp)) {
-        FilledTonalIconButton(
-          onClick = onRefreshClick,
-          enabled = !isRefreshing,
-          modifier = Modifier.align(Alignment.TopEnd),
-        ) {
-          if (isRefreshing) {
-            CircularProgressIndicator(modifier = Modifier.size(19.dp), strokeWidth = 2.dp)
-          } else {
-            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh profile")
-          }
+      FilledTonalIconButton(onClick = onRefreshClick, enabled = !isRefreshing) {
+        if (isRefreshing) {
+          CircularProgressIndicator(modifier = Modifier.size(19.dp), strokeWidth = 2.dp)
+        } else {
+          Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh profile")
         }
       }
       IconButton(onClick = onSettingsClick) {

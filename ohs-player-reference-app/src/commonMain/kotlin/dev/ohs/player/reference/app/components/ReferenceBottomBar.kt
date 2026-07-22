@@ -18,7 +18,6 @@ package dev.ohs.player.reference.app.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -38,19 +37,21 @@ fun ReferenceBottomBar(
   profileSelected: Boolean,
   onHomeClick: () -> Unit,
   onProfileClick: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   Surface(
     modifier =
-      Modifier.fillMaxWidth()
+      modifier
         .windowInsetsPadding(WindowInsets.navigationBars)
-        .padding(horizontal = 20.dp, vertical = 12.dp),
-    color = MaterialTheme.colorScheme.onPrimary,
-    shadowElevation = 12.dp,
-    shape = RoundedCornerShape(28.dp), // rounded on ALL corners = floating pill
+        .padding(horizontal = 32.dp, vertical = 10.dp),
+    color = MaterialTheme.colorScheme.surface,
+    shadowElevation = 16.dp,
+    tonalElevation = 2.dp,
+    shape = RoundedCornerShape(32.dp),
   ) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
-      horizontalArrangement = Arrangement.SpaceEvenly,
+      modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
       BottomNavItem(
         selected = homeSelected,

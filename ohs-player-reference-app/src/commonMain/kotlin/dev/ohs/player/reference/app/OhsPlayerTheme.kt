@@ -22,6 +22,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -31,6 +32,8 @@ import iclauth.ohs_player_reference_app.generated.resources.urbanist_medium
 import iclauth.ohs_player_reference_app.generated.resources.urbanist_regular
 import iclauth.ohs_player_reference_app.generated.resources.urbanist_semibold
 import org.jetbrains.compose.resources.Font
+
+// --- Colour tokens ---
 
 private val OhsPrimary = Color(0xFF236B3A)
 private val OhsOnPrimary = Color.White
@@ -113,6 +116,8 @@ private val OhsDarkColorScheme =
     outline = Color(0xFF8B938A),
   )
 
+// --- Font ---
+
 @Composable
 fun urbanistFontFamily(): FontFamily =
   FontFamily(
@@ -122,60 +127,53 @@ fun urbanistFontFamily(): FontFamily =
     Font(resource = Res.font.urbanist_bold, weight = FontWeight.Bold),
   )
 
+// --- Typography ---
+// All 15 Material 3 type roles are defined here so that every text in the app
+// uses Urbanist and benefits from consistent clinical readability.
+// Sizes follow the M3 type scale with minor upward tweaks for screen legibility.
+
 @Composable
 fun appTypography(): Typography {
-  val urbanist = urbanistFontFamily()
+  val u = urbanistFontFamily()
+
+  fun base(size: Int, lineH: Int, weight: FontWeight, tracking: Float = 0f) =
+    TextStyle(
+      fontFamily = u,
+      fontWeight = weight,
+      fontSize = size.sp,
+      lineHeight = lineH.sp,
+      letterSpacing = tracking.sp,
+    )
 
   return Typography(
-    headlineLarge =
-      Typography()
-        .headlineLarge
-        .copy(
-          fontFamily = urbanist,
-          fontWeight = FontWeight.Bold,
-          fontSize = 34.sp,
-          lineHeight = 40.sp,
-        ),
-    headlineSmall =
-      Typography()
-        .headlineSmall
-        .copy(
-          fontFamily = urbanist,
-          fontWeight = FontWeight.Bold,
-          fontSize = 24.sp,
-          lineHeight = 30.sp,
-        ),
-    titleLarge =
-      Typography()
-        .titleLarge
-        .copy(
-          fontFamily = urbanist,
-          fontWeight = FontWeight.Medium,
-          fontSize = 21.sp,
-          lineHeight = 27.sp,
-        ),
-    titleMedium =
-      Typography()
-        .titleMedium
-        .copy(
-          fontFamily = urbanist,
-          fontWeight = FontWeight.Bold,
-          fontSize = 17.sp,
-          lineHeight = 22.sp,
-        ),
-    bodyMedium =
-      Typography()
-        .bodyMedium
-        .copy(
-          fontFamily = urbanist,
-          fontWeight = FontWeight.Normal,
-          fontSize = 15.sp,
-          lineHeight = 20.sp,
-        ),
-    labelLarge =
-      Typography().labelLarge.copy(fontFamily = urbanist, fontWeight = FontWeight.SemiBold),
+    // Display — hero / splash text
+    displayLarge = base(size = 57, lineH = 64, weight = FontWeight.Bold, tracking = -0.25f),
+    displayMedium = base(size = 45, lineH = 52, weight = FontWeight.SemiBold),
+    displaySmall = base(size = 36, lineH = 44, weight = FontWeight.SemiBold),
+
+    // Headline — screen / section titles
+    headlineLarge = base(size = 34, lineH = 42, weight = FontWeight.Bold),
+    headlineMedium = base(size = 28, lineH = 36, weight = FontWeight.Bold),
+    headlineSmall = base(size = 24, lineH = 32, weight = FontWeight.Bold),
+
+    // Title — card headers, list titles
+    titleLarge = base(size = 21, lineH = 28, weight = FontWeight.SemiBold),
+    titleMedium = base(size = 17, lineH = 24, weight = FontWeight.SemiBold, tracking = 0.15f),
+    titleSmall = base(size = 14, lineH = 20, weight = FontWeight.Medium, tracking = 0.10f),
+
+    // Body — primary reading text; generous line-height for clinical clarity
+    bodyLarge = base(size = 16, lineH = 25, weight = FontWeight.Normal, tracking = 0.50f),
+    bodyMedium = base(size = 15, lineH = 22, weight = FontWeight.Normal, tracking = 0.25f),
+    bodySmall = base(size = 13, lineH = 18, weight = FontWeight.Normal, tracking = 0.40f),
+
+    // Label — chips, tags, captions, navigation items
+    labelLarge = base(size = 14, lineH = 20, weight = FontWeight.SemiBold, tracking = 0.10f),
+    labelMedium = base(size = 12, lineH = 16, weight = FontWeight.Medium, tracking = 0.50f),
+    labelSmall = base(size = 11, lineH = 16, weight = FontWeight.Medium, tracking = 0.50f),
   )
 }
+
+// --- Theme entry point ---
 
 @Composable
 fun OhsPlayerTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {

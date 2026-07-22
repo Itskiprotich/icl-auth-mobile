@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -197,7 +198,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth().widthIn(max = layout.maximumContentWidth),
           ) {
             ProfileActionRow(
-              icon = Icons.Default.Delete,
+              icon = Icons.Default.Refresh,
               title = "Clear cache",
               description = "Remove temporary files stored on this device.",
               onClick = { confirmationAction = ProfileConfirmationAction.ClearCache },

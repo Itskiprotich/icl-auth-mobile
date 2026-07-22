@@ -33,18 +33,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -52,8 +51,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -70,7 +71,6 @@ fun HomeScreen(
   onWorkflowClick: (WorkflowCardSpec) -> Unit,
   modifier: Modifier = Modifier,
   onNotificationsClick: () -> Unit = {},
-  onMoreClick: () -> Unit = {},
 ) {
   BoxWithConstraints(
     modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
@@ -80,8 +80,9 @@ fun HomeScreen(
       HomeHeader(
         displayName = uiState.displayName,
         horizontalPadding = layout.horizontalPadding,
+        greetingStyle = layout.greetingStyle,
+        nameStyle = layout.nameStyle,
         onNotificationsClick = onNotificationsClick,
-        onMoreClick = onMoreClick,
       )
 
       LazyVerticalGrid(
@@ -91,18 +92,17 @@ fun HomeScreen(
           PaddingValues(
             start = layout.horizontalPadding,
             end = layout.horizontalPadding,
-            bottom = 32.dp,
-            top = 30.dp,
+            bottom = 100.dp, // space for floating nav
+            top = 20.dp,
           ),
         horizontalArrangement = Arrangement.spacedBy(layout.cardSpacing),
         verticalArrangement = Arrangement.spacedBy(layout.cardSpacing),
       ) {
-        if (workflows.isEmpty()) {
-          item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
-            EmptyWorkflowCard()
-          }
-        } else {
+        item(span = { GridItemSpan(maxLineSpan) }) { WorkflowSectionHeader() }
 
+        if (workflows.isEmpty()) {
+          item(span = { GridItemSpan(maxLineSpan) }) { EmptyWorkflowCard() }
+        } else {
           items(items = workflows, key = WorkflowCardSpec::key) { workflow ->
             WorkflowCard(
               workflow = workflow,
@@ -116,74 +116,102 @@ fun HomeScreen(
   }
 }
 
+// --- Layout helpers ---
+
 private data class HomeLayout(
   val columns: Int,
   val horizontalPadding: Dp,
   val cardSpacing: Dp,
   val compactCards: Boolean,
+  val greetingStyle: @Composable () -> TextStyle,
+  val nameStyle: @Composable () -> TextStyle,
 )
 
+@Composable
 private fun homeLayoutForWidth(width: Dp): HomeLayout =
   when {
     width < 360.dp ->
-      HomeLayout(columns = 1, horizontalPadding = 15.dp, cardSpacing = 12.dp, compactCards = true)
-
+      HomeLayout(
+        columns = 1,
+        horizontalPadding = 16.dp,
+        cardSpacing = 12.dp,
+        compactCards = true,
+        greetingStyle = { MaterialTheme.typography.titleLarge },
+        nameStyle = { MaterialTheme.typography.bodyMedium },
+      )
     width < 600.dp ->
-      HomeLayout(columns = 2, horizontalPadding = 15.dp, cardSpacing = 12.dp, compactCards = true)
-
+      HomeLayout(
+        columns = 2,
+        horizontalPadding = 16.dp,
+        cardSpacing = 12.dp,
+        compactCards = true,
+        greetingStyle = { MaterialTheme.typography.headlineSmall },
+        nameStyle = { MaterialTheme.typography.titleSmall },
+      )
     width < 900.dp ->
-      HomeLayout(columns = 3, horizontalPadding = 15.dp, cardSpacing = 16.dp, compactCards = false)
-
+      HomeLayout(
+        columns = 3,
+        horizontalPadding = 20.dp,
+        cardSpacing = 16.dp,
+        compactCards = false,
+        greetingStyle = { MaterialTheme.typography.headlineMedium },
+        nameStyle = { MaterialTheme.typography.titleMedium },
+      )
     else ->
-      HomeLayout(columns = 4, horizontalPadding = 15.dp, cardSpacing = 18.dp, compactCards = false)
+      HomeLayout(
+        columns = 4,
+        horizontalPadding = 24.dp,
+        cardSpacing = 18.dp,
+        compactCards = false,
+        greetingStyle = { MaterialTheme.typography.headlineLarge },
+        nameStyle = { MaterialTheme.typography.titleLarge },
+      )
   }
+
+// --- Header ---
 
 @Composable
 private fun HomeHeader(
   displayName: String,
   horizontalPadding: Dp,
+  greetingStyle: @Composable () -> TextStyle,
+  nameStyle: @Composable () -> TextStyle,
   onNotificationsClick: () -> Unit,
-  onMoreClick: () -> Unit,
 ) {
-  val headerShape = RoundedCornerShape(bottomStart = 34.dp, bottomEnd = 34.dp)
+  val headerShape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
 
-  Column(
+  Box(
     modifier =
       Modifier.fillMaxWidth()
         .clip(headerShape)
-        .background(MaterialTheme.colorScheme.primaryContainer)
-        .padding(10.dp)
-        .windowInsetsPadding(WindowInsets.statusBars)
-  ) {
-    Row(
-      modifier = Modifier.fillMaxWidth().height(58.dp).padding(horizontal = horizontalPadding),
-      horizontalArrangement = Arrangement.End,
-      verticalAlignment = Alignment.CenterVertically,
-    ) {
-      IconButton(onClick = onMoreClick) {
-        Icon(
-          imageVector = Icons.Rounded.MoreVert,
-          contentDescription = "More options",
-          tint = MaterialTheme.colorScheme.onPrimaryContainer,
+        .background(
+          brush =
+            Brush.verticalGradient(
+              colors =
+                listOf(
+                  MaterialTheme.colorScheme.primary,
+                  MaterialTheme.colorScheme.primary.copy(alpha = 0.88f),
+                )
+            )
         )
-      }
-    }
-
-    Row(
-      modifier =
-        Modifier.fillMaxWidth()
-          .padding(start = horizontalPadding, end = horizontalPadding, top = 18.dp, bottom = 30.dp),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically,
-    ) {
-      Column(
-        modifier = Modifier.weight(1f).padding(end = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        .windowInsetsPadding(WindowInsets.statusBars)
+        .padding(horizontal = horizontalPadding)
+        .padding(top = 10.dp, bottom = 24.dp)
+  ) {
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
       ) {
+        NotificationButton(onClick = onNotificationsClick)
+      }
+
+      Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
           text = greetingForCurrentTime(),
-          style = MaterialTheme.typography.headlineSmall,
-          color = MaterialTheme.colorScheme.onPrimaryContainer,
+          style = greetingStyle(),
+          color = MaterialTheme.colorScheme.onPrimary,
           fontWeight = FontWeight.Bold,
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,
@@ -191,14 +219,12 @@ private fun HomeHeader(
 
         Text(
           text = displayName,
-          style = MaterialTheme.typography.titleSmall,
-          color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.84f),
+          style = nameStyle(),
+          color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.80f),
           maxLines = 1,
           overflow = TextOverflow.Ellipsis,
         )
       }
-
-      NotificationButton(onClick = onNotificationsClick)
     }
   }
 }
@@ -208,51 +234,72 @@ private fun NotificationButton(onClick: () -> Unit) {
   Box {
     Surface(
       onClick = onClick,
-      modifier = Modifier.size(58.dp),
-      shape = RoundedCornerShape(20.dp),
-      color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f),
+      modifier = Modifier.size(40.dp),
+      shape = RoundedCornerShape(12.dp),
+      color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f),
       border =
-        BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.55f)),
+        BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
     ) {
       Box(contentAlignment = Alignment.Center) {
         Icon(
           imageVector = Icons.Rounded.Notifications,
           contentDescription = "Notifications",
-          modifier = Modifier.size(27.dp),
-          tint = MaterialTheme.colorScheme.onPrimaryContainer,
+          modifier = Modifier.size(20.dp),
+          tint = MaterialTheme.colorScheme.onPrimary,
         )
       }
     }
 
+    // Unread indicator dot
     Box(
       modifier =
         Modifier.align(Alignment.TopEnd)
-          .padding(top = 10.dp, end = 9.dp)
-          .size(11.dp)
+          .padding(top = 7.dp, end = 7.dp)
+          .size(7.dp)
           .clip(CircleShape)
-          .background(MaterialTheme.colorScheme.error)
+          .background(MaterialTheme.colorScheme.errorContainer)
     )
   }
 }
+
+// --- Section header ---
+
+@Composable
+private fun WorkflowSectionHeader(modifier: Modifier = Modifier) {
+  Column(modifier = modifier.fillMaxWidth().padding(bottom = 4.dp)) {
+    Text(
+      text = "Clinical Modules",
+      style = MaterialTheme.typography.titleLarge,
+      color = MaterialTheme.colorScheme.onSurface,
+      fontWeight = FontWeight.Bold,
+    )
+
+    Spacer(modifier = Modifier.height(10.dp))
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+    Spacer(modifier = Modifier.height(2.dp))
+  }
+}
+
+// --- Workflow cards ---
 
 @Composable
 private fun WorkflowCard(workflow: WorkflowCardSpec, onClick: () -> Unit, compact: Boolean) {
   Card(
     onClick = onClick,
     modifier = Modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(22.dp),
+    shape = RoundedCornerShape(20.dp),
     border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp, pressedElevation = 3.dp),
+    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp, pressedElevation = 4.dp),
   ) {
     Column(
       modifier =
         Modifier.fillMaxWidth()
           .padding(
-            horizontal = if (compact) 16.dp else 20.dp,
-            vertical = if (compact) 16.dp else 20.dp,
+            horizontal = if (compact) 14.dp else 18.dp,
+            vertical = if (compact) 14.dp else 18.dp,
           ),
-      verticalArrangement = Arrangement.spacedBy(14.dp),
+      verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
       WorkflowIcon(
         icon = workflow.icon,
@@ -260,52 +307,39 @@ private fun WorkflowCard(workflow: WorkflowCardSpec, onClick: () -> Unit, compac
         compact = compact,
       )
 
-      Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        Column(
-          modifier = Modifier.weight(1f).padding(end = 8.dp),
-          verticalArrangement = Arrangement.spacedBy(5.dp),
-        ) {
-          Text(
-            text = workflow.title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Bold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-          )
+      Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+          text = workflow.title,
+          style = MaterialTheme.typography.titleMedium,
+          color = MaterialTheme.colorScheme.onSurface,
+          fontWeight = FontWeight.SemiBold,
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis,
+        )
 
-          Text(
-            text = workflow.description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = if (compact) 2 else 3,
-            overflow = TextOverflow.Ellipsis,
-          )
-        }
-
-        Icon(
-          imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-          contentDescription = null,
-          tint = MaterialTheme.colorScheme.onSurfaceVariant,
-          modifier = Modifier.padding(top = 5.dp).size(18.dp),
+        Text(
+          text = workflow.description,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          maxLines = if (compact) 2 else 3,
+          overflow = TextOverflow.Ellipsis,
         )
       }
-
-      Spacer(modifier = Modifier.height(if (compact) 2.dp else 8.dp))
     }
   }
 }
 
 @Composable
 private fun WorkflowIcon(icon: ImageVector, tint: Color, compact: Boolean) {
-  val containerSize = if (compact) 48.dp else 54.dp
-  val iconSize = if (compact) 25.dp else 29.dp
+  val containerSize = if (compact) 44.dp else 50.dp
+  val iconSize = if (compact) 22.dp else 26.dp
+  val cornerRadius = if (compact) 13.dp else 15.dp
 
   Surface(
     modifier = Modifier.size(containerSize),
-    shape = RoundedCornerShape(if (compact) 15.dp else 17.dp),
+    shape = RoundedCornerShape(cornerRadius),
     color = tint.copy(alpha = 0.10f),
-    border = BorderStroke(width = 1.dp, color = tint.copy(alpha = 0.22f)),
+    border = BorderStroke(width = 1.dp, color = tint.copy(alpha = 0.20f)),
   ) {
     Box(contentAlignment = Alignment.Center) {
       Icon(
@@ -322,24 +356,23 @@ private fun WorkflowIcon(icon: ImageVector, tint: Color, compact: Boolean) {
 private fun EmptyWorkflowCard() {
   Surface(
     modifier = Modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(22.dp),
+    shape = RoundedCornerShape(20.dp),
     color = MaterialTheme.colorScheme.surface,
     border = BorderStroke(width = 1.dp, color = MaterialTheme.colorScheme.outlineVariant),
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth().padding(28.dp),
+      modifier = Modifier.fillMaxWidth().padding(32.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
-      verticalArrangement = Arrangement.spacedBy(6.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
       Text(
-        text = "No workflows available",
+        text = "No modules configured",
         style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.onSurface,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.SemiBold,
       )
-
       Text(
-        text = "Configured reporting workflows will appear here.",
+        text = "Reporting workflows will appear here once configured by your administrator.",
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
       )
@@ -347,9 +380,10 @@ private fun EmptyWorkflowCard() {
   }
 }
 
+// --- Helpers ---
+
 private fun greetingForCurrentTime(): String {
   val hour = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).hour
-
   return when (hour) {
     in 5..11 -> "Good Morning"
     in 12..16 -> "Good Afternoon"

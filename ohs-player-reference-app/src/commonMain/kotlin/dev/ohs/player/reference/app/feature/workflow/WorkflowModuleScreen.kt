@@ -22,12 +22,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,25 +37,21 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -69,7 +66,6 @@ fun WorkflowModuleScreen(
   onNodeSelected: (String) -> Unit,
   modifier: Modifier = Modifier,
   onActionClick: (String, String) -> Unit = { _, _ -> },
-  onMenuClick: () -> Unit = {},
 ) {
   val screenState by
     produceState<WorkflowModuleScreenState>(
@@ -110,21 +106,33 @@ fun WorkflowModuleScreen(
           }
     }
 
-  Scaffold(
-    modifier = modifier,
-    containerColor = MaterialTheme.colorScheme.background,
-    topBar = { WorkflowTopBar(onBack = onBack, onMenuClick = onMenuClick) },
-  ) { innerPadding ->
-    Box(
-      modifier =
-        Modifier.fillMaxSize()
-          .background(MaterialTheme.colorScheme.background)
-          .padding(innerPadding)
-    ) {
+  Column(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    // Gradient header — same design language as HomeScreen
+    val headerTitle =
+      when (val s = screenState) {
+        is WorkflowModuleScreenState.Ready -> s.module.title
+        is WorkflowModuleScreenState.Missing -> s.title
+        WorkflowModuleScreenState.Loading -> ""
+      }
+    val headerSubtitle =
+      when (val s = screenState) {
+        is WorkflowModuleScreenState.Ready ->
+          if (s.node.items.any { it.action != null }) "Select an action to proceed"
+          else "Select a form to proceed"
+        else -> ""
+      }
+
+    WorkflowGradientHeader(title = headerTitle, subtitle = headerSubtitle, onBack = onBack)
+
+    // Body
+    Box(modifier = Modifier.fillMaxSize()) {
       when (val state = screenState) {
         WorkflowModuleScreenState.Loading ->
           Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+              color = MaterialTheme.colorScheme.primary,
+              trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+            )
           }
         is WorkflowModuleScreenState.Missing ->
           WorkflowMessageScreen(title = state.title, subtitle = state.message)
@@ -140,6 +148,10 @@ fun WorkflowModuleScreen(
   }
 }
 
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
 private sealed interface WorkflowModuleScreenState {
   data object Loading : WorkflowModuleScreenState
 
@@ -148,29 +160,78 @@ private sealed interface WorkflowModuleScreenState {
   data class Missing(val title: String, val message: String) : WorkflowModuleScreenState
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ---------------------------------------------------------------------------
+// Gradient header (mirrors HomeScreen HomeHeader)
+// ---------------------------------------------------------------------------
+
 @Composable
-private fun WorkflowTopBar(onBack: () -> Unit, onMenuClick: () -> Unit) {
-  TopAppBar(
-    title = {},
-    navigationIcon = {
-      IconButton(onClick = onBack) {
-        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+private fun WorkflowGradientHeader(title: String, subtitle: String, onBack: () -> Unit) {
+  val shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+
+  Box(
+    modifier =
+      Modifier.fillMaxWidth()
+        .clip(shape)
+        .background(
+          brush =
+            Brush.verticalGradient(
+              colors =
+                listOf(
+                  MaterialTheme.colorScheme.primary,
+                  MaterialTheme.colorScheme.primary.copy(alpha = 0.88f),
+                )
+            )
+        )
+        .windowInsetsPadding(WindowInsets.statusBars)
+        .padding(horizontal = 16.dp)
+        .padding(top = 8.dp, bottom = 24.dp)
+  ) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+      // Back button row
+      Surface(
+        onClick = onBack,
+        modifier = Modifier.size(40.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.15f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.25f)),
+      ) {
+        Box(contentAlignment = Alignment.Center) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+            contentDescription = "Back",
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(20.dp),
+          )
+        }
       }
-    },
-    actions = {
-      IconButton(onClick = onMenuClick) {
-        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More options")
+
+      // Title + subtitle
+      Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        if (title.isNotBlank()) {
+          Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+          )
+        }
+        if (subtitle.isNotBlank()) {
+          Text(
+            text = subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.75f),
+          )
+        }
       }
-    },
-    colors =
-      TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.primary,
-        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-        actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
-      ),
-  )
+    }
+  }
 }
+
+// ---------------------------------------------------------------------------
+// Node content
+// ---------------------------------------------------------------------------
 
 @Composable
 private fun WorkflowNodeContent(
@@ -181,18 +242,17 @@ private fun WorkflowNodeContent(
 ) {
   LazyColumn(
     modifier = Modifier.fillMaxSize(),
-    contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 24.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    contentPadding = PaddingValues(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 40.dp),
+    verticalArrangement = Arrangement.spacedBy(0.dp),
   ) {
-    item { WorkflowSummaryCard(module = module, node = node) }
-
     if (node.sectionTitle.isNotBlank()) {
       item {
         Text(
           text = node.sectionTitle,
-          style = MaterialTheme.typography.titleMedium,
-          color = MaterialTheme.colorScheme.onBackground,
-          fontWeight = FontWeight.Bold,
+          style = MaterialTheme.typography.labelLarge,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          fontWeight = FontWeight.SemiBold,
+          modifier = Modifier.padding(bottom = 12.dp),
         )
       }
     }
@@ -205,179 +265,167 @@ private fun WorkflowNodeContent(
             message = emptyMessageFor(node.layout, module.title),
           )
         }
-      node.layout == WorkflowNodeLayout.GRID ->
-        items(node.items.chunked(2)) { rowItems ->
-          Row(
+      node.items.any { it.action != null } -> {
+        // Terminal action level — show full action cards WITH icons
+        item {
+          Card(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
           ) {
-            rowItems.forEach { item ->
-              WorkflowGridCard(
-                item = item,
-                fallbackIcon = module.icon.toImageVector(),
-                modifier = Modifier.weight(1f),
-                onClick = { handleItemClick(node.id, item, onNodeSelected, onActionClick) },
-              )
-            }
-
-            if (rowItems.size == 1) {
-              Spacer(modifier = Modifier.weight(1f))
+            Column {
+              node.items.forEachIndexed { index, item ->
+                WorkflowActionRow(
+                  item = item,
+                  onClick = { handleItemClick(node.id, item, onNodeSelected, onActionClick) },
+                )
+                if (index < node.items.lastIndex) {
+                  HorizontalDivider(
+                    modifier = Modifier.padding(start = 72.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                  )
+                }
+              }
             }
           }
         }
-      else ->
-        items(node.items) { item ->
-          WorkflowActionCard(
-            item = item,
-            onClick = { handleItemClick(node.id, item, onNodeSelected, onActionClick) },
-          )
-        }
-    }
-  }
-}
-
-@Composable
-private fun WorkflowSummaryCard(module: WorkflowModule, node: WorkflowNode) {
-  Card(
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-  ) {
-    Row(
-      modifier = Modifier.fillMaxWidth().padding(18.dp),
-      horizontalArrangement = Arrangement.spacedBy(16.dp),
-      verticalAlignment = Alignment.Top,
-    ) {
-      Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.primaryContainer,
-      ) {
-        Box(modifier = Modifier.size(56.dp), contentAlignment = Alignment.Center) {
-          Icon(
-            imageVector = module.icon.toImageVector(),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-          )
-        }
       }
-
-      Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(
-          text = module.title,
-          style = MaterialTheme.typography.labelLarge,
-          color = MaterialTheme.colorScheme.primary,
-          fontWeight = FontWeight.Bold,
-        )
-        Text(
-          text = node.title,
-          style = MaterialTheme.typography.headlineSmall,
-          color = MaterialTheme.colorScheme.onSurface,
-          fontWeight = FontWeight.Bold,
-        )
+      else -> {
+        // Navigation level — clean text-only list, NO icons
+        item {
+          Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+          ) {
+            Column {
+              node.items.forEachIndexed { index, item ->
+                WorkflowFormRow(
+                  item = item,
+                  onClick = { handleItemClick(node.id, item, onNodeSelected, onActionClick) },
+                )
+                if (index < node.items.lastIndex) {
+                  HorizontalDivider(
+                    modifier = Modifier.padding(start = 20.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
+                  )
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
 }
 
+// ---------------------------------------------------------------------------
+// Form row — navigation items, NO icon (disease / sub-form selection)
+// ---------------------------------------------------------------------------
+
 @Composable
-private fun WorkflowGridCard(
-  item: WorkflowNodeItem,
-  fallbackIcon: ImageVector,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier,
-) {
+private fun WorkflowFormRow(item: WorkflowNodeItem, onClick: () -> Unit) {
   val isClickable = item.destinationNodeId != null || item.action != null
 
-  Card(
-    modifier = modifier,
+  Surface(
     onClick = onClick,
     enabled = isClickable,
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-  ) {
-    Column(
-      modifier = Modifier.fillMaxWidth().height(120.dp).padding(16.dp),
-      verticalArrangement = Arrangement.Center,
-    ) {
-      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Surface(
-          shape = RoundedCornerShape(14.dp),
-          color = MaterialTheme.colorScheme.primaryContainer,
-        ) {
-          Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
-            Icon(
-              imageVector = item.icon?.toImageVector() ?: fallbackIcon,
-              contentDescription = null,
-              tint = MaterialTheme.colorScheme.primary,
-            )
-          }
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-          Text(
-            text = item.title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Bold,
-            maxLines = 3,
-            overflow = TextOverflow.Ellipsis,
-          )
-        }
-      }
-    }
-  }
-}
-
-@Composable
-private fun WorkflowActionCard(item: WorkflowNodeItem, onClick: () -> Unit) {
-  val isClickable = item.destinationNodeId != null || item.action != null
-  val leadingIcon = item.action.leadingIcon(item.icon?.toImageVector() ?: Icons.Default.Info)
-  val leadingContainerColor =
-    when (item.action?.type) {
-      WorkflowActionType.QUESTIONNAIRE -> MaterialTheme.colorScheme.primaryContainer
-      WorkflowActionType.RECORD_LIST -> MaterialTheme.colorScheme.secondaryContainer
-      null -> MaterialTheme.colorScheme.primaryContainer
-    }
-  val leadingTint =
-    when (item.action?.type) {
-      WorkflowActionType.QUESTIONNAIRE -> MaterialTheme.colorScheme.primary
-      WorkflowActionType.RECORD_LIST -> MaterialTheme.colorScheme.onSecondaryContainer
-      null -> MaterialTheme.colorScheme.primary
-    }
-
-  Card(
     modifier = Modifier.fillMaxWidth(),
-    onClick = onClick,
-    enabled = isClickable,
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    color = MaterialTheme.colorScheme.surface,
   ) {
     Row(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp),
       horizontalArrangement = Arrangement.spacedBy(12.dp),
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      Surface(shape = RoundedCornerShape(14.dp), color = leadingContainerColor) {
-        Box(modifier = Modifier.size(46.dp), contentAlignment = Alignment.Center) {
-          Icon(imageVector = leadingIcon, contentDescription = null, tint = leadingTint)
+      Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+          text = item.title,
+          style = MaterialTheme.typography.bodyLarge,
+          color = MaterialTheme.colorScheme.onSurface,
+          fontWeight = FontWeight.Medium,
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis,
+        )
+        if (!item.trailingValue.isNullOrBlank()) {
+          Text(
+            text = "${item.trailingValue} ${item.trailingLabel ?: ""}".trim(),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
         }
       }
 
-      Column(modifier = Modifier.weight(1f)) {
+      if (isClickable) {
+        Icon(
+          imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.outline,
+          modifier = Modifier.size(20.dp),
+        )
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Action row — terminal items WITH icons (Add New Case / View Cases)
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun WorkflowActionRow(item: WorkflowNodeItem, onClick: () -> Unit) {
+  val isClickable = item.destinationNodeId != null || item.action != null
+  val icon = item.action.leadingIcon(item.icon?.toImageVector() ?: Icons.AutoMirrored.Filled.List)
+  val (iconBg, iconTint) =
+    when (item.action?.type) {
+      WorkflowActionType.QUESTIONNAIRE ->
+        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.primary
+      WorkflowActionType.RECORD_LIST ->
+        MaterialTheme.colorScheme.secondaryContainer to
+          MaterialTheme.colorScheme.onSecondaryContainer
+      null -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.primary
+    }
+
+  Surface(
+    onClick = onClick,
+    enabled = isClickable,
+    modifier = Modifier.fillMaxWidth(),
+    color = MaterialTheme.colorScheme.surface,
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+      horizontalArrangement = Arrangement.spacedBy(14.dp),
+      verticalAlignment = Alignment.CenterVertically,
+    ) {
+      // Icon container
+      Surface(shape = RoundedCornerShape(14.dp), color = iconBg, modifier = Modifier.size(44.dp)) {
+        Box(contentAlignment = Alignment.Center) {
+          Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(22.dp),
+          )
+        }
+      }
+
+      Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
           text = item.title,
-          style = MaterialTheme.typography.titleMedium,
+          style = MaterialTheme.typography.bodyLarge,
           color = MaterialTheme.colorScheme.onSurface,
-          fontWeight = FontWeight.Bold,
+          fontWeight = FontWeight.SemiBold,
           maxLines = 2,
           overflow = TextOverflow.Ellipsis,
         )
       }
 
       Row(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
         if (!item.trailingValue.isNullOrBlank()) {
@@ -402,12 +450,17 @@ private fun WorkflowActionCard(item: WorkflowNodeItem, onClick: () -> Unit) {
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.size(20.dp),
           )
         }
       }
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 private fun WorkflowAction?.leadingIcon(fallback: ImageVector): ImageVector =
   when (this?.type) {

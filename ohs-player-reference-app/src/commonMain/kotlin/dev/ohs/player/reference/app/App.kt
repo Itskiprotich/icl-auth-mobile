@@ -15,9 +15,8 @@
  */
 package dev.ohs.player.reference.app
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -26,6 +25,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -119,35 +119,11 @@ private fun ReferenceAppNavigation(onLogout: () -> Unit) {
   val homeSelected = currentRoute == HOME_ROUTE
   val profileSelected = currentRoute == PROFILE_ROUTE
 
-  Scaffold(
-    containerColor = MaterialTheme.colorScheme.background,
-    bottomBar = {
-      if (showBottomBar) {
-        ReferenceBottomBar(
-          homeSelected = homeSelected,
-          profileSelected = profileSelected,
-          onHomeClick = {
-            navController.navigate(HOME_ROUTE) {
-              popUpTo(navController.graph.startDestinationId) { saveState = true }
-              launchSingleTop = true
-              restoreState = true
-            }
-          },
-          onProfileClick = {
-            navController.navigate(PROFILE_ROUTE) {
-              popUpTo(navController.graph.startDestinationId) { saveState = true }
-              launchSingleTop = true
-              restoreState = true
-            }
-          },
-        )
-      }
-    },
-  ) { innerPadding ->
+  Box(modifier = Modifier.fillMaxSize()) {
     NavHost(
       navController = navController,
       startDestination = HOME_ROUTE,
-      modifier = Modifier.padding(innerPadding),
+      modifier = Modifier.fillMaxSize(),
     ) {
       composable(HOME_ROUTE) {
         HomeScreen(
@@ -313,6 +289,28 @@ private fun ReferenceAppNavigation(onLogout: () -> Unit) {
         val patientId = back.arguments?.read { getString(PATIENT_ID_ARG) }.orEmpty()
         PatientProfileScreen(patientId = patientId, onBack = { navController.popBackStack() })
       }
+    }
+
+    if (showBottomBar) {
+      ReferenceBottomBar(
+        homeSelected = homeSelected,
+        profileSelected = profileSelected,
+        modifier = Modifier.align(Alignment.BottomCenter),
+        onHomeClick = {
+          navController.navigate(HOME_ROUTE) {
+            popUpTo(navController.graph.startDestinationId) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+          }
+        },
+        onProfileClick = {
+          navController.navigate(PROFILE_ROUTE) {
+            popUpTo(navController.graph.startDestinationId) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+          }
+        },
+      )
     }
   }
 }
