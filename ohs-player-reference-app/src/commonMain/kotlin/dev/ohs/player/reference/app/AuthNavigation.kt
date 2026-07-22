@@ -23,15 +23,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.savedstate.read
 import dev.ohs.player.reference.app.feature.web.WebContentScreen
-import icl.ohs.libs.auth.ForgotPasswordScreen
-import icl.ohs.libs.auth.ForgotPasswordScreenConfig
 import icl.ohs.libs.auth.IclAuth
-import icl.ohs.libs.auth.LoginScreen
-import icl.ohs.libs.auth.LoginScreenConfig
-import icl.ohs.libs.auth.ResetPasswordScreen
-import icl.ohs.libs.auth.ResetPasswordScreenConfig
-import icl.ohs.libs.auth.SetNewPasswordScreen
-import icl.ohs.libs.auth.SetNewPasswordScreenConfig
+import icl.ohs.libs.auth.models.LoginScreenConfig
+import icl.ohs.libs.auth.models.ResetPasswordScreenConfig
+import icl.ohs.libs.auth.models.SetNewPasswordScreenConfig
+import icl.ohs.libs.auth.screens.ForgotPasswordScreen
+import icl.ohs.libs.auth.screens.ForgotPasswordScreenConfig
+import icl.ohs.libs.auth.screens.LoginScreen
+import icl.ohs.libs.auth.screens.ResetPasswordScreen
+import icl.ohs.libs.auth.screens.SetNewPasswordScreen
 
 private const val AUTH_LOGIN_ROUTE = "auth/login"
 private const val AUTH_FORGOT_PASSWORD_ROUTE = "auth/forgot-password"

@@ -15,8 +15,8 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
-import icl.ohs.libs.auth.ProviderLocationInfo
-import icl.ohs.libs.auth.ProviderUser
+import icl.ohs.libs.auth.models.ProviderLocationInfo
+import icl.ohs.libs.auth.models.ProviderUser
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -44,7 +44,8 @@ class WorkflowQuestionnairePersonalizationTest {
           }
         ]
       }
-      """.trimIndent()
+      """
+        .trimIndent()
 
     val personalized =
       personalizeQuestionnaireJson(
@@ -57,15 +58,33 @@ class WorkflowQuestionnairePersonalizationTest {
       )
 
     val groupItems =
-      json.parseToJsonElement(personalized).jsonObject["item"]!!.jsonArray.first().jsonObject["item"]!!.jsonArray
+      json
+        .parseToJsonElement(personalized)
+        .jsonObject["item"]!!
+        .jsonArray
+        .first()
+        .jsonObject["item"]!!
+        .jsonArray
 
     assertEquals(
       "SUBCOUNTY_DISEASE_SURVEILLANCE_OFFICER",
-      groupItems[0].jsonObject["initial"]!!.jsonArray.first().jsonObject["valueString"]!!.jsonPrimitive.content,
+      groupItems[0]
+        .jsonObject["initial"]!!
+        .jsonArray
+        .first()
+        .jsonObject["valueString"]!!
+        .jsonPrimitive
+        .content,
     )
     assertEquals(
       "37",
-      groupItems[1].jsonObject["initial"]!!.jsonArray.first().jsonObject["valueString"]!!.jsonPrimitive.content,
+      groupItems[1]
+        .jsonObject["initial"]!!
+        .jsonArray
+        .first()
+        .jsonObject["valueString"]!!
+        .jsonPrimitive
+        .content,
     )
     assertNull(groupItems[2].jsonObject["initial"])
   }
@@ -84,7 +103,8 @@ class WorkflowQuestionnairePersonalizationTest {
           }
         ]
       }
-      """.trimIndent()
+      """
+        .trimIndent()
 
     val personalized =
       personalizeQuestionnaireJson(

@@ -15,7 +15,7 @@
  */
 package dev.ohs.player.reference.app
 
-import icl.ohs.libs.auth.IclAuthConfig
+import icl.ohs.libs.auth.models.IclAuthConfig
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

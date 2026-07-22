@@ -13,8 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package icl.ohs.libs.auth
+package icl.ohs.libs.auth.network
 
+import icl.ohs.libs.auth.IclAuth
+import icl.ohs.libs.auth.models.AuthSession
+import icl.ohs.libs.auth.models.AuthSessionStore
+import icl.ohs.libs.auth.models.IclAuthConfig
+import icl.ohs.libs.auth.models.LoginFailure
+import icl.ohs.libs.auth.models.LoginMessages
+import icl.ohs.libs.auth.models.LoginScreenConfig
+import icl.ohs.libs.auth.models.LoginSuccess
+import icl.ohs.libs.auth.models.LoginTokenResponse
+import icl.ohs.libs.auth.models.ProviderLocationInfo
+import icl.ohs.libs.auth.models.ProviderProfile
+import icl.ohs.libs.auth.models.ProviderUser
+import icl.ohs.libs.auth.models.ResetPasswordFailure
+import icl.ohs.libs.auth.models.ResetPasswordMessages
+import icl.ohs.libs.auth.models.ResetPasswordReq
+import icl.ohs.libs.auth.models.ResetPasswordScreenConfig
+import icl.ohs.libs.auth.models.ResetPasswordSuccess
+import icl.ohs.libs.auth.models.SetNewPasswordFailure
+import icl.ohs.libs.auth.models.SetNewPasswordMessages
+import icl.ohs.libs.auth.models.SetNewPasswordReq
+import icl.ohs.libs.auth.models.SetNewPasswordScreenConfig
+import icl.ohs.libs.auth.models.SetNewPasswordSuccess
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpTimeout

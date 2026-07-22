@@ -15,7 +15,7 @@
  */
 package dev.ohs.player.reference.app.auth
 
-import icl.ohs.libs.auth.AuthSession
+import icl.ohs.libs.auth.models.AuthSession
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull

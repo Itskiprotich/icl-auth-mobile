@@ -15,8 +15,8 @@
  */
 package dev.ohs.player.reference.app.auth
 
-import icl.ohs.libs.auth.AuthSession
-import icl.ohs.libs.auth.AuthSessionStore
+import icl.ohs.libs.auth.models.AuthSession
+import icl.ohs.libs.auth.models.AuthSessionStore
 import java.io.File
 
 private const val AUTH_SESSION_FILE_NAME = "auth-session.json"

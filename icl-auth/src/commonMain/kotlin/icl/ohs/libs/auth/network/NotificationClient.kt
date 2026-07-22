@@ -13,8 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package icl.ohs.libs.auth
+package icl.ohs.libs.auth.network
 
+import icl.ohs.libs.auth.IclAuth
+import icl.ohs.libs.auth.models.AuthNotification
+import icl.ohs.libs.auth.models.IclAuthConfig
+import icl.ohs.libs.auth.models.NotificationListFailure
+import icl.ohs.libs.auth.models.NotificationListResult
+import icl.ohs.libs.auth.models.NotificationListSuccess
+import icl.ohs.libs.auth.models.NotificationMessages
+import icl.ohs.libs.auth.models.NotificationScreenConfig
+import icl.ohs.libs.auth.models.ResolvedNotificationConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.request.accept
 import io.ktor.client.request.get
@@ -25,6 +34,8 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 
@@ -162,7 +173,7 @@ internal fun JsonArray.toAuthNotifications(): List<AuthNotification> = mapNotNul
   it.toAuthNotification()
 }
 
-internal fun kotlinx.serialization.json.JsonElement.toAuthNotification(): AuthNotification? {
+internal fun JsonElement.toAuthNotification(): AuthNotification? {
   val json = runCatching { jsonObject }.getOrNull() ?: return null
   return AuthNotification(
     id = json.rawStringValue("id"),
@@ -181,5 +192,5 @@ internal fun kotlinx.serialization.json.JsonElement.toAuthNotification(): AuthNo
   )
 }
 
-internal fun kotlinx.serialization.json.JsonObject.arrayValue(key: String): JsonArray? =
+internal fun JsonObject.arrayValue(key: String): JsonArray? =
   runCatching { this[key]?.jsonArray }.getOrNull()

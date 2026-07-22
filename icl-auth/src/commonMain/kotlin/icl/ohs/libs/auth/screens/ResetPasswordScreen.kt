@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package icl.ohs.libs.auth
+package icl.ohs.libs.auth.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,13 +40,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -57,7 +52,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import icl.ohs.libs.auth.AuthMessageBanner
+import icl.ohs.libs.auth.AuthMessageBannerType
+import icl.ohs.libs.auth.models.ResetPasswordFailure
+import icl.ohs.libs.auth.models.ResetPasswordScreenConfig
+import icl.ohs.libs.auth.models.ResetPasswordSuccess
+import icl.ohs.libs.auth.viewmodels.ResetPasswordEvent
+import icl.ohs.libs.auth.viewmodels.ResetPasswordViewModel
 
 internal const val RESET_PASSWORD_OTP_TAG = "reset_password_otp"
 internal const val RESET_PASSWORD_NEW_TAG = "reset_password_new"
@@ -73,86 +76,35 @@ fun ResetPasswordScreen(
   onPasswordResetFailure: (ResetPasswordFailure) -> Unit = {},
   onBackToLoginClick: (() -> Unit)? = null,
   onTermsAndConditionsClick: () -> Unit = {},
+  viewModel: ResetPasswordViewModel =
+    viewModel(key = identifier) { ResetPasswordViewModel(config, identifier) },
 ) {
-  var otp by rememberSaveable { mutableStateOf("") }
-  var newPassword by rememberSaveable { mutableStateOf("") }
-  var confirmPassword by rememberSaveable { mutableStateOf("") }
-  var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-  var isSubmitting by rememberSaveable { mutableStateOf(false) }
-  val coroutineScope = rememberCoroutineScope()
-  val resolvedConfig = resolveResetPasswordConfig(screenConfig = config)
-  val httpClient =
-    remember(resolvedConfig.requestTimeoutMillis) {
-      buildLoginHttpClient(resolvedConfig.requestTimeoutMillis)
-    }
-  val loginService = remember(httpClient) { LoginService(httpClient) }
+  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-  DisposableEffect(httpClient) { onDispose { httpClient.close() } }
+  LaunchedEffect(viewModel) {
+    viewModel.events.collect { event ->
+      when (event) {
+        is ResetPasswordEvent.Success -> onPasswordResetSuccess(event.result)
+        is ResetPasswordEvent.Failure -> onPasswordResetFailure(event.result)
+      }
+    }
+  }
 
   ResetPasswordScreenContent(
-    otp = otp,
-    newPassword = newPassword,
-    confirmPassword = confirmPassword,
-    modifier = modifier,
+    otp = uiState.otp,
+    newPassword = uiState.newPassword,
+    confirmPassword = uiState.confirmPassword,
+    errorMessage = uiState.errorMessage,
+    isSubmitting = uiState.isSubmitting,
     config = config,
-    errorMessage = errorMessage,
-    isSubmitting = isSubmitting,
-    onTermsAndConditionsClick = onTermsAndConditionsClick,
-    onOtpChange = {
-      otp = it
-      errorMessage = null
-    },
-    onNewPasswordChange = {
-      newPassword = it
-      errorMessage = null
-    },
-    onConfirmPasswordChange = {
-      confirmPassword = it
-      errorMessage = null
-    },
-    onSubmitClick = {
-      if (isSubmitting) {
-        return@ResetPasswordScreenContent
-      }
-
-      val request = ResetPasswordReq(otp = otp, identifier = identifier, password = newPassword)
-      val validationFailure =
-        validateResetPasswordForm(
-          config = resolvedConfig,
-          request = request,
-          confirmPassword = confirmPassword,
-        )
-      if (validationFailure != null) {
-        errorMessage = validationFailure.message
-        onPasswordResetFailure(validationFailure)
-        return@ResetPasswordScreenContent
-      }
-
-      coroutineScope.launch {
-        isSubmitting = true
-        errorMessage = null
-
-        try {
-          when (
-            val result = loginService.resetPassword(config = resolvedConfig, request = request)
-          ) {
-            is ResetPasswordAttemptResult.Success -> {
-              errorMessage = null
-              onPasswordResetSuccess(result.value)
-            }
-
-            is ResetPasswordAttemptResult.Failure -> {
-              errorMessage = result.value.message
-              onPasswordResetFailure(result.value)
-            }
-          }
-        } finally {
-          isSubmitting = false
-        }
-      }
-    },
+    modifier = modifier,
+    onOtpChange = viewModel::onOtpChange,
+    onNewPasswordChange = viewModel::onNewPasswordChange,
+    onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+    onSubmitClick = viewModel::onSubmitClick,
+    onErrorDismiss = viewModel::onErrorDismiss,
     onBackToLoginClick = onBackToLoginClick,
-    onErrorDismiss = { errorMessage = null },
+    onTermsAndConditionsClick = onTermsAndConditionsClick,
   )
 }
 
@@ -354,16 +306,3 @@ private fun ResetPasswordScreenContent(
     }
   }
 }
-
-private fun validateResetPasswordForm(
-  config: ResolvedResetPasswordConfig,
-  request: ResetPasswordReq,
-  confirmPassword: String,
-): ResetPasswordFailure? =
-  when {
-    confirmPassword.isBlank() ->
-      ResetPasswordFailure(message = config.messages.emptyConfirmPassword)
-    request.password != confirmPassword ->
-      ResetPasswordFailure(message = config.messages.passwordMismatch)
-    else -> validateResetPasswordRequest(config = config, request = request)
-  }

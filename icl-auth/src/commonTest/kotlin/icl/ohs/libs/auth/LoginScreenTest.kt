@@ -27,6 +27,13 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
+import icl.ohs.libs.auth.models.LoginScreenConfig
+import icl.ohs.libs.auth.screens.LOGIN_PASSWORD_CLEAR_BUTTON_TAG
+import icl.ohs.libs.auth.screens.LOGIN_PASSWORD_TAG
+import icl.ohs.libs.auth.screens.LOGIN_PASSWORD_VISIBILITY_BUTTON_TAG
+import icl.ohs.libs.auth.screens.LOGIN_USERNAME_CLEAR_BUTTON_TAG
+import icl.ohs.libs.auth.screens.LOGIN_USERNAME_TAG
+import icl.ohs.libs.auth.screens.LoginScreen
 import kotlin.test.Test
 
 @OptIn(ExperimentalTestApi::class)

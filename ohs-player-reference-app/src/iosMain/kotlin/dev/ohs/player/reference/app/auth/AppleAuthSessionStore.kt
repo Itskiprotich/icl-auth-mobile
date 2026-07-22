@@ -15,8 +15,8 @@
  */
 package dev.ohs.player.reference.app.auth
 
-import icl.ohs.libs.auth.AuthSession
-import icl.ohs.libs.auth.AuthSessionStore
+import icl.ohs.libs.auth.models.AuthSession
+import icl.ohs.libs.auth.models.AuthSessionStore
 import platform.Foundation.NSUserDefaults
 
 private const val AUTH_SESSION_KEY = "reference.auth.session"

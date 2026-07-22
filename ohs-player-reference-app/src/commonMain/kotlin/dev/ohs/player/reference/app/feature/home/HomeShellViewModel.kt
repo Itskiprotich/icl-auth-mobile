@@ -18,8 +18,8 @@ package dev.ohs.player.reference.app.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import icl.ohs.libs.auth.IclAuth
-import icl.ohs.libs.auth.ProviderProfile
-import icl.ohs.libs.auth.ProviderUser
+import icl.ohs.libs.auth.models.ProviderProfile
+import icl.ohs.libs.auth.models.ProviderUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

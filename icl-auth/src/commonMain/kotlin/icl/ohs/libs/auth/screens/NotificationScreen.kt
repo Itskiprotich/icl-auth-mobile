@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package icl.ohs.libs.auth
+package icl.ohs.libs.auth.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -59,6 +59,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -66,12 +67,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,24 +84,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlin.math.absoluteValue
-import kotlin.time.Clock
-import kotlin.time.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-
-private const val ALL_NOTIFICATION_FILTER = "__all__"
-
-private enum class NotificationSortOption(val label: String) {
-  Newest("Newest first"),
-  Oldest("Oldest first"),
-  TitleAscending("Title A-Z"),
-  TitleDescending("Title Z-A"),
-  DueSoonest("Due date soonest"),
-  DueLatest("Due date latest"),
-}
-
-private data class NotificationCreatedMonthFilter(val key: String, val label: String)
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import icl.ohs.libs.auth.AuthMessageBanner
+import icl.ohs.libs.auth.AuthMessageBannerType
+import icl.ohs.libs.auth.models.AuthNotification
+import icl.ohs.libs.auth.models.NotificationListFailure
+import icl.ohs.libs.auth.models.NotificationListSuccess
+import icl.ohs.libs.auth.models.NotificationScreenConfig
+import icl.ohs.libs.auth.network.resolveNotificationConfig
+import icl.ohs.libs.auth.viewmodels.ALL_NOTIFICATION_FILTER
+import icl.ohs.libs.auth.viewmodels.NotificationCreatedMonthFilter
+import icl.ohs.libs.auth.viewmodels.NotificationEvent
+import icl.ohs.libs.auth.viewmodels.NotificationSortOption
+import icl.ohs.libs.auth.viewmodels.NotificationViewModel
+import icl.ohs.libs.auth.viewmodels.displayOrFallback
+import icl.ohs.libs.auth.viewmodels.humanizeToken
+import icl.ohs.libs.auth.viewmodels.isMeaningfulValue
+import icl.ohs.libs.auth.viewmodels.stableKey
+import icl.ohs.libs.auth.viewmodels.toReadableTimestamp
+import icl.ohs.libs.auth.viewmodels.toRelativeTimestamp
+import icl.ohs.libs.auth.viewmodels.trimToMeaningfulValue
 
 private val NotificationFilterActionIcon: ImageVector by lazy {
   ImageVector.Builder(
@@ -144,82 +146,23 @@ fun NotificationScreen(
   onBackClick: () -> Unit = {},
   onLoadSuccess: (NotificationListSuccess) -> Unit = {},
   onLoadFailure: (NotificationListFailure) -> Unit = {},
+  viewModel: NotificationViewModel = viewModel { NotificationViewModel(config) },
 ) {
-  val resolvedConfig = remember(config) { resolveNotificationConfig(config) }
-  val httpClient =
-    remember(resolvedConfig.requestTimeoutMillis) {
-      buildLoginHttpClient(resolvedConfig.requestTimeoutMillis)
-    }
-  val notificationService = remember(httpClient) { NotificationService(httpClient) }
+  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-  DisposableEffect(httpClient) { onDispose { httpClient.close() } }
+  // Pure UI state — not part of ViewModel because these don't affect data or survive
+  // configuration changes meaningfully; they reset to closed on recreation which is correct.
+  var isFilterDialogVisible by remember { mutableStateOf(false) }
+  var isOverflowMenuExpanded by remember { mutableStateOf(false) }
 
-  var notifications by remember { mutableStateOf<List<AuthNotification>>(emptyList()) }
-  var isLoading by rememberSaveable { mutableStateOf(true) }
-  var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-  var searchQuery by rememberSaveable { mutableStateOf("") }
-  var isSearchVisible by rememberSaveable { mutableStateOf(false) }
-  var isFilterDialogVisible by rememberSaveable { mutableStateOf(false) }
-  var isOverflowMenuExpanded by rememberSaveable { mutableStateOf(false) }
-  var selectedStatusFilter by rememberSaveable { mutableStateOf(ALL_NOTIFICATION_FILTER) }
-  var selectedTypeFilter by rememberSaveable { mutableStateOf(ALL_NOTIFICATION_FILTER) }
-  var selectedCreatedMonthFilter by rememberSaveable { mutableStateOf(ALL_NOTIFICATION_FILTER) }
-  var selectedSortOptionName by rememberSaveable {
-    mutableStateOf(NotificationSortOption.Newest.name)
-  }
-  var expandedNotificationId by rememberSaveable { mutableStateOf<String?>(null) }
-  var refreshToken by rememberSaveable { mutableStateOf(0) }
-
-  LaunchedEffect(resolvedConfig.notificationsUrl, refreshToken) {
-    isLoading = true
-    errorMessage = null
-
-    when (val result = notificationService.fetchNotifications(config = resolvedConfig)) {
-      is NotificationListResult.Success -> {
-        notifications = result.value.notifications
-        expandedNotificationId =
-          expandedNotificationId?.takeIf { id ->
-            result.value.notifications.any { notification -> notification.stableKey() == id }
-          }
-        onLoadSuccess(result.value)
-      }
-
-      is NotificationListResult.Failure -> {
-        errorMessage = result.value.message
-        onLoadFailure(result.value)
+  LaunchedEffect(viewModel) {
+    viewModel.events.collect { event ->
+      when (event) {
+        is NotificationEvent.LoadSuccess -> onLoadSuccess(event.result)
+        is NotificationEvent.LoadFailure -> onLoadFailure(event.result)
       }
     }
-
-    isLoading = false
   }
-
-  val statusOptions = notifications.distinctNotificationValues(AuthNotification::status)
-  val typeOptions = notifications.distinctNotificationValues(AuthNotification::type)
-  val createdMonthOptions = notifications.distinctCreatedMonthFilters()
-  val selectedSortOption =
-    NotificationSortOption.entries.firstOrNull { it.name == selectedSortOptionName }
-      ?: NotificationSortOption.Newest
-
-  LaunchedEffect(createdMonthOptions, selectedCreatedMonthFilter) {
-    if (
-      selectedCreatedMonthFilter != ALL_NOTIFICATION_FILTER &&
-        createdMonthOptions.none { option -> option.key == selectedCreatedMonthFilter }
-    ) {
-      selectedCreatedMonthFilter = ALL_NOTIFICATION_FILTER
-    }
-  }
-
-  val visibleNotifications =
-    notifications
-      .asSequence()
-      .filter { notification ->
-        notification.matchesSearch(searchQuery) &&
-          notification.matchesCreatedMonthFilter(selectedCreatedMonthFilter) &&
-          notification.matchesFilter(selectedStatusFilter, AuthNotification::status) &&
-          notification.matchesFilter(selectedTypeFilter, AuthNotification::type)
-      }
-      .sortedBy(selectedSortOption)
-      .toList()
 
   Scaffold(
     modifier = modifier.fillMaxSize(),
@@ -231,24 +174,24 @@ fun NotificationScreen(
       ) {
         TopAppBar(
           title = {
-            if (isSearchVisible) {
+            if (uiState.isSearchVisible) {
               OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
+                value = uiState.searchQuery,
+                onValueChange = viewModel::onSearchQueryChange,
                 modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                 placeholder = { Text(text = "Search notifications") },
                 singleLine = true,
                 shape = RoundedCornerShape(18.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 trailingIcon = {
-                  if (searchQuery.isNotBlank()) {
-                    IconButton(onClick = { searchQuery = "" }) {
+                  if (uiState.searchQuery.isNotBlank()) {
+                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
                       Icon(imageVector = Icons.Filled.Close, contentDescription = "Clear search")
                     }
                   }
                 },
                 colors =
-                  androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                  OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                     focusedBorderColor = Color.Transparent,
@@ -260,7 +203,8 @@ fun NotificationScreen(
               Column {
                 Text(text = config.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                  text = "${visibleNotifications.size} of ${notifications.size} notifications",
+                  text =
+                    "${uiState.visibleNotifications.size} of ${uiState.notifications.size} notifications",
                   style = MaterialTheme.typography.labelMedium,
                   color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -268,13 +212,8 @@ fun NotificationScreen(
             }
           },
           navigationIcon = {
-            if (isSearchVisible) {
-              IconButton(
-                onClick = {
-                  isSearchVisible = false
-                  searchQuery = ""
-                }
-              ) {
+            if (uiState.isSearchVisible) {
+              IconButton(onClick = { viewModel.onSearchVisibilityChange(false) }) {
                 Icon(imageVector = Icons.Filled.Close, contentDescription = "Close search")
               }
             } else if (config.showBackButton) {
@@ -284,8 +223,8 @@ fun NotificationScreen(
             }
           },
           actions = {
-            if (!isSearchVisible) {
-              IconButton(onClick = { isSearchVisible = true }) {
+            if (!uiState.isSearchVisible) {
+              IconButton(onClick = { viewModel.onSearchVisibilityChange(true) }) {
                 Icon(imageVector = Icons.Filled.Search, contentDescription = "Search")
               }
               IconButton(onClick = { isFilterDialogVisible = true }) {
@@ -306,7 +245,7 @@ fun NotificationScreen(
                     },
                     onClick = {
                       isOverflowMenuExpanded = false
-                      refreshToken += 1
+                      viewModel.refresh()
                     },
                   )
                 }
@@ -315,22 +254,22 @@ fun NotificationScreen(
           },
         )
 
-        if (createdMonthOptions.isNotEmpty()) {
+        if (uiState.createdMonthOptions.isNotEmpty()) {
           NotificationCreatedMonthFilterRow(
-            options = createdMonthOptions,
-            selectedKey = selectedCreatedMonthFilter,
-            onSelected = { selectedCreatedMonthFilter = it },
+            options = uiState.createdMonthOptions,
+            selectedKey = uiState.selectedCreatedMonthFilter,
+            onSelected = viewModel::onCreatedMonthFilterChange,
           )
         }
       }
     },
   ) { innerPadding ->
     Box(modifier = Modifier.fillMaxSize().padding(innerPadding).imePadding()) {
-      if (errorMessage != null) {
+      if (uiState.errorMessage != null) {
         AuthMessageBanner(
-          message = errorMessage.orEmpty(),
+          message = uiState.errorMessage.orEmpty(),
           type = AuthMessageBannerType.Error,
-          onDismiss = { errorMessage = null },
+          onDismiss = viewModel::onErrorDismiss,
           modifier =
             Modifier.align(Alignment.TopCenter).padding(start = 16.dp, top = 8.dp, end = 16.dp),
           durationMillis = 3_000,
@@ -338,20 +277,21 @@ fun NotificationScreen(
       }
 
       when {
-        isLoading && notifications.isEmpty() -> {
+        uiState.isLoading && uiState.notifications.isEmpty() -> {
           CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
 
-        visibleNotifications.isEmpty() -> {
+        uiState.visibleNotifications.isEmpty() -> {
+          val resolvedConfig = resolveNotificationConfig(config)
           NotificationEmptyState(
             title =
-              if (notifications.isEmpty()) {
+              if (uiState.notifications.isEmpty()) {
                 resolvedConfig.messages.emptyStateTitle
               } else {
                 resolvedConfig.messages.noResultsTitle
               },
             message =
-              if (notifications.isEmpty()) {
+              if (uiState.notifications.isEmpty()) {
                 resolvedConfig.messages.emptyStateMessage
               } else {
                 resolvedConfig.messages.noResultsMessage
@@ -366,17 +306,15 @@ fun NotificationScreen(
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
           ) {
-            items(items = visibleNotifications, key = { it.stableKey() }) { notification ->
+            items(items = uiState.visibleNotifications, key = { it.stableKey() }) { notification ->
               NotificationCard(
                 notification = notification,
-                expanded = expandedNotificationId == notification.stableKey(),
+                expanded = uiState.expandedNotificationId == notification.stableKey(),
                 onClick = {
-                  expandedNotificationId =
-                    if (expandedNotificationId == notification.stableKey()) {
-                      null
-                    } else {
-                      notification.stableKey()
-                    }
+                  val key = notification.stableKey()
+                  viewModel.onNotificationExpand(
+                    if (uiState.expandedNotificationId == key) null else key
+                  )
                 },
               )
             }
@@ -388,22 +326,18 @@ fun NotificationScreen(
 
   if (isFilterDialogVisible) {
     NotificationFilterDialog(
-      selectedSortOption = selectedSortOption,
-      selectedStatusFilter = selectedStatusFilter,
-      statusOptions = statusOptions,
-      selectedTypeFilter = selectedTypeFilter,
-      typeOptions = typeOptions,
+      selectedSortOption = uiState.selectedSortOption,
+      selectedStatusFilter = uiState.selectedStatusFilter,
+      statusOptions = uiState.statusOptions,
+      selectedTypeFilter = uiState.selectedTypeFilter,
+      typeOptions = uiState.typeOptions,
       onDismiss = { isFilterDialogVisible = false },
       onApply = { sortOption, statusFilter, typeFilter ->
-        selectedSortOptionName = sortOption.name
-        selectedStatusFilter = statusFilter
-        selectedTypeFilter = typeFilter
+        viewModel.applyFilters(sortOption, statusFilter, typeFilter)
         isFilterDialogVisible = false
       },
       onClear = {
-        selectedSortOptionName = NotificationSortOption.Newest.name
-        selectedStatusFilter = ALL_NOTIFICATION_FILTER
-        selectedTypeFilter = ALL_NOTIFICATION_FILTER
+        viewModel.clearFilters()
         isFilterDialogVisible = false
       },
     )
@@ -712,199 +646,6 @@ private fun NotificationEmptyState(title: String, message: String, modifier: Mod
     )
   }
 }
-
-private fun List<AuthNotification>.distinctNotificationValues(
-  selector: (AuthNotification) -> String?
-): List<String> =
-  mapNotNull(selector).map(String::trim).filter(String::isNotBlank).distinct().sortedBy {
-    it.lowercase()
-  }
-
-private fun AuthNotification.matchesSearch(query: String): Boolean {
-  val normalizedQuery = query.trim().lowercase()
-  if (normalizedQuery.isBlank()) {
-    return true
-  }
-
-  return listOf(title, body, type, status, failureReason).any { value ->
-    value?.lowercase()?.contains(normalizedQuery) == true
-  }
-}
-
-private fun AuthNotification.stableKey(): String =
-  listOf(id, createdAt, title, encounterId, practitionerId)
-    .mapNotNull { it?.trim()?.takeIf(String::isNotBlank) }
-    .joinToString(separator = "|")
-    .ifBlank { hashCode().toString() }
-
-private fun AuthNotification.matchesFilter(
-  selectedValue: String,
-  selector: (AuthNotification) -> String?,
-): Boolean {
-  if (selectedValue == ALL_NOTIFICATION_FILTER) {
-    return true
-  }
-
-  return selector(this)?.trim()?.equals(selectedValue, ignoreCase = true) == true
-}
-
-private fun AuthNotification.matchesCreatedMonthFilter(selectedMonthKey: String): Boolean {
-  if (selectedMonthKey == ALL_NOTIFICATION_FILTER) {
-    return true
-  }
-
-  return createdAt.toCreatedMonthFilter()?.key == selectedMonthKey
-}
-
-private fun Sequence<AuthNotification>.sortedBy(
-  option: NotificationSortOption
-): Sequence<AuthNotification> =
-  when (option) {
-    NotificationSortOption.Newest ->
-      sortedWith(
-        compareByDescending<AuthNotification> { it.createdAt.normalizedTimestampForDescending() }
-          .thenBy { it.title.normalizedText() }
-      )
-
-    NotificationSortOption.Oldest ->
-      sortedWith(
-        compareBy<AuthNotification> { it.createdAt.normalizedTimestampForAscending() }
-          .thenBy { it.title.normalizedText() }
-      )
-
-    NotificationSortOption.TitleAscending ->
-      sortedWith(
-        compareBy<AuthNotification> { it.title.normalizedText() }
-          .thenByDescending { it.createdAt.normalizedTimestampForDescending() }
-      )
-
-    NotificationSortOption.TitleDescending ->
-      sortedWith(
-        compareByDescending<AuthNotification> { it.title.normalizedText() }
-          .thenByDescending { it.createdAt.normalizedTimestampForDescending() }
-      )
-
-    NotificationSortOption.DueSoonest ->
-      sortedWith(
-        compareBy<AuthNotification> { it.dueDate.normalizedTimestampForAscending() }
-          .thenByDescending { it.createdAt.normalizedTimestampForDescending() }
-      )
-
-    NotificationSortOption.DueLatest ->
-      sortedWith(
-        compareByDescending<AuthNotification> { it.dueDate.normalizedTimestampForDescending() }
-          .thenByDescending { it.createdAt.normalizedTimestampForDescending() }
-      )
-  }
-
-private fun String?.normalizedTimestampForAscending(): String = trimToMeaningfulValue() ?: "\uFFFF"
-
-private fun String?.normalizedTimestampForDescending(): String = trimToMeaningfulValue().orEmpty()
-
-private fun String?.normalizedText(): String = trimToMeaningfulValue()?.lowercase().orEmpty()
-
-private fun String?.trimToMeaningfulValue(): String? = this?.trim()?.takeIf(String::isNotBlank)
-
-private fun String?.displayOrFallback(fallback: String): String =
-  trimToMeaningfulValue() ?: fallback
-
-private fun String?.isMeaningfulValue(): Boolean = trimToMeaningfulValue() != null
-
-private fun String?.humanizeToken(fallback: String): String {
-  val value = trimToMeaningfulValue() ?: return fallback
-  return value.split('_', '-', ' ').filter(String::isNotBlank).joinToString(" ") { token ->
-    token.lowercase().replaceFirstChar { char ->
-      if (char.isLowerCase()) char.titlecase() else char.toString()
-    }
-  }
-}
-
-private fun String?.toReadableTimestamp(): String {
-  val value = trimToMeaningfulValue() ?: return "Not available"
-  val localDateTime =
-    runCatching { Instant.parse(value).toLocalDateTime(TimeZone.currentSystemDefault()) }
-      .getOrNull() ?: return value.replace('T', ' ').removeSuffix("Z")
-
-  val month = localDateTime.month.toShortMonthName()
-  val minute = localDateTime.minute.toString().padStart(2, '0')
-  val hour = localDateTime.hour.toString().padStart(2, '0')
-  return "${localDateTime.day} $month ${localDateTime.year}, $hour:$minute"
-}
-
-private fun String?.toCreatedMonthFilter(): NotificationCreatedMonthFilter? {
-  val value = trimToMeaningfulValue() ?: return null
-  val localDateTime =
-    runCatching { Instant.parse(value).toLocalDateTime(TimeZone.currentSystemDefault()) }
-      .getOrNull() ?: return null
-  val monthNumber = (localDateTime.month.ordinal + 1).toString().padStart(2, '0')
-  return NotificationCreatedMonthFilter(
-    key = "${localDateTime.year}-$monthNumber",
-    label = "${localDateTime.month.toLongMonthName()} ${localDateTime.year}",
-  )
-}
-
-private fun String?.toRelativeTimestamp(now: Instant = Clock.System.now()): String {
-  val value = trimToMeaningfulValue() ?: return "Not available"
-  val instant = runCatching { Instant.parse(value) }.getOrNull() ?: return toReadableTimestamp()
-  val seconds = (now - instant).inWholeSeconds
-  val isPast = seconds >= 0
-  val absoluteSeconds = seconds.absoluteValue
-
-  return when {
-    absoluteSeconds < 45 -> if (isPast) "now" else "in a few seconds"
-    absoluteSeconds < 90 -> relativeTimeLabel(1, "minute", isPast)
-    absoluteSeconds < 45 * 60 -> relativeTimeLabel(absoluteSeconds / 60, "minute", isPast)
-    absoluteSeconds < 90 * 60 -> relativeTimeLabel(1, "hour", isPast)
-    absoluteSeconds < 22 * 60 * 60 -> relativeTimeLabel(absoluteSeconds / (60 * 60), "hour", isPast)
-    absoluteSeconds < 36 * 60 * 60 -> if (isPast) "yesterday" else "tomorrow"
-    absoluteSeconds < 7 * 24 * 60 * 60 ->
-      relativeTimeLabel(absoluteSeconds / (24 * 60 * 60), "day", isPast)
-    else -> toReadableTimestamp()
-  }
-}
-
-private fun relativeTimeLabel(value: Long, unit: String, isPast: Boolean): String {
-  val amount = if (value <= 1L) "1 $unit" else "$value ${unit}s"
-  return if (isPast) "$amount ago" else "in $amount"
-}
-
-private fun List<AuthNotification>.distinctCreatedMonthFilters():
-  List<NotificationCreatedMonthFilter> =
-  mapNotNull { notification -> notification.createdAt.toCreatedMonthFilter() }
-    .distinctBy(NotificationCreatedMonthFilter::key)
-    .sortedByDescending(NotificationCreatedMonthFilter::key)
-
-private fun kotlinx.datetime.Month.toShortMonthName(): String =
-  when (this) {
-    kotlinx.datetime.Month.JANUARY -> "Jan"
-    kotlinx.datetime.Month.FEBRUARY -> "Feb"
-    kotlinx.datetime.Month.MARCH -> "Mar"
-    kotlinx.datetime.Month.APRIL -> "Apr"
-    kotlinx.datetime.Month.MAY -> "May"
-    kotlinx.datetime.Month.JUNE -> "Jun"
-    kotlinx.datetime.Month.JULY -> "Jul"
-    kotlinx.datetime.Month.AUGUST -> "Aug"
-    kotlinx.datetime.Month.SEPTEMBER -> "Sep"
-    kotlinx.datetime.Month.OCTOBER -> "Oct"
-    kotlinx.datetime.Month.NOVEMBER -> "Nov"
-    kotlinx.datetime.Month.DECEMBER -> "Dec"
-  }
-
-private fun kotlinx.datetime.Month.toLongMonthName(): String =
-  when (this) {
-    kotlinx.datetime.Month.JANUARY -> "January"
-    kotlinx.datetime.Month.FEBRUARY -> "February"
-    kotlinx.datetime.Month.MARCH -> "March"
-    kotlinx.datetime.Month.APRIL -> "April"
-    kotlinx.datetime.Month.MAY -> "May"
-    kotlinx.datetime.Month.JUNE -> "June"
-    kotlinx.datetime.Month.JULY -> "July"
-    kotlinx.datetime.Month.AUGUST -> "August"
-    kotlinx.datetime.Month.SEPTEMBER -> "September"
-    kotlinx.datetime.Month.OCTOBER -> "October"
-    kotlinx.datetime.Month.NOVEMBER -> "November"
-    kotlinx.datetime.Month.DECEMBER -> "December"
-  }
 
 @Composable
 private fun AuthNotification.statusIndicatorColor(): Color =

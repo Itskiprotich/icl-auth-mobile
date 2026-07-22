@@ -15,15 +15,15 @@
  */
 package dev.ohs.player.auth
 
-import icl.ohs.libs.auth.AuthSession
 import icl.ohs.libs.auth.IclAuth
-import icl.ohs.libs.auth.IclAuthConfig
-import icl.ohs.libs.auth.InMemoryAuthSessionStore
-import icl.ohs.libs.auth.NotificationListResult
-import icl.ohs.libs.auth.NotificationScreenConfig
-import icl.ohs.libs.auth.NotificationService
-import icl.ohs.libs.auth.resolveNotificationConfig
-import icl.ohs.libs.auth.validateNotificationRequest
+import icl.ohs.libs.auth.models.AuthSession
+import icl.ohs.libs.auth.models.IclAuthConfig
+import icl.ohs.libs.auth.models.InMemoryAuthSessionStore
+import icl.ohs.libs.auth.models.NotificationListResult
+import icl.ohs.libs.auth.models.NotificationScreenConfig
+import icl.ohs.libs.auth.network.NotificationService
+import icl.ohs.libs.auth.network.resolveNotificationConfig
+import icl.ohs.libs.auth.network.validateNotificationRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

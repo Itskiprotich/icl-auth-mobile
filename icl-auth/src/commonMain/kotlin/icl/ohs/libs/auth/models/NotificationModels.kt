@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package icl.ohs.libs.auth
+package icl.ohs.libs.auth.models
 
 data class NotificationMessages(
   val missingNotificationsUrl: String = "Configure the notifications URL to continue.",

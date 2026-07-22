@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package icl.ohs.libs.auth
+package icl.ohs.libs.auth.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,10 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -53,7 +49,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import icl.ohs.libs.auth.AuthMessageBanner
+import icl.ohs.libs.auth.AuthMessageBannerType
+import icl.ohs.libs.auth.viewmodels.ForgotPasswordViewModel
 
 internal const val FORGOT_PASSWORD_EMAIL_TAG = "forgot_password_email"
 internal const val FORGOT_PASSWORD_SUBMIT_BUTTON_TAG = "forgot_password_submit_button"
@@ -72,13 +72,40 @@ fun ForgotPasswordScreen(
   config: ForgotPasswordScreenConfig = ForgotPasswordScreenConfig(),
   initialIdentifier: String = "",
   onIAlreadyHaveCodeClick: (String) -> Unit = {},
+  viewModel: ForgotPasswordViewModel =
+    viewModel(key = initialIdentifier) { ForgotPasswordViewModel(config, initialIdentifier) },
 ) {
-  var identifier by rememberSaveable(initialIdentifier) { mutableStateOf(initialIdentifier) }
-  var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-  var isSubmitting by rememberSaveable { mutableStateOf(false) }
-  var isSubmitted by rememberSaveable { mutableStateOf(false) }
-  val coroutineScope = rememberCoroutineScope()
+  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+  ForgotPasswordScreenContent(
+    identifier = uiState.identifier,
+    errorMessage = uiState.errorMessage,
+    isSubmitting = uiState.isSubmitting,
+    isSubmitted = uiState.isSubmitted,
+    config = config,
+    modifier = modifier,
+    onIdentifierChange = viewModel::onIdentifierChange,
+    onSubmitClick = { viewModel.submit(onSubmit) },
+    onErrorDismiss = viewModel::onErrorDismiss,
+    onIAlreadyHaveCodeClick = { viewModel.onIAlreadyHaveCodeClick(onIAlreadyHaveCodeClick) },
+    onBackToLoginClick = onBackToLoginClick,
+  )
+}
+
+@Composable
+private fun ForgotPasswordScreenContent(
+  identifier: String,
+  onIdentifierChange: (String) -> Unit,
+  onSubmitClick: () -> Unit,
+  onErrorDismiss: () -> Unit,
+  onIAlreadyHaveCodeClick: () -> Unit,
+  onBackToLoginClick: () -> Unit,
+  config: ForgotPasswordScreenConfig,
+  modifier: Modifier = Modifier,
+  errorMessage: String? = null,
+  isSubmitting: Boolean = false,
+  isSubmitted: Boolean = false,
+) {
   val canSubmit = identifier.isNotBlank() && !isSubmitting
 
   Scaffold(modifier = modifier.fillMaxSize(), containerColor = MaterialTheme.colorScheme.surface) {
@@ -102,9 +129,9 @@ fun ForgotPasswordScreen(
     ) {
       if (errorMessage != null) {
         AuthMessageBanner(
-          message = errorMessage!!,
+          message = errorMessage,
           type = AuthMessageBannerType.Error,
-          onDismiss = { errorMessage = null },
+          onDismiss = onErrorDismiss,
           modifier =
             Modifier.align(Alignment.TopCenter).padding(start = 20.dp, top = 12.dp, end = 20.dp),
         )
@@ -157,10 +184,7 @@ fun ForgotPasswordScreen(
             } else {
               OutlinedTextField(
                 value = identifier,
-                onValueChange = {
-                  identifier = it
-                  errorMessage = null
-                },
+                onValueChange = onIdentifierChange,
                 modifier = Modifier.fillMaxWidth().testTag(FORGOT_PASSWORD_EMAIL_TAG),
                 label = { Text("Username or email") },
                 placeholder = { Text("Enter your username or email") },
@@ -168,38 +192,11 @@ fun ForgotPasswordScreen(
                 enabled = !isSubmitting,
                 keyboardOptions =
                   KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Done),
-                keyboardActions =
-                  KeyboardActions(
-                    onDone = {
-                      if (canSubmit) {
-                        coroutineScope.launch {
-                          isSubmitting = true
-                          errorMessage = null
-                          onSubmit(identifier)
-                            .onSuccess { isSubmitted = true }
-                            .onFailure { errorMessage = config.emptyEmailMessage }
-                          isSubmitting = false
-                        }
-                      }
-                    }
-                  ),
+                keyboardActions = KeyboardActions(onDone = { if (canSubmit) onSubmitClick() }),
               )
 
               Button(
-                onClick = {
-                  if (identifier.isBlank()) {
-                    errorMessage = config.emptyEmailMessage
-                    return@Button
-                  }
-                  coroutineScope.launch {
-                    isSubmitting = true
-                    errorMessage = null
-                    onSubmit(identifier)
-                      .onSuccess { isSubmitted = true }
-                      .onFailure { errorMessage = it.message ?: config.emptyEmailMessage }
-                    isSubmitting = false
-                  }
-                },
+                onClick = onSubmitClick,
                 modifier = Modifier.fillMaxWidth().testTag(FORGOT_PASSWORD_SUBMIT_BUTTON_TAG),
                 enabled = canSubmit,
                 shape = RoundedCornerShape(18.dp),
@@ -209,15 +206,7 @@ fun ForgotPasswordScreen(
             }
 
             TextButton(
-              onClick = {
-                val trimmedIdentifier = identifier.trim()
-                if (trimmedIdentifier.isBlank()) {
-                  errorMessage = config.emptyEmailMessage
-                  return@TextButton
-                }
-
-                onIAlreadyHaveCodeClick(trimmedIdentifier)
-              },
+              onClick = onIAlreadyHaveCodeClick,
               modifier = Modifier.testTag(FORGOT_PASSWORD_HAVE_CODE_TAG),
               enabled = !isSubmitting,
             ) {

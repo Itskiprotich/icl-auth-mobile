@@ -15,10 +15,10 @@
  */
 package dev.ohs.player.reference.app.auth
 
-import icl.ohs.libs.auth.AuthSessionStore
 import icl.ohs.libs.auth.IclAuth
-import icl.ohs.libs.auth.IclAuthConfig
-import icl.ohs.libs.auth.InMemoryAuthSessionStore
+import icl.ohs.libs.auth.models.AuthSessionStore
+import icl.ohs.libs.auth.models.IclAuthConfig
+import icl.ohs.libs.auth.models.InMemoryAuthSessionStore
 
 private const val AUTH_BASE_URL = "https://auth.nphiis.health.go.ke"
 

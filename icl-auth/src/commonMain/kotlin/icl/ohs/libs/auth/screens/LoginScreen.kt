@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package icl.ohs.libs.auth
+package icl.ohs.libs.auth.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -46,11 +46,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -77,7 +75,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import icl.ohs.libs.auth.AuthMessageBanner
+import icl.ohs.libs.auth.AuthMessageBannerType
+import icl.ohs.libs.auth.models.LoginFailure
+import icl.ohs.libs.auth.models.LoginScreenConfig
+import icl.ohs.libs.auth.models.LoginSuccess
+import icl.ohs.libs.auth.viewmodels.LoginEvent
+import icl.ohs.libs.auth.viewmodels.LoginViewModel
 
 internal const val LOGIN_USERNAME_TAG = "login_username"
 internal const val LOGIN_PASSWORD_TAG = "login_password"
@@ -95,83 +101,32 @@ fun LoginScreen(
   onForgotPasswordClick: (String) -> Unit = {},
   onTermsAndConditionsClick: () -> Unit = {},
   onPrivacyPolicyClick: (() -> Unit)? = null,
+  viewModel: LoginViewModel = viewModel { LoginViewModel(config) },
 ) {
-  var username by rememberSaveable { mutableStateOf("32645167") }
-  var password by rememberSaveable { mutableStateOf("00001111") }
-  var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-  var isSubmitting by rememberSaveable { mutableStateOf(false) }
-  val coroutineScope = rememberCoroutineScope()
-  val resolvedConfig = resolveLoginConfig(screenConfig = config)
-  val httpClient =
-    remember(resolvedConfig.requestTimeoutMillis) {
-      buildLoginHttpClient(resolvedConfig.requestTimeoutMillis)
-    }
-  val loginService = remember(httpClient) { LoginService(httpClient) }
+  val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-  DisposableEffect(httpClient) { onDispose { httpClient.close() } }
+  LaunchedEffect(viewModel) {
+    viewModel.events.collect { event ->
+      when (event) {
+        is LoginEvent.Success -> onLoginSuccess(event.result)
+        is LoginEvent.Failure -> onLoginFailure(event.result)
+        is LoginEvent.ForgotPassword -> onForgotPasswordClick(event.username)
+      }
+    }
+  }
 
   LoginScreenContent(
-    username = username,
-    password = password,
-    modifier = modifier,
-    errorMessage = errorMessage,
-    isSubmitting = isSubmitting,
+    username = uiState.username,
+    password = uiState.password,
+    errorMessage = uiState.errorMessage,
+    isSubmitting = uiState.isSubmitting,
     config = config,
-    onUsernameChange = {
-      username = it
-      errorMessage = null
-    },
-    onPasswordChange = {
-      password = it
-      errorMessage = null
-    },
-    onLoginClick = {
-      if (isSubmitting) {
-        return@LoginScreenContent
-      }
-
-      val validationFailure =
-        validateLoginRequest(config = resolvedConfig, username = username, password = password)
-      if (validationFailure != null) {
-        errorMessage = validationFailure.message
-        onLoginFailure(validationFailure)
-        return@LoginScreenContent
-      }
-
-      coroutineScope.launch {
-        isSubmitting = true
-        errorMessage = null
-
-        try {
-          when (
-            val result =
-              loginService.login(config = resolvedConfig, username = username, password = password)
-          ) {
-            is LoginAttemptResult.Success -> {
-              errorMessage = null
-              onLoginSuccess(result.value)
-            }
-
-            is LoginAttemptResult.Failure -> {
-              errorMessage = result.value.message
-              onLoginFailure(result.value)
-            }
-          }
-        } finally {
-          isSubmitting = false
-        }
-      }
-    },
-    onForgotPasswordClick = {
-      val trimmedUsername = username.trim()
-      if (trimmedUsername.isBlank()) {
-        errorMessage = resolvedConfig.messages.emptyUsername
-        return@LoginScreenContent
-      }
-
-      onForgotPasswordClick(trimmedUsername)
-    },
-    onErrorDismiss = { errorMessage = null },
+    modifier = modifier,
+    onUsernameChange = viewModel::onUsernameChange,
+    onPasswordChange = viewModel::onPasswordChange,
+    onLoginClick = viewModel::onLoginClick,
+    onForgotPasswordClick = viewModel::onForgotPasswordClick,
+    onErrorDismiss = viewModel::onErrorDismiss,
     onTermsAndConditionsClick = onTermsAndConditionsClick,
     onPrivacyPolicyClick = onPrivacyPolicyClick,
   )
@@ -380,8 +335,7 @@ private fun LoginFieldActionButton(
 ) {
   IconButton(
     onClick = onClick,
-    modifier =
-      modifier.testTag(tag).semantics { this.contentDescription = contentDescription }
+    modifier = modifier.testTag(tag).semantics { this.contentDescription = contentDescription },
   ) {
     LoginFieldActionGlyphIcon(glyph = glyph)
   }
@@ -394,10 +348,7 @@ private enum class LoginFieldActionGlyph {
 }
 
 @Composable
-private fun LoginFieldActionGlyphIcon(
-  glyph: LoginFieldActionGlyph,
-  modifier: Modifier = Modifier,
-) {
+private fun LoginFieldActionGlyphIcon(glyph: LoginFieldActionGlyph, modifier: Modifier = Modifier) {
   val strokeColor = MaterialTheme.colorScheme.onSurfaceVariant
 
   Canvas(modifier = modifier.size(20.dp)) {
@@ -426,10 +377,30 @@ private fun LoginFieldActionGlyphIcon(
         val eyePath =
           Path().apply {
             moveTo(size.width * 0.08f, size.height * 0.50f)
-            quadraticTo(size.width * 0.30f, size.height * 0.16f, size.width * 0.50f, size.height * 0.16f)
-            quadraticTo(size.width * 0.70f, size.height * 0.16f, size.width * 0.92f, size.height * 0.50f)
-            quadraticTo(size.width * 0.70f, size.height * 0.84f, size.width * 0.50f, size.height * 0.84f)
-            quadraticTo(size.width * 0.30f, size.height * 0.84f, size.width * 0.08f, size.height * 0.50f)
+            quadraticTo(
+              size.width * 0.30f,
+              size.height * 0.16f,
+              size.width * 0.50f,
+              size.height * 0.16f,
+            )
+            quadraticTo(
+              size.width * 0.70f,
+              size.height * 0.16f,
+              size.width * 0.92f,
+              size.height * 0.50f,
+            )
+            quadraticTo(
+              size.width * 0.70f,
+              size.height * 0.84f,
+              size.width * 0.50f,
+              size.height * 0.84f,
+            )
+            quadraticTo(
+              size.width * 0.30f,
+              size.height * 0.84f,
+              size.width * 0.08f,
+              size.height * 0.50f,
+            )
             close()
           }
 

@@ -15,7 +15,6 @@
  */
 package dev.ohs.player.reference.app
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -54,9 +53,9 @@ import dev.ohs.player.reference.app.feature.workflow.WorkflowCatalogStore
 import dev.ohs.player.reference.app.feature.workflow.WorkflowModuleScreen
 import dev.ohs.player.reference.app.feature.workflow.toCardSpec
 import icl.ohs.libs.auth.IclAuth
-import icl.ohs.libs.auth.NotificationScreen
-import icl.ohs.libs.auth.SetNewPasswordScreen
-import icl.ohs.libs.auth.SetNewPasswordScreenConfig
+import icl.ohs.libs.auth.models.SetNewPasswordScreenConfig
+import icl.ohs.libs.auth.screens.NotificationScreen
+import icl.ohs.libs.auth.screens.SetNewPasswordScreen
 
 private const val HOME_ROUTE = "home"
 private const val PROFILE_ROUTE = "profile"
