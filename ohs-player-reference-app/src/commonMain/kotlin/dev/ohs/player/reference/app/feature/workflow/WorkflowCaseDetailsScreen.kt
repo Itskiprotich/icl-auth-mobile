@@ -27,25 +27,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
-import androidx.compose.material.ScrollableTabRow
-import androidx.compose.material.Tab
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -58,9 +59,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.ohs.player.reference.app.feature.component.common.Chip
 
 @Composable
 internal fun WorkflowCaseDetailsScreen(
@@ -170,9 +174,9 @@ private fun WorkflowCaseDetailsContent(
     WorkflowCaseOverviewCard(details = details)
 
     if (details.tabs.isNotEmpty()) {
-      ScrollableTabRow(
+      PrimaryScrollableTabRow(
         selectedTabIndex = selectedTabIndex.coerceIn(0, details.tabs.lastIndex),
-        backgroundColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.primary,
         edgePadding = 16.dp,
       ) {
@@ -221,39 +225,63 @@ private fun WorkflowCaseDetailsContent(
 private fun WorkflowCaseOverviewCard(details: WorkflowCaseDetails, modifier: Modifier = Modifier) {
   val overviewTitle = details.patientName.ifBlank { details.title.ifBlank { details.caseLabel } }
   val epidemicNumber = details.epidemicNumber.orEmpty()
+  val accentColor = details.record.statusTone.color()
+  val initials = overviewTitle.trim().firstOrNull()?.uppercaseChar()?.toString() ?: "?"
 
   Card(
     modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
-    shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+    shape = RoundedCornerShape(24.dp),
     colors =
       CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
   ) {
-    Column(
-      modifier = Modifier.fillMaxWidth().padding(18.dp),
-      verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-      Text(
-        text = overviewTitle,
-        style = MaterialTheme.typography.headlineMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-        fontWeight = FontWeight.Bold,
-      )
+    Column {
+      Box(modifier = Modifier.fillMaxWidth().height(4.dp).background(accentColor))
 
-      Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        OverviewStatCard(
-          label = "Case",
-          value = details.caseLabel,
-          icon = Icons.Default.Info,
-          modifier = Modifier.weight(if (epidemicNumber.isBlank()) 1f else 1.3f),
-        )
-        if (epidemicNumber.isNotBlank()) {
-          OverviewStatCard(
-            label = "EPID No",
-            value = epidemicNumber,
-            icon = Icons.Default.Search,
-            modifier = Modifier.weight(1f),
-          )
+      Column(
+        modifier = Modifier.fillMaxWidth().padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+      ) {
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(12.dp),
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          Box(
+            modifier =
+              Modifier.size(48.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center,
+          ) {
+            Text(
+              text = initials,
+              style = MaterialTheme.typography.titleLarge,
+              color = MaterialTheme.colorScheme.onPrimaryContainer,
+              fontWeight = FontWeight.Bold,
+            )
+          }
+
+          Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+              text = overviewTitle,
+              style = MaterialTheme.typography.headlineSmall,
+              color = MaterialTheme.colorScheme.onSurface,
+              fontWeight = FontWeight.Bold,
+            )
+
+            if (epidemicNumber.isNotBlank()) {
+              Chip(
+                label = epidemicNumber,
+                containerColor = accentColor.copy(alpha = 0.12f),
+                contentColor = accentColor,
+              )
+            }
+          }
+        }
+
+        if (details.highlights.isNotEmpty()) {
+          HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+          HighlightRows(details.highlights)
         }
       }
     }
@@ -264,12 +292,12 @@ private fun WorkflowCaseOverviewCard(details: WorkflowCaseDetails, modifier: Mod
 private fun OverviewStatCard(
   label: String,
   value: String,
-  icon: androidx.compose.ui.graphics.vector.ImageVector,
+  icon: ImageVector,
   modifier: Modifier = Modifier,
 ) {
   Card(
     modifier = modifier.defaultMinSize(minHeight = 96.dp),
-    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+    shape = RoundedCornerShape(20.dp),
     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
   ) {
     Column(
@@ -329,12 +357,12 @@ private fun SummaryField(label: String, value: String, modifier: Modifier = Modi
   Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
     Text(
       text = label,
-      style = MaterialTheme.typography.bodySmall,
+      style = MaterialTheme.typography.labelMedium,
       color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
     Text(
       text = value.ifBlank { "—" },
-      style = MaterialTheme.typography.titleMedium,
+      style = MaterialTheme.typography.bodyLarge,
       color = MaterialTheme.colorScheme.onSurface,
       fontWeight = FontWeight.Medium,
     )
@@ -345,40 +373,39 @@ private fun SummaryField(label: String, value: String, modifier: Modifier = Modi
 private fun SummarySectionCard(section: WorkflowCaseDetailSection, modifier: Modifier = Modifier) {
   Card(
     modifier = modifier.fillMaxWidth(),
-    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    shape = RoundedCornerShape(20.dp),
+    colors =
+      CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
   ) {
     Column(
       modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
-      verticalArrangement = Arrangement.spacedBy(10.dp),
+      verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
       if (section.title.isNotBlank()) {
-        Text(
-          text = section.title,
-          style = MaterialTheme.typography.titleMedium,
-          color = MaterialTheme.colorScheme.onSurface,
-          fontWeight = FontWeight.SemiBold,
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          Text(
+            text = section.title,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.SemiBold,
+          )
+          HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        }
       }
 
-      section.answers.forEachIndexed { index, answer ->
-        if (index > 0) {
-          Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-          Text(
-            text = answer.label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-          )
-          Text(
-            text = answer.value,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Medium,
-          )
+      section.answers.chunked(2).forEach { row ->
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.spacedBy(16.dp),
+          verticalAlignment = Alignment.Top,
+        ) {
+          row.forEach { answer ->
+            SummaryField(label = answer.label, value = answer.value, modifier = Modifier.weight(1f))
+          }
+          if (row.size == 1) {
+            Spacer(modifier = Modifier.weight(1f))
+          }
         }
       }
     }
@@ -389,8 +416,8 @@ private fun SummarySectionCard(section: WorkflowCaseDetailSection, modifier: Mod
 private fun SummaryEmptyCard(message: String, modifier: Modifier = Modifier) {
   Card(
     modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
-    shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    shape = RoundedCornerShape(22.dp),
+    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
   ) {
     Column(
       modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 24.dp),

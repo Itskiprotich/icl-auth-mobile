@@ -400,7 +400,9 @@ private suspend fun loadWorkflowCaseContexts(
           val patientIds = patientIdsForIdentifierSystem(identifierSystem)
           allResponses.filter { response ->
             val patientId = patientIdFromReference(response.subject?.reference?.value)
-            patientId != null && patientId in patientIds
+            patientId != null &&
+              patientId in patientIds &&
+              !response.isFollowUpQuestionnaireResponse()
           }
         } else {
           allResponses.filter { response ->
@@ -486,7 +488,7 @@ private suspend fun loadWorkflowCaseContexts(
         childEncounterIds.flatMap { childEncounterId ->
           observationsByEncounterId[childEncounterId].orEmpty()
         }
-      val latestLabResultsResponse =
+      val latestChildResponse =
         allResponses
           .filter { childResponse ->
             childResponse.questionnaireReferenceValue()?.toQuestionnaireResource() ==
@@ -494,18 +496,29 @@ private suspend fun loadWorkflowCaseContexts(
               encounterIdFromReference(childResponse.encounter?.reference?.value) in
                 childEncounterIds
           }
-          .map { childResponse ->
-            val childResponseJson =
-              workflowCaseJson
-                .encodeToJsonElement(QuestionnaireResponse.serializer(), childResponse)
-                .jsonObject
-            WorkflowLinkedQuestionnaireResponse(
-              responseJson = childResponseJson,
-              answersByLinkId = childResponseJson.answersByLinkId(),
-              authoredText = childResponseJson.authoredText(),
-            )
+          .maxByOrNull { childResponse ->
+            workflowCaseJson
+              .encodeToJsonElement(QuestionnaireResponse.serializer(), childResponse)
+              .jsonObject
+              .authoredText()
+              .orEmpty()
           }
-          .maxByOrNull { linkedResponse -> linkedResponse.authoredText.orEmpty() }
+      val latestLabResultsResponse =
+        latestChildResponse?.let { childResponse ->
+          val childResponseJson =
+            workflowCaseJson
+              .encodeToJsonElement(QuestionnaireResponse.serializer(), childResponse)
+              .jsonObject
+          WorkflowLinkedQuestionnaireResponse(
+            responseJson = childResponseJson,
+            answersByLinkId = childResponseJson.answersByLinkId(),
+            authoredText = childResponseJson.authoredText(),
+          )
+        }
+      val latestChildEncounterObservations =
+        encounterIdFromReference(latestChildResponse?.encounter?.reference?.value)
+          ?.let { observationsByEncounterId[it] }
+          .orEmpty()
       val encounterLinkedObservations = buildList {
         encounterId?.let { addAll(observationsByEncounterId[it].orEmpty()) }
         addAll(childEncounterObservations)
@@ -523,7 +536,7 @@ private suspend fun loadWorkflowCaseContexts(
         patient = patientId?.let(patientsById::get),
         references = references,
         observationIndex = linkedObservations.toObservationIndex(),
-        childObservationIndex = childEncounterObservations.toObservationIndex(preferLatest = true),
+        childObservationIndex = latestChildEncounterObservations.toObservationIndex(),
         latestLabResultsResponse = latestLabResultsResponse,
       )
     }
@@ -1032,14 +1045,14 @@ private fun JsonObject.answersByLinkId(): Map<String, List<JsonObject>> {
   return answers
 }
 
-private fun List<Resource>.toObservationIndex(preferLatest: Boolean = false): ObservationIndex {
+private fun List<Resource>.toObservationIndex(): ObservationIndex {
   val valuesByKey = linkedMapOf<String, String>()
 
   for (resource in this) {
     val resourceJson = resource.asJsonObject()
     val value = resourceJson.observationValue() ?: continue
     resourceJson.observationKeys().forEach { key ->
-      if (preferLatest || key !in valuesByKey) {
+      if (key !in valuesByKey) {
         valuesByKey[key] = value
       }
     }
@@ -1120,6 +1133,9 @@ private fun QuestionnaireResponse.questionnaireReferenceValue(): String? =
     .jsonObject["questionnaire"]
     ?.jsonPrimitive
     ?.contentOrNull
+
+private fun QuestionnaireResponse.isFollowUpQuestionnaireResponse(): Boolean =
+  questionnaireReferenceValue()?.toQuestionnaireResource() == MEASLES_LAB_RESULTS_RESOURCE
 
 private fun Resource.asJsonObject(): JsonObject =
   workflowCaseJson.encodeToJsonElement(Resource.serializer(), this).jsonObject

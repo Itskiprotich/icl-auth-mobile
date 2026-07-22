@@ -119,7 +119,10 @@ internal suspend fun loadWorkflowRecordCount(resource: String): Int {
         .filterIsInstance<QuestionnaireResponse>()
         .count { response ->
           val patientId = patientIdFromReference(response.subject?.reference?.value)
-          patientId != null && patientId in patientIds
+          patientId != null &&
+            patientId in patientIds &&
+            response.questionnaireReferenceValue()?.toQuestionnaireResource() !=
+              MEASLES_LAB_RESULTS_RESOURCE
         }
     }
   }

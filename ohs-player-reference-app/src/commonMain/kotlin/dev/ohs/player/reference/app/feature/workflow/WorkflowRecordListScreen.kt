@@ -15,6 +15,9 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +44,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -434,6 +439,7 @@ private fun WorkflowCaseCard(
   val isClickable = !record.references?.questionnaireResponseId.isNullOrBlank()
   val accentColor = record.statusTone.color()
   val initials = layout.titleValue.trim().firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+  var expanded by rememberSaveable { mutableStateOf(false) }
 
   Card(
     modifier = modifier.fillMaxWidth().clickable(enabled = isClickable, onClick = onClick),
@@ -476,11 +482,20 @@ private fun WorkflowCaseCard(
               color = MaterialTheme.colorScheme.onSurface,
               fontWeight = FontWeight.Bold,
             )
-            Text(
-              text = layout.titleLabel,
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (layout.epid != null) {
+              Text(
+                text = "${layout.epid.label}: ${layout.epid.value.ifBlank { "—" }}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+              )
+            } else {
+              Text(
+                text = layout.titleLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+              )
+            }
           }
 
           layout.badge?.let { badge ->
@@ -501,19 +516,51 @@ private fun WorkflowCaseCard(
         }
 
         if (layout.rows.isNotEmpty()) {
-          HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-        }
-
-        layout.rows.forEach { (leftField, rightField) ->
-          if (rightField == null) {
-            CaseValue(label = leftField.label, value = leftField.value)
-          } else {
-            TwoColumnCaseRow(
-              leftLabel = leftField.label,
-              leftValue = leftField.value,
-              rightLabel = rightField.label,
-              rightValue = rightField.value,
+          Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = "Case Details",
+              style = MaterialTheme.typography.titleSmall,
+              fontWeight = FontWeight.SemiBold,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              modifier = Modifier.weight(1f),
             )
+
+            IconButton(onClick = { expanded = !expanded }, modifier = Modifier.size(32.dp)) {
+              Icon(
+                imageVector =
+                  if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription =
+                  if (expanded) "Collapse case details" else "Expand case details",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp),
+              )
+            }
+          }
+
+          AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+          ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+              HorizontalDivider(
+                modifier = Modifier.padding(bottom = 4.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+              )
+
+              layout.rows.forEach { (leftField, rightField) ->
+                if (rightField == null) {
+                  CaseValue(label = leftField.label, value = leftField.value)
+                } else {
+                  TwoColumnCaseRow(
+                    leftLabel = leftField.label,
+                    leftValue = leftField.value,
+                    rightLabel = rightField.label,
+                    rightValue = rightField.value,
+                  )
+                }
+              }
+            }
           }
         }
       }
@@ -568,7 +615,7 @@ private fun CaseValue(label: String, value: String, modifier: Modifier = Modifie
 }
 
 @Composable
-private fun WorkflowRecordTone.color(): Color =
+internal fun WorkflowRecordTone.color(): Color =
   when (this) {
     WorkflowRecordTone.SUCCESS -> MaterialTheme.colorScheme.primary
     WorkflowRecordTone.WARNING -> Color(0xFFB8860B)
@@ -738,6 +785,7 @@ private data class WorkflowCaseCardFieldSpec(val label: String, val aliases: Lis
 private data class WorkflowCaseCardLayout(
   val titleLabel: String,
   val titleValue: String,
+  val epid: WorkflowCaseCardField?,
   val badge: WorkflowCaseCardField?,
   val rows: List<Pair<WorkflowCaseCardField, WorkflowCaseCardField?>>,
 )
@@ -805,17 +853,21 @@ private fun WorkflowRecord.cardLayout(): WorkflowCaseCardLayout {
           candidate.endsWith(" Case", ignoreCase = true)
       }
       .orEmpty()
+  val epidSpec = CASE_LIST_FIELD_SPECS.first { it.label == "EPID No" }
+  val epidValue = fieldValue(*epidSpec.aliases.toTypedArray())
   val detailFields =
-    CASE_LIST_FIELD_SPECS.map { spec ->
-      WorkflowCaseCardField(
-        label = spec.label,
-        value = fieldValue(*spec.aliases.toTypedArray()).orEmpty(),
-      )
-    }
+    CASE_LIST_FIELD_SPECS.filterNot { it.label == "EPID No" }
+      .map { spec ->
+        WorkflowCaseCardField(
+          label = spec.label,
+          value = fieldValue(*spec.aliases.toTypedArray()).orEmpty(),
+        )
+      }
 
   return WorkflowCaseCardLayout(
     titleLabel = "Patient Name",
     titleValue = titleValue,
+    epid = epidValue?.let { WorkflowCaseCardField(label = "EPID No", value = it) },
     badge = null,
     rows = detailFields.chunked(2).map { row -> row.first() to row.getOrNull(1) },
   )
@@ -833,6 +885,7 @@ private fun WorkflowRecord.supervisoryChecklistCardLayout(): WorkflowCaseCardLay
   return WorkflowCaseCardLayout(
     titleLabel = "County",
     titleValue = fieldValue("County", "User County").orEmpty(),
+    epid = null,
     badge =
       WorkflowCaseCardField(
         label = "Sub County",
