@@ -42,26 +42,20 @@ class WorkflowSocialInvestigationTest {
   }
 
   @Test
-  fun registry_resolvesDedicatedSpecsForEachSocialInvestigationRecordResource() {
-    val countySubCountySpec =
+  fun registry_socialFormsSpecMatchesBothQuestionnaireResources() {
+    val spec =
       WorkflowCasePresentationRegistry.specForRecordResource(
-        SOCIAL_COUNTY_SUB_COUNTY_RECORD_RESOURCE
+        SOCIAL_INVESTIGATION_COMBINED_RECORD_RESOURCE
       )
-    val communitySpec =
-      WorkflowCasePresentationRegistry.specForRecordResource(SOCIAL_COMMUNITY_RECORD_RESOURCE)
 
     assertEquals(
-      setOf(SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE),
-      countySubCountySpec.questionnaireResources,
+      setOf(
+        SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE,
+        SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE,
+      ),
+      spec.questionnaireResources,
     )
-    assertEquals(
-      setOf(SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE),
-      communitySpec.questionnaireResources,
-    )
-  }
 
-  @Test
-  fun registry_combinedSocialInvestigationSpecMatchesBothQuestionnaireResources() {
     assertTrue(
       WorkflowCasePresentationRegistry.matchesRecordResource(
         resource = SOCIAL_INVESTIGATION_COMBINED_RECORD_RESOURCE,
@@ -76,29 +70,15 @@ class WorkflowSocialInvestigationTest {
         questionnaireReference = SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE,
       )
     )
+  }
+
+  @Test
+  fun registry_socialFormsSpecDoesNotMatchUnrelatedQuestionnaires() {
     assertFalse(
       WorkflowCasePresentationRegistry.matchesRecordResource(
         resource = SOCIAL_INVESTIGATION_COMBINED_RECORD_RESOURCE,
         questionnaireResource = "questionnaires/measles-case.json",
         questionnaireReference = "questionnaires/measles-case.json",
-      )
-    )
-  }
-
-  @Test
-  fun registry_dedicatedSpecsDoNotMatchTheOtherCategorysQuestionnaire() {
-    assertFalse(
-      WorkflowCasePresentationRegistry.matchesRecordResource(
-        resource = SOCIAL_COUNTY_SUB_COUNTY_RECORD_RESOURCE,
-        questionnaireResource = SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE,
-        questionnaireReference = SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE,
-      )
-    )
-    assertFalse(
-      WorkflowCasePresentationRegistry.matchesRecordResource(
-        resource = SOCIAL_COMMUNITY_RECORD_RESOURCE,
-        questionnaireResource = SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE,
-        questionnaireReference = SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE,
       )
     )
   }

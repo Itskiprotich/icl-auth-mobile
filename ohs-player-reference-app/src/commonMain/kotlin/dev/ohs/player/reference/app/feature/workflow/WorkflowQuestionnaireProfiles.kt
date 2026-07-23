@@ -22,19 +22,15 @@ internal const val MPOX_SUMMARY_SHEET_RESOURCE = "questionnaires/mpox-summary-sh
 
 /**
  * Social investigation forms (RCCE Tools). These are two dependent categories of a single "social
- * form" concept — not independent workflows — see [WorkflowNode.formCategory] in
- * workflow-catalog.json and the "Select Questionnaire Type" bottom sheet in
- * WorkflowModuleScreen.kt.
+ * form" concept — not independent workflows. Both are linked directly from the "Select
+ * Questionnaire Type" bottom sheet in WorkflowModuleScreen.kt (no separate Add/View step per
+ * category) and their results are always shown together in one combined "Social Forms" list,
+ * distinguished only by the "Category" field (see [socialInvestigationCategoryFor]).
  */
 internal const val SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE =
   "questionnaires/social-county-sub.json"
 
 internal const val SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE = "questionnaires/social-community.json"
-
-internal const val SOCIAL_COUNTY_SUB_COUNTY_RECORD_RESOURCE =
-  "records/county-sub-county-questionnaire-forms.json"
-
-internal const val SOCIAL_COMMUNITY_RECORD_RESOURCE = "records/community-questionnaire-forms.json"
 
 internal const val SOCIAL_INVESTIGATION_COMBINED_RECORD_RESOURCE =
   "records/social-investigation-forms.json"

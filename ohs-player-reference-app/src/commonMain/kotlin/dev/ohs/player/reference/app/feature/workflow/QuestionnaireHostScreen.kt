@@ -138,6 +138,13 @@ internal fun QuestionnaireHostScreen(
   val scope = rememberCoroutineScope()
   var isSubmitting by remember(resource) { mutableStateOf(false) }
   var submissionSuccessMessage by remember(resource) { mutableStateOf<String?>(null) }
+  var showDiscardConfirmation by remember(resource) { mutableStateOf(false) }
+  fun requestBack() {
+    if (isSubmitting || submissionSuccessMessage != null) {
+      return
+    }
+    showDiscardConfirmation = true
+  }
   fun resolveCqfCalculatedToday(questionnaireJson: String): String {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault()).toString() // "2026-07-14"
     val root = Json.parseToJsonElement(questionnaireJson)
@@ -174,16 +181,7 @@ internal fun QuestionnaireHostScreen(
     Scaffold(
       modifier = Modifier.fillMaxSize(),
       snackbarHost = { SnackbarHost(snackbarHostState) },
-      topBar = {
-        QuestionnaireTopBar(
-          title = title,
-          onBack = {
-            if (!isSubmitting && submissionSuccessMessage == null) {
-              onBack()
-            }
-          },
-        )
-      },
+      topBar = { QuestionnaireTopBar(title = title, onBack = ::requestBack) },
     ) { innerPadding ->
       Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
         when (val state = screenState) {
@@ -285,11 +283,7 @@ internal fun QuestionnaireHostScreen(
                       }
                     }
                   },
-                  onCancel = {
-                    if (!isSubmitting && submissionSuccessMessage == null) {
-                      onBack()
-                    }
-                  },
+                  onCancel = ::requestBack,
                 )
               }
             }
@@ -320,6 +314,29 @@ internal fun QuestionnaireHostScreen(
           ) {
             Text(text = "OK")
           }
+        },
+      )
+    }
+
+    if (showDiscardConfirmation) {
+      AlertDialog(
+        onDismissRequest = { showDiscardConfirmation = false },
+        title = { Text(text = "Discard this form?") },
+        text = {
+          Text(text = "Your answers haven't been saved. If you leave now, they will be lost.")
+        },
+        confirmButton = {
+          TextButton(
+            onClick = {
+              showDiscardConfirmation = false
+              onBack()
+            }
+          ) {
+            Text(text = "Discard")
+          }
+        },
+        dismissButton = {
+          TextButton(onClick = { showDiscardConfirmation = false }) { Text(text = "Keep Editing") }
         },
       )
     }

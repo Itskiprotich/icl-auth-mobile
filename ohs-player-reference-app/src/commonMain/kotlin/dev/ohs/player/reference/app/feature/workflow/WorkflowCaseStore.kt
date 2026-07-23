@@ -171,23 +171,11 @@ internal object WorkflowCasePresentationRegistry {
         questionnaireKeywords = setOf("mpox", "supervisory", "checklist"),
         emptyMessage = "No locally saved supervisory checklists are available yet.",
       ),
-      WorkflowCasePresentationSpec(
-        recordResource = SOCIAL_COUNTY_SUB_COUNTY_RECORD_RESOURCE,
-        questionnaireResources = setOf(SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE),
-        questionnaireKeywords = setOf("social-county-sub", "county-sub-county-questionnaire"),
-        emptyMessage = "No locally saved County/Sub County questionnaires are available yet.",
-      ),
-      WorkflowCasePresentationSpec(
-        recordResource = SOCIAL_COMMUNITY_RECORD_RESOURCE,
-        questionnaireResources = setOf(SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE),
-        questionnaireKeywords = setOf("social-community", "community-questionnaire"),
-        emptyMessage = "No locally saved Community questionnaires are available yet.",
-      ),
-      // Combined "Social Forms" list — both categories (County/Sub County and Community) are
-      // dependent sub-forms of the same Social Investigation Form, not independent workflows,
-      // so they are matched by a single spec here and distinguished per-record via the
-      // "Category" field (see WorkflowCaseContext.buildRecordFields /
-      // socialInvestigationCategoryFor).
+      // Social Forms — both categories (County/Sub County and Community) are dependent
+      // sub-forms of the same Social Investigation Form, not independent workflows, so there is
+      // no separate per-category record list: both are matched by this single spec and
+      // distinguished per-record via the "Category" field (see
+      // WorkflowCaseContext.buildRecordFields / socialInvestigationCategoryFor).
       WorkflowCasePresentationSpec(
         recordResource = SOCIAL_INVESTIGATION_COMBINED_RECORD_RESOURCE,
         questionnaireResources =
