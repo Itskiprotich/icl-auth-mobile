@@ -28,156 +28,154 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Serializable
-data class WorkflowCatalog(
-    val modules: List<WorkflowModule> = emptyList(),
-)
+@Serializable data class WorkflowCatalog(val modules: List<WorkflowModule> = emptyList())
 
 @Serializable
 data class WorkflowModule(
-    val id: String,
-    val title: String,
-    val description: String,
-    val icon: WorkflowIconKey = WorkflowIconKey.INFO,
-    val startNodeId: String,
-    val nodes: List<WorkflowNode> = emptyList(),
+  val id: String,
+  val title: String,
+  val description: String,
+  val icon: WorkflowIconKey = WorkflowIconKey.INFO,
+  val startNodeId: String,
+  val nodes: List<WorkflowNode> = emptyList(),
 )
 
 @Serializable
 data class WorkflowNode(
-    val id: String,
-    val title: String,
-    val subtitle: String = "",
-    val sectionTitle: String = "",
-    val layout: WorkflowNodeLayout = WorkflowNodeLayout.GRID,
-    val items: List<WorkflowNodeItem> = emptyList(),
+  val id: String,
+  val title: String,
+  val subtitle: String = "",
+  val sectionTitle: String = "",
+  val layout: WorkflowNodeLayout = WorkflowNodeLayout.GRID,
+  val items: List<WorkflowNodeItem> = emptyList(),
+  val presentation: WorkflowNodePresentation = WorkflowNodePresentation.SCREEN,
+  val formCategory: String? = null,
 )
 
 @Serializable
 data class WorkflowNodeItem(
-    val id: String,
-    val title: String,
-    val description: String = "",
-    val icon: WorkflowIconKey? = null,
-    val destinationNodeId: String? = null,
-    val action: WorkflowAction? = null,
-    val trailingValue: String? = null,
-    val trailingLabel: String? = null,
+  val id: String,
+  val title: String,
+  val description: String = "",
+  val icon: WorkflowIconKey? = null,
+  val destinationNodeId: String? = null,
+  val action: WorkflowAction? = null,
+  val trailingValue: String? = null,
+  val trailingLabel: String? = null,
 )
 
 @Serializable
 data class WorkflowAction(
-    val type: WorkflowActionType,
-    val resource: String,
-    val title: String? = null,
-    val subtitle: String = "",
-    val primaryActionLabel: String? = null,
+  val type: WorkflowActionType,
+  val resource: String,
+  val title: String? = null,
+  val subtitle: String = "",
+  val primaryActionLabel: String? = null,
 )
 
 @Serializable
 enum class WorkflowNodeLayout {
-    @SerialName("grid")
-    GRID,
-    @SerialName("actions")
-    ACTIONS,
+  @SerialName("grid") GRID,
+  @SerialName("actions") ACTIONS,
+}
+
+/**
+ * How a node should be presented when navigated to via [WorkflowNodeItem.destinationNodeId].
+ *
+ * [SCREEN] pushes a full workflow screen (the default, existing behaviour). [BOTTOM_SHEET] keeps
+ * the caller on the current screen and instead surfaces the node's items as a modal bottom sheet
+ * grid. This is used for forms that are dependent sub-steps of a parent workflow (e.g. social
+ * investigation questionnaires) rather than independent workflows in their own right.
+ */
+@Serializable
+enum class WorkflowNodePresentation {
+  @SerialName("screen") SCREEN,
+  @SerialName("bottom_sheet") BOTTOM_SHEET,
 }
 
 @Serializable
 enum class WorkflowActionType {
-    @SerialName("questionnaire")
-    QUESTIONNAIRE,
-    @SerialName("record_list")
-    RECORD_LIST,
+  @SerialName("questionnaire") QUESTIONNAIRE,
+  @SerialName("record_list") RECORD_LIST,
 }
 
 @Serializable
 enum class WorkflowIconKey {
-    @SerialName("warning")
-    WARNING,
-    @SerialName("favorite")
-    FAVORITE,
-    @SerialName("info")
-    INFO,
-    @SerialName("person")
-    PERSON,
-    @SerialName("check_circle")
-    CHECK_CIRCLE,
-    @SerialName("add")
-    ADD,
+  @SerialName("warning") WARNING,
+  @SerialName("favorite") FAVORITE,
+  @SerialName("info") INFO,
+  @SerialName("person") PERSON,
+  @SerialName("check_circle") CHECK_CIRCLE,
+  @SerialName("add") ADD,
 }
 
 @Immutable
 data class WorkflowCardSpec(
-    val key: String,
-    val title: String,
-    val description: String,
-    val icon: ImageVector,
-    val color: Color? = null,
+  val key: String,
+  val title: String,
+  val description: String,
+  val icon: ImageVector,
+  val color: Color? = null,
 )
 
 object DefaultWorkflowCatalog {
-    val cards: List<WorkflowCardSpec> =
-        listOf(
-            WorkflowCardSpec(
-                key = "notifiable-diseases",
-                title = "Notifiable Diseases",
-                description = "Capture immediate, weekly and monthly alerts.",
-                icon = WorkflowIconKey.WARNING.toImageVector(),
-            ),
-            WorkflowCardSpec(
-                key = "mass-immunization",
-                title = "Mass Immunization",
-                description = "Track vaccination and campaign activities.",
-                icon = WorkflowIconKey.FAVORITE.toImageVector(),
-            ),
-            WorkflowCardSpec(
-                key = "case-management",
-                title = "Case Management",
-                description = "Manage follow-up and case outcomes.",
-                icon = WorkflowIconKey.INFO.toImageVector(),
-            ),
-            WorkflowCardSpec(
-                key = "rcce-tools",
-                title = "RCCE Tools",
-                description = "Record rumors and social investigation data.",
-                icon = WorkflowIconKey.PERSON.toImageVector(),
-            ),
-            WorkflowCardSpec(
-                key = "assessments-surveys",
-                title = "Assessments/Surveys",
-                description = "Run assessments and supervision checklists.",
-                icon = WorkflowIconKey.CHECK_CIRCLE.toImageVector(),
-            ),
-        )
+  val cards: List<WorkflowCardSpec> =
+    listOf(
+      WorkflowCardSpec(
+        key = "notifiable-diseases",
+        title = "Notifiable Diseases",
+        description = "Capture immediate, weekly and monthly alerts.",
+        icon = WorkflowIconKey.WARNING.toImageVector(),
+      ),
+      WorkflowCardSpec(
+        key = "mass-immunization",
+        title = "Mass Immunization",
+        description = "Track vaccination and campaign activities.",
+        icon = WorkflowIconKey.FAVORITE.toImageVector(),
+      ),
+      WorkflowCardSpec(
+        key = "case-management",
+        title = "Case Management",
+        description = "Manage follow-up and case outcomes.",
+        icon = WorkflowIconKey.INFO.toImageVector(),
+      ),
+      WorkflowCardSpec(
+        key = "rcce-tools",
+        title = "RCCE Tools",
+        description = "Record rumors and social investigation data.",
+        icon = WorkflowIconKey.PERSON.toImageVector(),
+      ),
+      WorkflowCardSpec(
+        key = "assessments-surveys",
+        title = "Assessments/Surveys",
+        description = "Run assessments and supervision checklists.",
+        icon = WorkflowIconKey.CHECK_CIRCLE.toImageVector(),
+      ),
+    )
 }
 
 fun WorkflowCatalog.findModule(moduleId: String?): WorkflowModule? =
-    modules.firstOrNull { it.id == moduleId }
+  modules.firstOrNull { it.id == moduleId }
 
 fun WorkflowModule.resolveNode(nodeId: String?): WorkflowNode? =
-    if (nodeId == null) findNode(startNodeId) else findNode(nodeId)
+  if (nodeId == null) findNode(startNodeId) else findNode(nodeId)
 
 fun WorkflowModule.findNode(nodeId: String): WorkflowNode? = nodes.firstOrNull { it.id == nodeId }
 
 fun WorkflowModule.findItem(nodeId: String, itemId: String): WorkflowNodeItem? =
-    findNode(nodeId)?.findItem(itemId)
+  findNode(nodeId)?.findItem(itemId)
 
 fun WorkflowNode.findItem(itemId: String): WorkflowNodeItem? = items.firstOrNull { it.id == itemId }
 
 fun WorkflowModule.toCardSpec(): WorkflowCardSpec =
-    WorkflowCardSpec(
-        key = id,
-        title = title,
-        description = description,
-        icon = icon.toImageVector(),
-    )
+  WorkflowCardSpec(key = id, title = title, description = description, icon = icon.toImageVector())
 
 fun WorkflowIconKey.toImageVector(): ImageVector =
-    when (this) {
-        WorkflowIconKey.WARNING -> Icons.Default.Warning
-        WorkflowIconKey.FAVORITE -> Icons.Default.Favorite
-        WorkflowIconKey.INFO -> Icons.Default.Info
-        WorkflowIconKey.PERSON -> Icons.Default.Person
-        WorkflowIconKey.CHECK_CIRCLE -> Icons.Default.CheckCircle
-        WorkflowIconKey.ADD -> Icons.Default.Add
-    }
+  when (this) {
+    WorkflowIconKey.WARNING -> Icons.Default.Warning
+    WorkflowIconKey.FAVORITE -> Icons.Default.Favorite
+    WorkflowIconKey.INFO -> Icons.Default.Info
+    WorkflowIconKey.PERSON -> Icons.Default.Person
+    WorkflowIconKey.CHECK_CIRCLE -> Icons.Default.CheckCircle
+    WorkflowIconKey.ADD -> Icons.Default.Add
+  }

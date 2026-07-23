@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -40,14 +42,20 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -240,6 +248,37 @@ private fun WorkflowNodeContent(
   onNodeSelected: (String) -> Unit,
   onActionClick: (String, String) -> Unit,
 ) {
+  // Any node tagged presentation = BOTTOM_SHEET in the catalog is a dependent sub-step
+  // (e.g. picking between County/Sub County vs Community questionnaire) rather than an
+  // independent workflow, so instead of pushing a new screen we surface its items as a
+  // bottom sheet grid. This dispatch is shared by the on-screen list AND by items tapped
+  // from inside an already-open bottom sheet, so BOTTOM_SHEET nodes chain and compose
+  // anywhere in the workflow graph, not just for this one screen.
+  var bottomSheetNode by remember(node.id) { mutableStateOf<WorkflowNode?>(null) }
+
+  fun dispatchItemClick(originNodeId: String, item: WorkflowNodeItem) {
+    val destinationId = item.destinationNodeId
+    if (destinationId != null) {
+      val destinationNode = module.findNode(destinationId)
+      if (
+        destinationNode != null &&
+          destinationNode.presentation == WorkflowNodePresentation.BOTTOM_SHEET
+      ) {
+        bottomSheetNode = destinationNode
+      } else {
+        bottomSheetNode = null
+        onNodeSelected(destinationId)
+      }
+      return
+    }
+    item.action?.let {
+      bottomSheetNode = null
+      onActionClick(originNodeId, item.id)
+    }
+  }
+
+  fun onItemClick(item: WorkflowNodeItem) = dispatchItemClick(node.id, item)
+
   LazyColumn(
     modifier = Modifier.fillMaxSize(),
     contentPadding = PaddingValues(start = 16.dp, top = 20.dp, end = 16.dp, bottom = 40.dp),
@@ -277,10 +316,7 @@ private fun WorkflowNodeContent(
           ) {
             Column {
               node.items.forEachIndexed { index, item ->
-                WorkflowActionRow(
-                  item = item,
-                  onClick = { handleItemClick(node.id, item, onNodeSelected, onActionClick) },
-                )
+                WorkflowActionRow(item = item, onClick = { onItemClick(item) })
                 if (index < node.items.lastIndex) {
                   HorizontalDivider(
                     modifier = Modifier.padding(start = 72.dp),
@@ -304,10 +340,7 @@ private fun WorkflowNodeContent(
           ) {
             Column {
               node.items.forEachIndexed { index, item ->
-                WorkflowFormRow(
-                  item = item,
-                  onClick = { handleItemClick(node.id, item, onNodeSelected, onActionClick) },
-                )
+                WorkflowFormRow(item = item, onClick = { onItemClick(item) })
                 if (index < node.items.lastIndex) {
                   HorizontalDivider(
                     modifier = Modifier.padding(start = 20.dp),
@@ -318,6 +351,137 @@ private fun WorkflowNodeContent(
             }
           }
         }
+      }
+    }
+  }
+
+  bottomSheetNode?.let { sheetNode ->
+    WorkflowActionsBottomSheet(
+      node = sheetNode,
+      onDismiss = { bottomSheetNode = null },
+      onItemClick = { item -> dispatchItemClick(sheetNode.id, item) },
+    )
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bottom sheet — a reusable grid presentation for any BOTTOM_SHEET-tagged node.
+// e.g. tapping "Add" on the Social Investigation Form surfaces this sheet with
+// County/Sub County Questionnaire and Community Questionnaire as a 2-up grid,
+// since those are dependent categories of one form rather than independent
+// workflows. Any other node in the catalog can opt into the same presentation.
+// ---------------------------------------------------------------------------
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WorkflowActionsBottomSheet(
+  node: WorkflowNode,
+  onDismiss: () -> Unit,
+  onItemClick: (WorkflowNodeItem) -> Unit,
+) {
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+  // Resolve record counts (e.g. "3 Entries") the same way the full-screen action list does,
+  // so the bottom sheet grid stays consistent with that presentation.
+  val resolvedNode by
+    produceState(initialValue = node, node.id) { value = node.withRuntimeSummaries() }
+
+  ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    Column(
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 32.dp),
+      verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+      Text(
+        text = node.title,
+        style = MaterialTheme.typography.titleLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+        fontWeight = FontWeight.Bold,
+      )
+      if (node.subtitle.isNotBlank()) {
+        Text(
+          text = node.subtitle,
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          modifier = Modifier.padding(bottom = 12.dp),
+        )
+      } else {
+        Spacer(modifier = Modifier.padding(top = 8.dp))
+      }
+
+      if (resolvedNode.items.isEmpty()) {
+        WorkflowEmptyState(title = node.title, message = emptyMessageFor(node.layout, node.title))
+      } else {
+        resolvedNode.items.chunked(2).forEach { rowItems ->
+          Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+          ) {
+            rowItems.forEach { item ->
+              Box(modifier = Modifier.weight(1f)) {
+                WorkflowBottomSheetActionCard(item = item, onClick = { onItemClick(item) })
+              }
+            }
+            if (rowItems.size == 1) {
+              Spacer(modifier = Modifier.weight(1f))
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@Composable
+private fun WorkflowBottomSheetActionCard(item: WorkflowNodeItem, onClick: () -> Unit) {
+  val isClickable = item.destinationNodeId != null || item.action != null
+  val icon = item.action.leadingIcon(item.icon?.toImageVector() ?: Icons.AutoMirrored.Filled.List)
+  val (iconBg, iconTint) =
+    when (item.action?.type) {
+      WorkflowActionType.QUESTIONNAIRE ->
+        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.primary
+      WorkflowActionType.RECORD_LIST ->
+        MaterialTheme.colorScheme.secondaryContainer to
+          MaterialTheme.colorScheme.onSecondaryContainer
+      null -> MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.primary
+    }
+
+  Surface(
+    onClick = onClick,
+    enabled = isClickable,
+    modifier = Modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(20.dp),
+    color = MaterialTheme.colorScheme.surface,
+    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+  ) {
+    Column(
+      modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 20.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+      Surface(shape = CircleShape, color = iconBg, modifier = Modifier.size(48.dp)) {
+        Box(contentAlignment = Alignment.Center) {
+          Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(22.dp),
+          )
+        }
+      }
+      Text(
+        text = item.title,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurface,
+        fontWeight = FontWeight.SemiBold,
+        textAlign = TextAlign.Center,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+      )
+      if (!item.trailingValue.isNullOrBlank()) {
+        Text(
+          text = "${item.trailingValue} ${item.trailingLabel ?: ""}".trim(),
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
       }
     }
   }
@@ -519,15 +683,6 @@ private fun WorkflowMessageScreen(title: String, subtitle: String) {
       )
     }
   }
-}
-
-private fun handleItemClick(
-  nodeId: String,
-  item: WorkflowNodeItem,
-  onNodeSelected: (String) -> Unit,
-  onActionClick: (String, String) -> Unit,
-) {
-  item.destinationNodeId?.let(onNodeSelected) ?: item.action?.let { onActionClick(nodeId, item.id) }
 }
 
 private suspend fun WorkflowNode.withRuntimeSummaries(): WorkflowNode =

@@ -529,6 +529,7 @@
           "subtitle": "Select Questionnaire Type",
           "sectionTitle": "Available Forms",
           "layout": "grid",
+          "presentation": "bottom_sheet",
           "items": [
             {
               "id": "county-sub-county-questionnaire",
@@ -549,18 +550,74 @@
         {
           "id": "county-sub-county-questionnaire",
           "title": "County/Sub County Questionnaire",
-          "subtitle": "Coming soon",
+          "subtitle": "Select an action",
           "sectionTitle": "Case Actions",
           "layout": "actions",
-          "items": []
+          "formCategory": "social",
+          "items": [
+            {
+              "id": "add-county-sub-county-questionnaire",
+              "title": "Add",
+              "icon": "add",
+              "description": "Capture a new County/Sub County questionnaire submission.",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/county-sub-county-questionnaire.json",
+                "title": "County/Sub County Questionnaire",
+                "subtitle": "Capture county and sub-county level social investigation details.",
+                "primaryActionLabel": "Submit Questionnaire"
+              }
+            },
+            {
+              "id": "county-sub-county-questionnaire-list",
+              "title": "View",
+              "icon": "person",
+              "description": "Browse, search, and paginate submitted questionnaires.",
+              "action": {
+                "type": "record_list",
+                "resource": "records/county-sub-county-questionnaire-forms.json",
+                "title": "County/Sub County Questionnaire List",
+                "subtitle": "Track draft, submitted, and reviewed questionnaires."
+              },
+              "trailingLabel": "Entries"
+            }
+          ]
         },
         {
           "id": "community-questionnaire",
           "title": "Community Questionnaire",
-          "subtitle": "Coming soon",
+          "subtitle": "Select an action",
           "sectionTitle": "Case Actions",
           "layout": "actions",
-          "items": []
+          "formCategory": "social",
+          "items": [
+            {
+              "id": "add-community-questionnaire",
+              "title": "Add",
+              "icon": "add",
+              "description": "Capture a new Community questionnaire submission.",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/community-questionnaire.json",
+                "title": "Community Questionnaire",
+                "subtitle": "Capture community level social investigation details.",
+                "primaryActionLabel": "Submit Questionnaire"
+              }
+            },
+            {
+              "id": "community-questionnaire-list",
+              "title": "View",
+              "icon": "person",
+              "description": "Browse, search, and paginate submitted questionnaires.",
+              "action": {
+                "type": "record_list",
+                "resource": "records/community-questionnaire-forms.json",
+                "title": "Community Questionnaire List",
+                "subtitle": "Track draft, submitted, and reviewed questionnaires."
+              },
+              "trailingLabel": "Entries"
+            }
+          ]
         }
       ]
     },

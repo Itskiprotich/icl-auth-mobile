@@ -157,4 +157,102 @@ class WorkflowCatalogTest {
     assertEquals("Cases", caseList.trailingLabel)
     assertTrue(caseList.action != null)
   }
+
+  @Test
+  fun workflowNode_defaultsToScreenPresentationWhenUnspecified() {
+    val catalog =
+      json.decodeFromString(
+        WorkflowCatalog.serializer(),
+        """
+        {
+          "modules": [
+            {
+              "id": "rcce-tools",
+              "title": "RCCE Tools",
+              "description": "Record rumors and social investigation data.",
+              "icon": "person",
+              "startNodeId": "root",
+              "nodes": [
+                {
+                  "id": "root",
+                  "title": "RCCE Tools",
+                  "layout": "grid",
+                  "items": []
+                }
+              ]
+            }
+          ]
+        }
+        """
+          .trimIndent(),
+      )
+
+    val node = assertNotNull(catalog.findModule("rcce-tools")?.findNode("root"))
+
+    assertEquals(WorkflowNodePresentation.SCREEN, node.presentation)
+    assertEquals(null, node.formCategory)
+  }
+
+  @Test
+  fun workflowNode_parsesBottomSheetPresentationAndFormCategory() {
+    val catalog =
+      json.decodeFromString(
+        WorkflowCatalog.serializer(),
+        """
+        {
+          "modules": [
+            {
+              "id": "rcce-tools",
+              "title": "RCCE Tools",
+              "description": "Record rumors and social investigation data.",
+              "icon": "person",
+              "startNodeId": "social-investigation-add",
+              "nodes": [
+                {
+                  "id": "social-investigation-add",
+                  "title": "Add",
+                  "layout": "grid",
+                  "items": [
+                    {
+                      "id": "county-sub-county-questionnaire",
+                      "title": "County/Sub County Questionnaire",
+                      "destinationNodeId": "county-sub-county-questionnaire"
+                    }
+                  ]
+                },
+                {
+                  "id": "county-sub-county-questionnaire",
+                  "title": "County/Sub County Questionnaire",
+                  "layout": "actions",
+                  "presentation": "bottom_sheet",
+                  "formCategory": "social",
+                  "items": [
+                    {
+                      "id": "add-county-sub-county-questionnaire",
+                      "title": "Add",
+                      "action": {
+                        "type": "questionnaire",
+                        "resource": "questionnaires/county-sub-county-questionnaire.json"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+        """
+          .trimIndent(),
+      )
+
+    val module = assertNotNull(catalog.findModule("rcce-tools"))
+    val destinationId =
+      assertNotNull(module.findItem("social-investigation-add", "county-sub-county-questionnaire"))
+        .destinationNodeId
+    val destinationNode = assertNotNull(destinationId?.let(module::findNode))
+
+    assertEquals(WorkflowNodePresentation.BOTTOM_SHEET, destinationNode.presentation)
+    assertEquals("social", destinationNode.formCategory)
+    assertEquals(1, destinationNode.items.size)
+  }
 }
