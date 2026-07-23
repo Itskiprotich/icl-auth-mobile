@@ -845,6 +845,10 @@ private fun WorkflowRecord.cardLayout(): WorkflowCaseCardLayout {
     return supervisoryChecklistCardLayout()
   }
 
+  if (socialInvestigationCategoryFor(references?.questionnaireResource) != null) {
+    return socialInvestigationCardLayout()
+  }
+
   val titleValue =
     fieldValue("Name", "Patient Name", "Case Name", "Client Name")
       ?.takeIf(String::isNotBlank)
@@ -895,6 +899,27 @@ private fun WorkflowRecord.supervisoryChecklistCardLayout(): WorkflowCaseCardLay
   )
 }
 
+private fun WorkflowRecord.socialInvestigationCardLayout(): WorkflowCaseCardLayout {
+  val category = socialInvestigationCategoryFor(references?.questionnaireResource).orEmpty()
+  val detailFields =
+    SOCIAL_INVESTIGATION_FIELD_SPECS.mapNotNull { spec ->
+      fieldValue(*spec.aliases.toTypedArray())?.takeIf(String::isNotBlank)?.let { value ->
+        WorkflowCaseCardField(label = spec.label, value = value)
+      }
+    }
+
+  return WorkflowCaseCardLayout(
+    titleLabel = "Social Investigation Form",
+    titleValue = fieldValue("Name").orEmpty(),
+    epid = null,
+    badge =
+      category.takeIf(String::isNotBlank)?.let {
+        WorkflowCaseCardField(label = "Category", value = it)
+      },
+    rows = detailFields.chunked(2).map { row -> row.first() to row.getOrNull(1) },
+  )
+}
+
 private fun String.matchesAnyLabel(vararg labels: String): Boolean =
   labels.any { label ->
     trim().removeSuffix(":").equals(label.trim().removeSuffix(":"), ignoreCase = true)
@@ -904,6 +929,7 @@ private fun String.normalizeCaseKey(): String = trim().lowercase()
 
 private val FILTER_LABEL_PRIORITY =
   listOf(
+    "category",
     "county",
     "sub county",
     "sub-county",
@@ -965,6 +991,20 @@ private val CASE_LIST_FIELD_SPECS =
       label = "Final Classification",
       aliases = listOf("Final Classification", "Classification"),
     ),
+  )
+
+private val SOCIAL_INVESTIGATION_FIELD_SPECS =
+  listOf(
+    WorkflowCaseCardFieldSpec(label = "County", aliases = listOf("County", "District")),
+    WorkflowCaseCardFieldSpec(
+      label = "Sub County",
+      aliases = listOf("Sub County", "Sub-county", "Subcounty"),
+    ),
+    WorkflowCaseCardFieldSpec(
+      label = "Reporting Facility",
+      aliases = listOf("Reporting Facility", "Health Facility", "Facility"),
+    ),
+    WorkflowCaseCardFieldSpec(label = "Village", aliases = listOf("Village")),
   )
 
 private val SUPERVISORY_CHECKLIST_FIELD_SPECS =

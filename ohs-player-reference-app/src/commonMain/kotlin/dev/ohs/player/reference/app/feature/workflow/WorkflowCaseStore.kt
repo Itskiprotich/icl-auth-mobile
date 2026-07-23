@@ -171,6 +171,34 @@ internal object WorkflowCasePresentationRegistry {
         questionnaireKeywords = setOf("mpox", "supervisory", "checklist"),
         emptyMessage = "No locally saved supervisory checklists are available yet.",
       ),
+      WorkflowCasePresentationSpec(
+        recordResource = SOCIAL_COUNTY_SUB_COUNTY_RECORD_RESOURCE,
+        questionnaireResources = setOf(SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE),
+        questionnaireKeywords = setOf("social-county-sub", "county-sub-county-questionnaire"),
+        emptyMessage = "No locally saved County/Sub County questionnaires are available yet.",
+      ),
+      WorkflowCasePresentationSpec(
+        recordResource = SOCIAL_COMMUNITY_RECORD_RESOURCE,
+        questionnaireResources = setOf(SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE),
+        questionnaireKeywords = setOf("social-community", "community-questionnaire"),
+        emptyMessage = "No locally saved Community questionnaires are available yet.",
+      ),
+      // Combined "Social Forms" list — both categories (County/Sub County and Community) are
+      // dependent sub-forms of the same Social Investigation Form, not independent workflows,
+      // so they are matched by a single spec here and distinguished per-record via the
+      // "Category" field (see WorkflowCaseContext.buildRecordFields /
+      // socialInvestigationCategoryFor).
+      WorkflowCasePresentationSpec(
+        recordResource = SOCIAL_INVESTIGATION_COMBINED_RECORD_RESOURCE,
+        questionnaireResources =
+          setOf(
+            SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE,
+            SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE,
+          ),
+        questionnaireKeywords =
+          setOf("social-county-sub", "social-community", "social-investigation"),
+        emptyMessage = "No locally saved social investigation forms are available yet.",
+      ),
     )
 
   fun matchesRecordResource(
@@ -575,13 +603,46 @@ private fun WorkflowCaseContext.toWorkflowRecord(
 }
 
 private fun WorkflowCaseContext.resolveCaseTitle(): String =
-  patient.patientName()
+  resolveSocialInvestigationTitle()
+    ?: patient.patientName()
     ?: answerValue(*NAME_FIELD_LINK_IDS.toTypedArray())
     ?: responseFields.valueForAliases("Patient Name", "Name", "Case Name", "Client Name")
     ?: response.questionnaireReferenceValue()?.substringAfterLast('/')?.toDisplayTitle()?.let {
       "$it Case"
     }
     ?: "Submitted Case"
+
+/**
+ * County/Sub County and Community questionnaires don't have a "patient name" — they're
+ * facility/community assessments. Title them by location instead (Village for Community, Sub
+ * County/County for County/Sub County), reusing the shared reporting-site linkIds so this works
+ * even before/without the questionnaire's template-extract Observations are indexed.
+ */
+private fun WorkflowCaseContext.resolveSocialInvestigationTitle(): String? {
+  val category = socialInvestigationCategoryFor(references.questionnaireResource) ?: return null
+  val county =
+    answerValue(
+      "294367770999_national",
+      "294367770999_county",
+      "294367770999_sub_county",
+      "294367770999",
+    )
+  val subCounty =
+    answerValue(
+      "819946803642_national",
+      "819946803642_county",
+      "819946803642_sub_county",
+      "819946803642",
+    )
+  val village = answerValue("village")
+
+  return when (category) {
+    SOCIAL_CATEGORY_COMMUNITY ->
+      (village ?: subCounty ?: county)?.let { "$it Community Investigation" }
+        ?: "Community Investigation"
+    else -> (subCounty ?: county)?.let { "$it Assessment" } ?: "County/Sub County Assessment"
+  }
+}
 
 private fun WorkflowCaseContext.buildRecordFields(
   spec: WorkflowCasePresentationSpec,
@@ -592,6 +653,11 @@ private fun WorkflowCaseContext.buildRecordFields(
 
   fields += WorkflowRecordField(label = "Name", value = title)
   normalizedUsedLabels += "Name".normalizeCaseKey()
+
+  socialInvestigationCategoryFor(references.questionnaireResource)?.let { category ->
+    fields += WorkflowRecordField(label = "Category", value = category)
+    normalizedUsedLabels += "Category".normalizeCaseKey()
+  }
 
   STANDARD_CASE_FIELDS.forEach { definition ->
     val value = resolveFieldValue(definition) ?: return@forEach
@@ -734,6 +800,7 @@ private fun WorkflowRecord.summaryHighlights(
   spec: WorkflowCasePresentationSpec
 ): List<WorkflowCaseDetailAnswer> {
   val priorityGroups = buildList {
+    add(listOf("Category"))
     spec.defaultFieldValues.keys.forEach { add(listOf(it)) }
     add(listOf("Outcome"))
     add(listOf("Status"))

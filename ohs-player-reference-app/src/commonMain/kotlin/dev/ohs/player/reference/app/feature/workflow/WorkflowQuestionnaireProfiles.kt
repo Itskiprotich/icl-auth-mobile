@@ -19,3 +19,34 @@ internal const val MPOX_SUPERVISORY_CHECKLIST_RESOURCE =
   "questionnaires/mpox-supervisory-checklist.json"
 
 internal const val MPOX_SUMMARY_SHEET_RESOURCE = "questionnaires/mpox-summary-sheet.json"
+
+/**
+ * Social investigation forms (RCCE Tools). These are two dependent categories of a single "social
+ * form" concept — not independent workflows — see [WorkflowNode.formCategory] in
+ * workflow-catalog.json and the "Select Questionnaire Type" bottom sheet in
+ * WorkflowModuleScreen.kt.
+ */
+internal const val SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE =
+  "questionnaires/social-county-sub.json"
+
+internal const val SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE = "questionnaires/social-community.json"
+
+internal const val SOCIAL_COUNTY_SUB_COUNTY_RECORD_RESOURCE =
+  "records/county-sub-county-questionnaire-forms.json"
+
+internal const val SOCIAL_COMMUNITY_RECORD_RESOURCE = "records/community-questionnaire-forms.json"
+
+internal const val SOCIAL_INVESTIGATION_COMBINED_RECORD_RESOURCE =
+  "records/social-investigation-forms.json"
+
+internal const val SOCIAL_CATEGORY_COUNTY_SUB_COUNTY = "County/Sub County"
+
+internal const val SOCIAL_CATEGORY_COMMUNITY = "Community"
+
+/** Derives the "County/Sub County" vs "Community" category for a social investigation response. */
+internal fun socialInvestigationCategoryFor(questionnaireResource: String?): String? =
+  when (questionnaireResource) {
+    SOCIAL_COUNTY_SUB_COUNTY_QUESTIONNAIRE_RESOURCE -> SOCIAL_CATEGORY_COUNTY_SUB_COUNTY
+    SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE -> SOCIAL_CATEGORY_COMMUNITY
+    else -> null
+  }

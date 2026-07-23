@@ -562,7 +562,7 @@
               "description": "Capture a new County/Sub County questionnaire submission.",
               "action": {
                 "type": "questionnaire",
-                "resource": "questionnaires/county-sub-county-questionnaire.json",
+                "resource": "questionnaires/social-county-sub.json",
                 "title": "County/Sub County Questionnaire",
                 "subtitle": "Capture county and sub-county level social investigation details.",
                 "primaryActionLabel": "Submit Questionnaire"
@@ -598,7 +598,7 @@
               "description": "Capture a new Community questionnaire submission.",
               "action": {
                 "type": "questionnaire",
-                "resource": "questionnaires/community-questionnaire.json",
+                "resource": "questionnaires/social-community.json",
                 "title": "Community Questionnaire",
                 "subtitle": "Capture community level social investigation details.",
                 "primaryActionLabel": "Submit Questionnaire"
