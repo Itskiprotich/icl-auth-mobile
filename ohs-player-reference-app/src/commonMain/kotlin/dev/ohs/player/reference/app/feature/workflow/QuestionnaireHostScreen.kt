@@ -177,6 +177,11 @@ internal fun QuestionnaireHostScreen(
 
     return transform(root).toString()
   }
+
+  // Intercept the hardware/gesture back press the same way as the toolbar back arrow, so
+  // in-progress answers can't be lost by backing out of the screen without confirming.
+  BackHandler { requestBack() }
+
   Box(modifier = modifier.fillMaxSize()) {
     Scaffold(
       modifier = Modifier.fillMaxSize(),
