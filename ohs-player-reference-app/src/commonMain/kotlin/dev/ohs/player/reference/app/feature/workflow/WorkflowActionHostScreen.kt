@@ -73,11 +73,13 @@ fun WorkflowActionHostScreen(
 
   when (val state = screenState) {
     WorkflowActionState.Loading ->
-      CircularProgressIndicator(
-        strokeWidth = 4.dp,
-        color = MaterialTheme.colorScheme.primary,
-        trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-      )
+      Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(
+          strokeWidth = 4.dp,
+          color = MaterialTheme.colorScheme.primary,
+          trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+        )
+      }
     is WorkflowActionState.Missing ->
       Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Card(

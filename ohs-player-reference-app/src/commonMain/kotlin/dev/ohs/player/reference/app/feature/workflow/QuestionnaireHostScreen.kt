@@ -96,6 +96,11 @@ private const val MPOX_SUMMARY_SHEET_SECTION_CODE_SYSTEM =
   "https://open-health-stack.org/fhir/CodeSystem/mpox-summary-sheet-section"
 private const val SYSTEM_CREATION_IDENTIFIER_SYSTEM = "system-creation"
 
+// A single, professional, non-technical confirmation shown regardless of what happens
+// internally (raw response save, template extraction, etc.) — the user shouldn't see
+// implementation details like "resources were extracted."
+private const val SUBMISSION_SUCCESS_MESSAGE = "Your form has been saved and submitted."
+
 private val MPOX_SUMMARY_SHEET_OBSERVATION_SECTION_LINK_IDS =
   setOf("target_population", "utilization_aefi_mpox_surveilance")
 
@@ -191,11 +196,13 @@ internal fun QuestionnaireHostScreen(
       Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
         when (val state = screenState) {
           QuestionnaireScreenState.Loading ->
-            CircularProgressIndicator(
-              strokeWidth = 4.dp,
-              color = MaterialTheme.colorScheme.primary,
-              trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-            )
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+              CircularProgressIndicator(
+                strokeWidth = 4.dp,
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+              )
+            }
 
           is QuestionnaireScreenState.Error ->
             WorkflowCenteredMessage(title = "Questionnaire unavailable", message = state.message)
@@ -245,7 +252,7 @@ internal fun QuestionnaireHostScreen(
                               resource = resource,
                             )
                           )
-                          submissionSuccessMessage = "Checklist saved successfully."
+                          submissionSuccessMessage = SUBMISSION_SUCCESS_MESSAGE
                           return@launch
                         }
 
@@ -275,8 +282,7 @@ internal fun QuestionnaireHostScreen(
                             parentEncounterRef = parentEncounterRef,
                           )
                         saveWorkflowBundle(bundle)
-                        submissionSuccessMessage =
-                          "Resources were extracted successfully and the questionnaire response is ready for review."
+                        submissionSuccessMessage = SUBMISSION_SUCCESS_MESSAGE
                       } catch (_: CancellationException) {
                         // Validation feedback is already shown by the data capture library.
                       } catch (error: Throwable) {
@@ -298,11 +304,13 @@ internal fun QuestionnaireHostScreen(
     }
 
     if (isSubmitting) {
-      CircularProgressIndicator(
-        strokeWidth = 4.dp,
-        color = MaterialTheme.colorScheme.primary,
-        trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-      )
+      Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator(
+          strokeWidth = 4.dp,
+          color = MaterialTheme.colorScheme.primary,
+          trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+        )
+      }
     }
 
     submissionSuccessMessage?.let { message ->

@@ -133,11 +133,13 @@ internal fun WorkflowCaseDetailsScreen(
     ) {
       when (val state = screenState) {
         WorkflowCaseDetailsScreenState.Loading ->
-          CircularProgressIndicator(
-            strokeWidth = 4.dp,
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-          )
+          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(
+              strokeWidth = 4.dp,
+              color = MaterialTheme.colorScheme.primary,
+              trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+            )
+          }
 
         is WorkflowCaseDetailsScreenState.Error ->
           WorkflowCenteredMessage(title = "Case summary unavailable", message = state.message)

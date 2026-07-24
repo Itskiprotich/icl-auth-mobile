@@ -139,11 +139,13 @@ fun WorkflowRecordListScreen(
     Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
       when (val state = screenState) {
         RecordListScreenState.Loading -> {
-          CircularProgressIndicator(
-            strokeWidth = 4.dp,
-            color = MaterialTheme.colorScheme.primary,
-            trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
-          )
+          Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(
+              strokeWidth = 4.dp,
+              color = MaterialTheme.colorScheme.primary,
+              trackColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.42f),
+            )
+          }
         }
 
         is RecordListScreenState.Error -> {
