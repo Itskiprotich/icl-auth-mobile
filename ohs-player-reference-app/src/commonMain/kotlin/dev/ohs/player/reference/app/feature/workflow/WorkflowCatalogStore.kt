@@ -15,10 +15,10 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
-import iclauth.ohs_player_reference_app.generated.resources.Res
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import nphiiskmp.ohs_player_reference_app.generated.resources.Res
 
 private val workflowJson = Json { ignoreUnknownKeys = true }
 
@@ -29,11 +29,11 @@ object WorkflowCatalogStore {
   private var cachedCatalog: WorkflowCatalog? = null
 
   suspend fun catalog(): WorkflowCatalog {
-    cachedCatalog?.let { return it }
-
-    return mutex.withLock {
-      cachedCatalog ?: loadCatalog().also { cachedCatalog = it }
+    cachedCatalog?.let {
+      return it
     }
+
+    return mutex.withLock { cachedCatalog ?: loadCatalog().also { cachedCatalog = it } }
   }
 
   suspend fun module(moduleId: String): WorkflowModule? = catalog().findModule(moduleId)

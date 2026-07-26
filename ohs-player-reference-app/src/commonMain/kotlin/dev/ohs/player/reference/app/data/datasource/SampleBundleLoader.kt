@@ -17,7 +17,7 @@ package dev.ohs.player.reference.app.data.datasource
 
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.player.reference.app.util.FhirJson
-import iclauth.ohs_player_reference_app.generated.resources.Res
+import nphiiskmp.ohs_player_reference_app.generated.resources.Res
 
 internal suspend fun loadSampleResourcesBundle(): Bundle {
   val json = Res.readBytes("files/SampleResourcesBundle.json").decodeToString()

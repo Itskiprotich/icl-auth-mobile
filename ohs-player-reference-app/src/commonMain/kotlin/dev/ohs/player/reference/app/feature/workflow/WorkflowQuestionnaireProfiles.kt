@@ -46,3 +46,17 @@ internal fun socialInvestigationCategoryFor(questionnaireResource: String?): Str
     SOCIAL_COMMUNITY_QUESTIONNAIRE_RESOURCE -> SOCIAL_CATEGORY_COMMUNITY
     else -> null
   }
+
+/** RCCE Tools — Rumor Tracking Tool (see rumor-tracking.json). */
+internal const val RUMOR_TRACKING_RESOURCE = "questionnaires/rumor-tracking.json"
+
+internal const val RUMOR_TRACKING_RECORD_RESOURCE = "records/rumors.json"
+
+/**
+ * Notifiable Diseases — MOH 505 weekly facility reporting form (see moh-505.json). The form has
+ * no patient identity (subjectType is Encounter): each submission is one facility's weekly return,
+ * extracted as an Encounter + a MeasureReport of per-disease case/death counts.
+ */
+internal const val MOH_505_RESOURCE = "questionnaires/moh-505.json"
+
+internal const val MOH_505_RECORD_RESOURCE = "records/moh-505-reports.json"

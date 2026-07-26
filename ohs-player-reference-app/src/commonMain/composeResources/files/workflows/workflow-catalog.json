@@ -149,10 +149,37 @@
         {
           "id": "moh-505",
           "title": "MOH 505",
-          "subtitle": "Coming soon",
+          "subtitle": "Select an action",
           "sectionTitle": "Case Actions",
           "layout": "actions",
-          "items": []
+          "items": [
+            {
+              "id": "add-new-moh-505",
+              "title": "Add New MOH 505 Report",
+              "icon": "add",
+              "description": "Open the weekly facility reporting form.",
+              "action": {
+                "type": "questionnaire",
+                "resource": "questionnaires/moh-505.json",
+                "title": "MOH 505 Report",
+                "subtitle": "Capture weekly notifiable disease and laboratory surveillance data.",
+                "primaryActionLabel": "Submit Report"
+              }
+            },
+            {
+              "id": "moh-505-report-list",
+              "title": "MOH 505 Report List",
+              "icon": "person",
+              "description": "Browse, search, and paginate submitted weekly reports.",
+              "action": {
+                "type": "record_list",
+                "resource": "records/moh-505-reports.json",
+                "title": "MOH 505 Report List",
+                "subtitle": "Track submitted weekly facility reports."
+              },
+              "trailingLabel": "Reports"
+            }
+          ]
         },
         {
           "id": "monthly-reportable-diseases",

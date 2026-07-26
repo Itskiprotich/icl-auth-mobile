@@ -26,11 +26,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import iclauth.ohs_player_reference_app.generated.resources.Res
-import iclauth.ohs_player_reference_app.generated.resources.urbanist_bold
-import iclauth.ohs_player_reference_app.generated.resources.urbanist_medium
-import iclauth.ohs_player_reference_app.generated.resources.urbanist_regular
-import iclauth.ohs_player_reference_app.generated.resources.urbanist_semibold
+import nphiiskmp.ohs_player_reference_app.generated.resources.Res
+import nphiiskmp.ohs_player_reference_app.generated.resources.urbanist_bold
+import nphiiskmp.ohs_player_reference_app.generated.resources.urbanist_medium
+import nphiiskmp.ohs_player_reference_app.generated.resources.urbanist_regular
+import nphiiskmp.ohs_player_reference_app.generated.resources.urbanist_semibold
 import org.jetbrains.compose.resources.Font
 
 // --- Colour tokens ---

@@ -19,7 +19,6 @@ import dev.ohs.fhir.model.r4.Questionnaire
 import icl.ohs.libs.auth.IclAuth
 import icl.ohs.libs.auth.models.ProviderLocationInfo
 import icl.ohs.libs.auth.models.ProviderUser
-import iclauth.ohs_player_reference_app.generated.resources.Res
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -29,6 +28,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
+import nphiiskmp.ohs_player_reference_app.generated.resources.Res
 
 private val workflowQuestionnaireJson = Json { ignoreUnknownKeys = true }
 

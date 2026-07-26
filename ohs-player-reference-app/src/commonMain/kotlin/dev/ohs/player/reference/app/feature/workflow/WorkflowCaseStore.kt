@@ -187,6 +187,14 @@ internal object WorkflowCasePresentationRegistry {
           setOf("social-county-sub", "social-community", "social-investigation"),
         emptyMessage = "No locally saved social investigation forms are available yet.",
       ),
+      WorkflowCasePresentationSpec(
+        recordResource = RUMOR_TRACKING_RECORD_RESOURCE,
+        questionnaireResources = setOf(RUMOR_TRACKING_RESOURCE),
+        questionnaireKeywords = setOf("rumor-tracking", "rumor"),
+        indicatorLinkIds = setOf("765331413106", "560083852118", "217867281789", "735623392446"),
+        emptyMessage = "No locally saved rumors are available yet.",
+        defaultFieldValues = linkedMapOf("Was Rumour Investigated?" to "Pending"),
+      ),
     )
 
   fun matchesRecordResource(
@@ -592,6 +600,7 @@ private fun WorkflowCaseContext.toWorkflowRecord(
 
 private fun WorkflowCaseContext.resolveCaseTitle(): String =
   resolveSocialInvestigationTitle()
+    ?: resolveRumorTrackingTitle()
     ?: patient.patientName()
     ?: answerValue(*NAME_FIELD_LINK_IDS.toTypedArray())
     ?: responseFields.valueForAliases("Patient Name", "Name", "Case Name", "Client Name")
@@ -630,6 +639,35 @@ private fun WorkflowCaseContext.resolveSocialInvestigationTitle(): String? {
         ?: "Community Investigation"
     else -> (subCounty ?: county)?.let { "$it Assessment" } ?: "County/Sub County Assessment"
   }
+}
+
+/**
+ * The Rumor Tracking Tool has no patient identity either — title by the reporting site instead
+ * (Village/Community Health unit, falling back to Sub County/County), the same way
+ * [resolveSocialInvestigationTitle] does for the social investigation forms.
+ */
+private fun WorkflowCaseContext.resolveRumorTrackingTitle(): String? {
+  if (references.questionnaireResource != RUMOR_TRACKING_RESOURCE) {
+    return null
+  }
+
+  val village = answerValue("871818396498")
+  val subCounty =
+    answerValue(
+      "819946803642_national",
+      "819946803642_county",
+      "819946803642_sub_county",
+      "819946803642",
+    )
+  val county =
+    answerValue(
+      "294367770999_national",
+      "294367770999_county",
+      "294367770999_sub_county",
+      "294367770999",
+    )
+
+  return (village ?: subCounty ?: county)?.let { "$it Rumor Report" } ?: "Rumor Report"
 }
 
 private fun WorkflowCaseContext.buildRecordFields(
