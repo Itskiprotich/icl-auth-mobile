@@ -79,6 +79,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.ohs.player.reference.app.feature.component.common.Chip
 import dev.ohs.player.reference.app.feature.home.components.RecordListMessage
@@ -480,9 +481,11 @@ private fun WorkflowCaseCard(
           Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
               text = layout.titleValue.ifBlank { "—" },
-              style = MaterialTheme.typography.titleLarge,
+              style = MaterialTheme.typography.titleMedium,
               color = MaterialTheme.colorScheme.onSurface,
               fontWeight = FontWeight.Bold,
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
             )
             if (layout.epid != null) {
               Text(
@@ -847,6 +850,10 @@ private fun WorkflowRecord.cardLayout(): WorkflowCaseCardLayout {
     return supervisoryChecklistCardLayout()
   }
 
+  if (references?.questionnaireResource == MOH_505_RESOURCE) {
+    return moh505CardLayout()
+  }
+
   if (socialInvestigationCategoryFor(references?.questionnaireResource) != null) {
     return socialInvestigationCardLayout()
   }
@@ -917,6 +924,34 @@ private fun WorkflowRecord.socialInvestigationCardLayout(): WorkflowCaseCardLayo
     badge =
       category.takeIf(String::isNotBlank)?.let {
         WorkflowCaseCardField(label = "Category", value = it)
+      },
+    rows = detailFields.chunked(2).map { row -> row.first() to row.getOrNull(1) },
+  )
+}
+
+private fun WorkflowRecord.moh505CardLayout(): WorkflowCaseCardLayout {
+  val detailFields =
+    MOH_505_FIELD_SPECS.mapNotNull { spec ->
+      fieldValue(*spec.aliases.toTypedArray())?.takeIf(String::isNotBlank)?.let { value ->
+        WorkflowCaseCardField(label = spec.label, value = value)
+      }
+    }
+  // Keep the headline short — just the reporting site — instead of the combined "site — Week
+  // Ending <date>" case title used elsewhere (details header, search): at the card's large title
+  // font, that longer string wrapped awkwardly and made the list look oversized/uneven next to
+  // every other form's short (name-length) titles. The date still shows via the badge below.
+  val site =
+    fieldValue("Reporting Facility", "Health Facility", "Facility")
+      ?: fieldValue("Sub County", "Sub-county", "Subcounty")
+      ?: fieldValue("County", "District")
+
+  return WorkflowCaseCardLayout(
+    titleLabel = "MOH 505 Report",
+    titleValue = site.orEmpty(),
+    epid = null,
+    badge =
+      fieldValue("Week Ending Date")?.takeIf(String::isNotBlank)?.let {
+        WorkflowCaseCardField(label = "Week Ending", value = it)
       },
     rows = detailFields.chunked(2).map { row -> row.first() to row.getOrNull(1) },
   )
@@ -1007,6 +1042,20 @@ private val SOCIAL_INVESTIGATION_FIELD_SPECS =
       aliases = listOf("Reporting Facility", "Health Facility", "Facility"),
     ),
     WorkflowCaseCardFieldSpec(label = "Village", aliases = listOf("Village")),
+  )
+
+private val MOH_505_FIELD_SPECS =
+  listOf(
+    WorkflowCaseCardFieldSpec(label = "County", aliases = listOf("County", "District")),
+    WorkflowCaseCardFieldSpec(
+      label = "Sub County",
+      aliases = listOf("Sub County", "Sub-county", "Subcounty"),
+    ),
+    WorkflowCaseCardFieldSpec(
+      label = "Reporting Facility",
+      aliases = listOf("Reporting Facility", "Health Facility", "Facility"),
+    ),
+    WorkflowCaseCardFieldSpec(label = "Week Ending Date", aliases = listOf("Week Ending Date")),
   )
 
 private val SUPERVISORY_CHECKLIST_FIELD_SPECS =

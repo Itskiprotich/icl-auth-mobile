@@ -53,10 +53,25 @@ internal const val RUMOR_TRACKING_RESOURCE = "questionnaires/rumor-tracking.json
 internal const val RUMOR_TRACKING_RECORD_RESOURCE = "records/rumors.json"
 
 /**
- * Notifiable Diseases — MOH 505 weekly facility reporting form (see moh-505.json). The form has
- * no patient identity (subjectType is Encounter): each submission is one facility's weekly return,
+ * Notifiable Diseases — MOH 505 weekly facility reporting form (see moh-505.json). The form has no
+ * patient identity (subjectType is Encounter): each submission is one facility's weekly return,
  * extracted as an Encounter + a MeasureReport of per-disease case/death counts.
  */
 internal const val MOH_505_RESOURCE = "questionnaires/moh-505.json"
 
 internal const val MOH_505_RECORD_RESOURCE = "records/moh-505-reports.json"
+
+/**
+ * Children of the repeating "others-specify-entry" group in moh-505.json. Since the group repeats,
+ * these linkIds are excluded from the generic per-tab case-detail summary (which would otherwise
+ * flatten every repetition's answers into one comma-joined value per field) and rendered instead,
+ * one row per repetition, via a dedicated supplemental tab.
+ */
+internal val MOH_505_OTHERS_SPECIFY_CHILD_LINK_IDS =
+  setOf(
+    "others-specify-cases-name",
+    "others-specify-cases-under-5",
+    "others-specify-cases-over-5",
+    "others-specify-deaths-under-5",
+    "others-specify-deaths-over-5",
+  )

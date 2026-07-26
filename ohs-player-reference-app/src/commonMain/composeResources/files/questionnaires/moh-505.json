@@ -242,6 +242,374 @@
           }
         },
         {
+          "fullUrl": "urn:uuid:moh-505-obs-county",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "294367770999",
+                  "display": "Reporting County"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "encounter": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "%resource.descendants().where(linkId='294367770999_national' or linkId='294367770999_county' or linkId='294367770999_sub_county' or linkId='294367770999').answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "fullUrl": "urn:uuid:moh-505-obs-sub-county",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819946803642",
+                  "display": "Reporting Sub County"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "encounter": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "%resource.descendants().where(linkId='819946803642_national' or linkId='819946803642_county' or linkId='819946803642_sub_county' or linkId='819946803642').answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "fullUrl": "urn:uuid:moh-505-obs-ward",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819943434",
+                  "display": "Reporting Ward"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "encounter": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "%resource.descendants().where(linkId='819943434_national' or linkId='819943434_county' or linkId='819943434_sub_county' or linkId='819943434').answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "fullUrl": "urn:uuid:moh-505-obs-facility",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "819946803677",
+                  "display": "Reporting Facility"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "encounter": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "_valueString": {
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                  "valueString": "%resource.descendants().where(linkId='819946803677_national' or linkId='819946803677_county' or linkId='819946803677_sub_county' or linkId='819946803677').answer.value.display"
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "fullUrl": "urn:uuid:moh-505-obs-facility-type",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "reporting-site"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "code": "438862163919",
+                  "display": "Type of health facility"
+                }
+              ]
+            },
+            "subject": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "encounter": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "valueCodeableConcept": {
+              "coding": [
+                {
+                  "system": "http://loinc.org",
+                  "_code": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "%resource.descendants().where(linkId='438862163919_national' or linkId='438862163919_county' or linkId='438862163919_sub_county' or linkId='438862163919').answer.value.code"
+                      }
+                    ]
+                  },
+                  "_display": {
+                    "extension": [
+                      {
+                        "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                        "valueString": "%resource.descendants().where(linkId='438862163919_national' or linkId='438862163919_county' or linkId='438862163919_sub_county' or linkId='438862163919').answer.value.display"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractContext",
+              "valueString": "%resource.descendants().where(linkId='others-specify-entry')"
+            }
+          ],
+          "fullUrl": "urn:uuid:moh-505-obs-others-specify",
+          "resource": {
+            "resourceType": "Observation",
+            "language": "en",
+            "status": "final",
+            "category": [
+              {
+                "coding": [
+                  {
+                    "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                    "code": "survey"
+                  }
+                ]
+              }
+            ],
+            "code": {
+              "coding": [
+                {
+                  "system": "http://ohs.dev/CodeSystem/moh-505-disease",
+                  "code": "others-specify"
+                }
+              ],
+              "_text": {
+                "extension": [
+                  {
+                    "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                    "valueString": "item.where(linkId='others-specify-cases-name').answer.value.first()"
+                  }
+                ]
+              }
+            },
+            "subject": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "encounter": {
+              "reference": "urn:uuid:moh-505-encounter"
+            },
+            "component": [
+              {
+                "code": {
+                  "coding": [
+                    {
+                      "system": "http://ohs.dev/CodeSystem/moh-505-population",
+                      "code": "under-5-cases",
+                      "display": "Under 5 Cases"
+                    }
+                  ]
+                },
+                "_valueInteger": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='others-specify-cases-under-5').answer.value.first()"
+                    }
+                  ]
+                }
+              },
+              {
+                "code": {
+                  "coding": [
+                    {
+                      "system": "http://ohs.dev/CodeSystem/moh-505-population",
+                      "code": "over-5-cases",
+                      "display": "Over 5 Cases"
+                    }
+                  ]
+                },
+                "_valueInteger": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='others-specify-cases-over-5').answer.value.first()"
+                    }
+                  ]
+                }
+              },
+              {
+                "code": {
+                  "coding": [
+                    {
+                      "system": "http://ohs.dev/CodeSystem/moh-505-population",
+                      "code": "under-5-deaths",
+                      "display": "Under 5 Deaths"
+                    }
+                  ]
+                },
+                "_valueInteger": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='others-specify-deaths-under-5').answer.value.first()"
+                    }
+                  ]
+                }
+              },
+              {
+                "code": {
+                  "coding": [
+                    {
+                      "system": "http://ohs.dev/CodeSystem/moh-505-population",
+                      "code": "over-5-deaths",
+                      "display": "Over 5 Deaths"
+                    }
+                  ]
+                },
+                "_valueInteger": {
+                  "extension": [
+                    {
+                      "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                      "valueString": "item.where(linkId='others-specify-deaths-over-5').answer.value.first()"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "request": {
+            "method": "POST",
+            "url": "Observation"
+          }
+        },
+        {
           "fullUrl": "urn:uuid:moh-505-measure-report",
           "resource": {
             "resourceType": "MeasureReport",
@@ -265,6 +633,19 @@
             ],
             "group": [
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='aefi-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -354,6 +735,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='bacterial-meningitis-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -443,6 +837,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='acute-jaundice-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -532,6 +939,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='neonatal-deaths-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -564,6 +984,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='acute-malnutrition-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -653,6 +1086,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='neonatal-tetanus-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -704,6 +1150,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='afp-poliomyelitis-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -793,6 +1252,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='onchocerciasis-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -882,6 +1354,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='plague-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -971,6 +1456,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='anthrax-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1060,6 +1558,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='rabies-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1149,6 +1660,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='cholera-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1238,6 +1762,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='rift-valley-fever-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1327,6 +1864,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='chikungunya-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1416,6 +1966,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='covid--19-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1505,6 +2068,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='sari-cluster-ge3-cases-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1594,6 +2170,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='dengue-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1683,6 +2272,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='dysentery-bacillary-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1772,6 +2374,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='suspected-mdr-xdr-tb-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1861,6 +2476,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='guinea-worm-disease-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -1950,6 +2578,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='typhoid-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -2039,6 +2680,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='measles-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -2128,6 +2782,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='vhf-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -2217,6 +2884,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='suspected-malaria-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -2306,6 +2986,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='yellow-fever-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -2395,6 +3088,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='deaths-due-to-malaria-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -2446,6 +3152,19 @@
                 ]
               },
               {
+                "extension": [
+                  {
+                    "url": "http://ohs.dev/StructureDefinition/moh-505-disease-reported",
+                    "_valueCode": {
+                      "extension": [
+                        {
+                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
+                          "valueString": "%resource.descendants().where(linkId='zika-virus-summary').answer.value.code.first()"
+                        }
+                      ]
+                    }
+                  }
+                ],
                 "code": {
                   "coding": [
                     {
@@ -2528,103 +3247,6 @@
                         {
                           "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
                           "valueString": "%resource.descendants().where(linkId='zika-virus-deaths-over-5' or linkId='zika-virus-summary-deaths-over-5-if-no').answer.value.first()"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              },
-              {
-                "code": {
-                  "coding": [
-                    {
-                      "system": "http://ohs.dev/CodeSystem/moh-505-disease",
-                      "code": "others-specify",
-                      "display": "Others Specify",
-                      "_display": {
-                        "extension": [
-                          {
-                            "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
-                            "valueString": "%resource.descendants().where(linkId='others-specify-cases-name').answer.value.first()"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                },
-                "population": [
-                  {
-                    "code": {
-                      "coding": [
-                        {
-                          "system": "http://ohs.dev/CodeSystem/moh-505-population",
-                          "code": "under-5-cases",
-                          "display": "Under 5 Cases"
-                        }
-                      ]
-                    },
-                    "_count": {
-                      "extension": [
-                        {
-                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
-                          "valueString": "%resource.descendants().where(linkId='others-specify-cases-under-5').answer.value.first()"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "code": {
-                      "coding": [
-                        {
-                          "system": "http://ohs.dev/CodeSystem/moh-505-population",
-                          "code": "over-5-cases",
-                          "display": "Over 5 Cases"
-                        }
-                      ]
-                    },
-                    "_count": {
-                      "extension": [
-                        {
-                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
-                          "valueString": "%resource.descendants().where(linkId='others-specify-cases-over-5').answer.value.first()"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "code": {
-                      "coding": [
-                        {
-                          "system": "http://ohs.dev/CodeSystem/moh-505-population",
-                          "code": "under-5-deaths",
-                          "display": "Under 5 Deaths"
-                        }
-                      ]
-                    },
-                    "_count": {
-                      "extension": [
-                        {
-                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
-                          "valueString": "%resource.descendants().where(linkId='others-specify-deaths-under-5').answer.value.first()"
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "code": {
-                      "coding": [
-                        {
-                          "system": "http://ohs.dev/CodeSystem/moh-505-population",
-                          "code": "over-5-deaths",
-                          "display": "Over 5 Deaths"
-                        }
-                      ]
-                    },
-                    "_count": {
-                      "extension": [
-                        {
-                          "url": "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire-templateExtractValue",
-                          "valueString": "%resource.descendants().where(linkId='others-specify-deaths-over-5').answer.value.first()"
                         }
                       ]
                     }
@@ -3967,7 +4589,7 @@
             },
             {
               "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-              "valueDate": {
+              "_valueDate": {
                 "extension": [
                   {
                     "url": "http://hl7.org/fhir/StructureDefinition/cqf-calculatedValue",
@@ -3980,8 +4602,7 @@
               }
             }
           ],
-          "text": "Week Ending Date",
-          "definition": "http://example.org/sdh/dtr/aslp/StructureDefinition/aslp-bmi#Observation.value[x]"
+          "text": "Week Ending Date"
         }
       ],
       "type": "group",
@@ -9897,9 +10518,10 @@
           ]
         },
         {
-          "type": "string",
-          "linkId": "others-specify-cases-name",
-          "text": "Others (Specify) ",
+          "type": "group",
+          "linkId": "others-specify-entry",
+          "text": "Other",
+          "repeats": true,
           "enableWhen": [
             {
               "question": "others-specify-summary",
@@ -9910,93 +10532,60 @@
               }
             }
           ],
-          "required": true
-        },
-        {
-          "type": "integer",
-          "linkId": "others-specify-cases-under-5",
-          "text": "Under 5 Cases",
-          "enableWhen": [
+          "item": [
             {
-              "question": "others-specify-summary",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true,
-          "extension": [
+              "type": "string",
+              "linkId": "others-specify-cases-name",
+              "text": "Others (Specify) ",
+              "required": true
+            },
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-              "valueInteger": 999
-            }
-          ]
-        },
-        {
-          "type": "integer",
-          "linkId": "others-specify-cases-over-5",
-          "text": "Over 5 Cases",
-          "enableWhen": [
+              "type": "integer",
+              "linkId": "others-specify-cases-under-5",
+              "text": "Under 5 Cases",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueInteger": 999
+                }
+              ]
+            },
             {
-              "question": "others-specify-summary",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true,
-          "extension": [
+              "type": "integer",
+              "linkId": "others-specify-cases-over-5",
+              "text": "Over 5 Cases",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueInteger": 999
+                }
+              ]
+            },
             {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-              "valueInteger": 999
-            }
-          ]
-        },
-        {
-          "type": "integer",
-          "linkId": "others-specify-deaths-under-5",
-          "text": "Under 5 Deaths",
-          "enableWhen": [
+              "type": "integer",
+              "linkId": "others-specify-deaths-under-5",
+              "text": "Under 5 Deaths",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueInteger": 999
+                }
+              ]
+            },
             {
-              "question": "others-specify-summary",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-              "valueInteger": 999
-            }
-          ]
-        },
-        {
-          "type": "integer",
-          "linkId": "others-specify-deaths-over-5",
-          "text": "Over 5 Deaths",
-          "enableWhen": [
-            {
-              "question": "others-specify-summary",
-              "operator": "=",
-              "answerCoding": {
-                "code": "yes",
-                "display": "Yes"
-              }
-            }
-          ],
-          "required": true,
-          "extension": [
-            {
-              "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
-              "valueInteger": 999
+              "type": "integer",
+              "linkId": "others-specify-deaths-over-5",
+              "text": "Over 5 Deaths",
+              "required": true,
+              "extension": [
+                {
+                  "url": "http://hl7.org/fhir/StructureDefinition/maxValue",
+                  "valueInteger": 999
+                }
+              ]
             }
           ]
         }

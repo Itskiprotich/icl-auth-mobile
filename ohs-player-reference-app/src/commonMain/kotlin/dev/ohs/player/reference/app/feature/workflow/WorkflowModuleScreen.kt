@@ -15,6 +15,12 @@
  */
 package dev.ohs.player.reference.app.feature.workflow
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +57,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -59,12 +66,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 
 @Composable
 fun WorkflowModuleScreen(
@@ -633,31 +644,96 @@ private fun WorkflowAction?.leadingIcon(fallback: ImageVector): ImageVector =
     null -> fallback
   }
 
+/**
+ * Placeholder shown for any section that has no forms/actions configured yet. Centered, with a
+ * gently bouncing badge and a "Coming soon" caption whose ellipsis keeps animating, so the empty
+ * state reads as "actively being built" rather than "broken/missing".
+ */
 @Composable
 private fun WorkflowEmptyState(title: String, message: String) {
-  Card(
-    modifier = Modifier.fillMaxWidth(),
-    shape = RoundedCornerShape(20.dp),
-    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+  Box(
+    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+    contentAlignment = Alignment.Center,
   ) {
-    Column(
-      modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 20.dp),
-      verticalArrangement = Arrangement.spacedBy(8.dp),
+    Card(
+      modifier = Modifier.fillMaxWidth(),
+      shape = RoundedCornerShape(28.dp),
+      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+      border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
-      Text(
-        text = title,
-        style = MaterialTheme.typography.titleLarge,
-        color = MaterialTheme.colorScheme.onSurface,
-        fontWeight = FontWeight.Bold,
-      )
-      Text(
-        text = message,
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-      )
+      Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 44.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+      ) {
+        ComingSoonBadge()
+
+        Text(
+          text = "Coming Soon${rememberComingSoonDots()}",
+          style = MaterialTheme.typography.titleLarge,
+          color = MaterialTheme.colorScheme.primary,
+          fontWeight = FontWeight.Bold,
+          textAlign = TextAlign.Center,
+        )
+
+        Text(
+          text = message,
+          style = MaterialTheme.typography.bodyMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
+          textAlign = TextAlign.Center,
+        )
+      }
     }
   }
+}
+
+/** A softly pulsing circular badge (scale + glow) around a construction emoji. */
+@Composable
+private fun ComingSoonBadge() {
+  val transition = rememberInfiniteTransition(label = "coming-soon-badge")
+  val scale by
+    transition.animateFloat(
+      initialValue = 0.9f,
+      targetValue = 1.08f,
+      animationSpec =
+        infiniteRepeatable(
+          animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
+          repeatMode = RepeatMode.Reverse,
+        ),
+      label = "coming-soon-scale",
+    )
+  val glowAlpha by
+    transition.animateFloat(
+      initialValue = 0.5f,
+      targetValue = 1f,
+      animationSpec =
+        infiniteRepeatable(
+          animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
+          repeatMode = RepeatMode.Reverse,
+        ),
+      label = "coming-soon-glow",
+    )
+
+  Surface(
+    shape = CircleShape,
+    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = glowAlpha),
+    modifier = Modifier.size(88.dp).scale(scale),
+  ) {
+    Box(contentAlignment = Alignment.Center) { Text(text = "🚧", fontSize = 40.sp) }
+  }
+}
+
+/** Cycles "", ".", "..", "..." every ~450ms so the caption keeps feeling alive. */
+@Composable
+private fun rememberComingSoonDots(): String {
+  var dotCount by remember { mutableStateOf(0) }
+  LaunchedEffect(Unit) {
+    while (true) {
+      delay(450.milliseconds)
+      dotCount = (dotCount + 1) % 4
+    }
+  }
+  return ".".repeat(dotCount)
 }
 
 @Composable
@@ -696,6 +772,9 @@ private suspend fun WorkflowNodeItem.withRuntimeSummary(): WorkflowNodeItem {
 
 private fun emptyMessageFor(layout: WorkflowNodeLayout, moduleTitle: String): String =
   when (layout) {
-    WorkflowNodeLayout.GRID -> "No forms are configured for $moduleTitle yet."
-    WorkflowNodeLayout.ACTIONS -> "No actions are configured for this step yet."
+    WorkflowNodeLayout.GRID ->
+      "We're putting the finishing touches on $moduleTitle. New forms will show up here the " +
+        "moment they're ready."
+    WorkflowNodeLayout.ACTIONS ->
+      "This step is still being built. Add and view actions will appear here shortly."
   }

@@ -195,6 +195,22 @@ internal object WorkflowCasePresentationRegistry {
         emptyMessage = "No locally saved rumors are available yet.",
         defaultFieldValues = linkedMapOf("Was Rumour Investigated?" to "Pending"),
       ),
+      WorkflowCasePresentationSpec(
+        recordResource = MOH_505_RECORD_RESOURCE,
+        questionnaireResources = setOf(MOH_505_RESOURCE),
+        questionnaireKeywords = setOf("moh-505", "moh505"),
+        indicatorLinkIds = setOf("728034137219"),
+        emptyMessage = "No locally saved MOH 505 reports are available yet.",
+        supplementalTabs =
+          listOf(
+            WorkflowCaseSupplementalTab(
+              id = "others-specify",
+              title = "Other (Specify)",
+              emptyMessage = "No other diseases were reported for this week.",
+              sectionBuilder = WorkflowCaseContext::buildOthersSpecifySections,
+            )
+          ),
+      ),
     )
 
   fun matchesRecordResource(
@@ -373,7 +389,17 @@ internal suspend fun loadWorkflowCaseDetails(
         workflowCaseJson.encodeToJsonElement(Questionnaire.serializer(), questionnaire).jsonObject
       WorkflowQuestionnaireDescriptor(
         title = questionnaireJson["title"]?.jsonPrimitive?.contentOrNull,
-        tabs = questionnaireJson.buildCaseDetailTabs(contextWithLabResults.answersByLinkId),
+        tabs =
+          questionnaireJson.buildCaseDetailTabs(
+            answersByLinkId = contextWithLabResults.answersByLinkId,
+            // The "Other (Specify)" group repeats, so its children can't be summarized generically
+            // (answersByLinkId flattens every repetition's answers into one comma-joined value per
+            // field, losing which count belongs to which named disease). Skip them here and render
+            // them instead via the dedicated "Other (Specify)" supplemental tab, one row per entry.
+            excludedLinkIds =
+              if (resource == MOH_505_RESOURCE) MOH_505_OTHERS_SPECIFY_CHILD_LINK_IDS
+              else emptySet(),
+          ),
       )
     }
   val patientName = contextWithLabResults.mappedPatientName()
@@ -601,6 +627,7 @@ private fun WorkflowCaseContext.toWorkflowRecord(
 private fun WorkflowCaseContext.resolveCaseTitle(): String =
   resolveSocialInvestigationTitle()
     ?: resolveRumorTrackingTitle()
+    ?: resolveMoh505Title()
     ?: patient.patientName()
     ?: answerValue(*NAME_FIELD_LINK_IDS.toTypedArray())
     ?: responseFields.valueForAliases("Patient Name", "Name", "Case Name", "Client Name")
@@ -668,6 +695,41 @@ private fun WorkflowCaseContext.resolveRumorTrackingTitle(): String? {
     )
 
   return (village ?: subCounty ?: county)?.let { "$it Rumor Report" } ?: "Rumor Report"
+}
+
+/**
+ * MOH 505 is a facility-level weekly return (subjectType is Encounter, no patient at all) — title
+ * by reporting facility/site and the reporting week, so each week's submission is distinguishable
+ * in the report list.
+ */
+private fun WorkflowCaseContext.resolveMoh505Title(): String? {
+  if (references.questionnaireResource != MOH_505_RESOURCE) {
+    return null
+  }
+
+  val facility =
+    answerValue(
+      "819946803677_national",
+      "819946803677_county",
+      "819946803677_sub_county",
+      "819946803677",
+    )
+  val subCounty =
+    answerValue(
+      "819946803642_national",
+      "819946803642_county",
+      "819946803642_sub_county",
+      "819946803642",
+    )
+  val site = facility ?: subCounty
+  val weekEnding = answerValue("728034137219")
+
+  return when {
+    site != null && weekEnding != null -> "$site — Week Ending $weekEnding"
+    site != null -> "$site MOH 505 Report"
+    weekEnding != null -> "MOH 505 Report — Week Ending $weekEnding"
+    else -> "MOH 505 Report"
+  }
 }
 
 private fun WorkflowCaseContext.buildRecordFields(
@@ -807,6 +869,39 @@ private fun WorkflowCaseContext.buildLabResultsSections(): List<WorkflowCaseDeta
   return sections
 }
 
+/**
+ * MOH 505's "Others (Specify)" group repeats — one entry per additional disease the reporter names.
+ * Each repetition becomes its own section (named after that entry's disease, with its own four
+ * counts as separate answer rows) instead of being flattened through the generic per-field/per-tab
+ * summary, which would otherwise comma-join every repetition's values together and lose which count
+ * belongs to which disease.
+ */
+private fun WorkflowCaseContext.buildOthersSpecifySections(): List<WorkflowCaseDetailSection> =
+  responseJson.responseItemInstances("others-specify-entry").mapIndexed { index, entry ->
+    val entryAnswers = entry.answersByLinkId()
+    fun value(linkId: String): String? =
+      entryAnswers[linkId]?.firstOrNull()?.answerDisplayValue()?.takeIf(String::isNotBlank)
+
+    val name = value("others-specify-cases-name") ?: "Other ${index + 1}"
+    val answers =
+      listOfNotNull(
+        value("others-specify-cases-under-5")?.let {
+          WorkflowCaseDetailAnswer(label = "Under 5 Cases", value = it)
+        },
+        value("others-specify-cases-over-5")?.let {
+          WorkflowCaseDetailAnswer(label = "Over 5 Cases", value = it)
+        },
+        value("others-specify-deaths-under-5")?.let {
+          WorkflowCaseDetailAnswer(label = "Under 5 Deaths", value = it)
+        },
+        value("others-specify-deaths-over-5")?.let {
+          WorkflowCaseDetailAnswer(label = "Over 5 Deaths", value = it)
+        },
+      )
+
+    WorkflowCaseDetailSection(id = "others-specify-$index", title = name, answers = answers)
+  }
+
 private fun buildLabResultsQuestionnaireSections(
   questionnaireJson: JsonObject,
   labResponse: WorkflowLinkedQuestionnaireResponse,
@@ -860,7 +955,8 @@ private fun WorkflowRecord.summaryHighlights(
 }
 
 private fun JsonObject.buildCaseDetailTabs(
-  answersByLinkId: Map<String, List<JsonObject>>
+  answersByLinkId: Map<String, List<JsonObject>>,
+  excludedLinkIds: Set<String> = emptySet(),
 ): List<WorkflowCaseDetailTab> =
   itemArray().mapNotNull { element ->
     val item = element.jsonObject
@@ -871,7 +967,7 @@ private fun JsonObject.buildCaseDetailTabs(
     WorkflowCaseDetailTab(
       id = item.linkId(),
       title = item.displayTitle(),
-      sections = item.buildSections(answersByLinkId),
+      sections = item.buildSections(answersByLinkId, excludedLinkIds = excludedLinkIds),
       emptyMessage = DEFAULT_SUMMARY_EMPTY_MESSAGE,
     )
   }
@@ -1136,6 +1232,28 @@ private fun JsonObject.answersByLinkId(): Map<String, List<JsonObject>> {
 
   collect(responseItems())
   return answers
+}
+
+/**
+ * Every response item matching [linkId], anywhere in this tree — one match per repetition of a
+ * repeating group (e.g. moh-505's "others-specify-entry"), each with its own nested "item" array
+ * intact so [answersByLinkId] can be scoped to that single repetition.
+ */
+private fun JsonObject.responseItemInstances(linkId: String): List<JsonObject> {
+  val matches = mutableListOf<JsonObject>()
+
+  fun collect(items: JsonArray) {
+    for (element in items) {
+      val item = element.jsonObject
+      if (item["linkId"]?.jsonPrimitive?.contentOrNull == linkId) {
+        matches += item
+      }
+      collect(item["item"]?.jsonArray.orEmpty())
+    }
+  }
+
+  collect(responseItems())
+  return matches
 }
 
 private fun List<Resource>.toObservationIndex(): ObservationIndex {
