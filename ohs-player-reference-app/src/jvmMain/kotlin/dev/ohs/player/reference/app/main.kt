@@ -24,24 +24,12 @@ import dev.ohs.player.reference.app.auth.FileAuthSessionStore
 import dev.ohs.player.reference.app.auth.defaultReferenceStorageDirectory
 import dev.ohs.player.reference.app.auth.initializeReferenceAuth
 import dev.ohs.player.reference.app.data.di.initKoin
-import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
-import dev.ohs.player.reference.app.data.repository.FhirRepository
-import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
 import org.koin.dsl.module
 
 fun main() = application {
   val storageDirectory = defaultReferenceStorageDirectory()
   initializeReferenceAuth(FileAuthSessionStore(storageDirectory))
-  if (FhirEngineProvider.isNotInitialized()) {
-    FhirEngineProvider.init(
-      FhirEngineConfiguration(storageDirectory = storageDirectory.absolutePath)
-    )
-  }
-  initKoin(
-    module {
-      single<FhirEngine> { FhirEngineProvider.getInstance() }
-      single<FhirRepository> { SeededFhirRepository(FhirEngineRepository(get())) }
-    }
-  )
+  FhirEngineProvider.init(FhirEngineConfiguration(storageDirectory = storageDirectory.absolutePath))
+  initKoin(module { single<FhirEngine> { FhirEngineProvider.getInstance() } })
   Window(onCloseRequest = ::exitApplication, title = "OHS Player Reference App") { App() }
 }

@@ -24,32 +24,22 @@ import dev.ohs.fhir.datacapture.DataCaptureConfig
 import dev.ohs.player.reference.app.auth.AndroidAuthSessionStore
 import dev.ohs.player.reference.app.auth.initializeReferenceAuth
 import dev.ohs.player.reference.app.data.di.initKoin
-import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
-import dev.ohs.player.reference.app.data.repository.FhirRepository
-import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
 import dev.ohs.player.reference.app.feature.workflow.AndroidAssetLocationQueryResolver
 import org.koin.dsl.module
 
 class ReferenceAppApplication : Application(), DataCaptureConfig.Provider {
-  private val appDataCaptureConfig by
+    private val appDataCaptureConfig by
     lazy(LazyThreadSafetyMode.NONE) {
-      DataCaptureConfig(xFhirQueryResolver = AndroidAssetLocationQueryResolver(this))
+        DataCaptureConfig(xFhirQueryResolver = AndroidAssetLocationQueryResolver(this))
     }
 
-  override fun onCreate() {
-    super.onCreate()
-    initializeReferenceAuth(AndroidAuthSessionStore(this))
-    if (FhirEngineProvider.isNotInitialized()) {
-      FhirEngineProvider.init(FhirEngineConfiguration(), applicationContext)
+    override fun onCreate() {
+        super.onCreate()
+        initializeReferenceAuth(AndroidAuthSessionStore(this))
+        FhirEngineProvider.init(FhirEngineConfiguration(), applicationContext)
+        initKoin(module { single<FhirEngine> { FhirEngineProvider.getInstance(applicationContext) } })
+        DataCapture.initialize(this)
     }
-    initKoin(
-      module {
-        single<FhirEngine> { FhirEngineProvider.getInstance(applicationContext) }
-        single<FhirRepository> { SeededFhirRepository(FhirEngineRepository(get())) }
-      }
-    )
-    DataCapture.initialize(this)
-  }
 
-  override fun getDataCaptureConfig(): DataCaptureConfig = appDataCaptureConfig
+    override fun getDataCaptureConfig(): DataCaptureConfig = appDataCaptureConfig
 }

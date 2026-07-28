@@ -406,7 +406,7 @@
         {
           "id": "case-management-home",
           "title": "Case Management",
-          "subtitle": "Existing household and patient screens continue from here.",
+          "subtitle": "Select a case type to proceed.",
           "sectionTitle": "Available Forms",
           "layout": "grid",
           "items": [

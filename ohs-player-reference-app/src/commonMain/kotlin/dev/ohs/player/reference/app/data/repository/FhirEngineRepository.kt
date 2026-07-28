@@ -15,9 +15,12 @@
  */
 package dev.ohs.player.reference.app.data.repository
 
+import dev.ohs.fhir.FhirEngine
+import dev.ohs.fhir.db.ResourceNotFoundException
 import dev.ohs.fhir.model.r4.Bundle
 import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.fhir.model.r4.terminologies.ResourceType
+import dev.ohs.fhir.search.Search
 import dev.ohs.player.reference.app.generateId
 import dev.ohs.player.reference.app.util.FhirJson
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,13 +32,11 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-internal class EngineBackedFhirRepository(
-  private val getResource: suspend (ResourceType, String) -> Resource?,
-  private val listResources: suspend (ResourceType) -> List<Resource>,
-  private val createResource: suspend (Resource) -> Unit,
-  private val updateResource: suspend (Resource) -> Unit,
-  private val withTransaction: suspend (suspend () -> Unit) -> Unit,
-) : FhirRepository {
+/**
+ * [FhirRepository] backed by a real on-disk database via [FhirEngine]. Same on every platform —
+ * [FhirEngine] is a commonMain interface, so there's no need for per-platform actuals here.
+ */
+class FhirEngineRepository(private val fhirEngine: FhirEngine) : FhirRepository {
   private val json = FhirJson.instance
   private val _revision = MutableStateFlow(0L)
 
@@ -50,24 +51,25 @@ internal class EngineBackedFhirRepository(
     val normalized = normalizeBundleResources(bundle)
     if (normalized.isEmpty()) return 0
 
-    withTransaction { normalized.forEach { upsertResource(it) } }
+    fhirEngine.withTransaction { normalized.forEach { upsertResource(it) } }
     _revision.value += 1
     return normalized.size
   }
 
   override suspend fun get(resourceType: String, id: String): Resource? {
-    return getResource(ResourceType.valueOf(resourceType), id)
+    return runCatching { fhirEngine.get(ResourceType.valueOf(resourceType), id) }
+      .getOrElse { if (it is ResourceNotFoundException) null else throw it }
   }
 
   override suspend fun all(resourceType: String): List<Resource> {
-    return listResources(ResourceType.valueOf(resourceType))
+    return fhirEngine.search<Resource>(Search(ResourceType.valueOf(resourceType))).map { it.resource }
   }
 
   private suspend fun upsertResource(resource: Resource) {
     val withId = if (resource.id == null) resource.withId(generateId()) else resource
     val type = ResourceType.valueOf(resourceTypeOf(withId))
-    val exists = withId.id?.let { getResource(type, it) } != null
-    if (exists) updateResource(withId) else createResource(withId)
+    val exists = withId.id?.let { runCatching { fhirEngine.get(type, it) }.isSuccess } == true
+    if (exists) fhirEngine.update(withId) else fhirEngine.create(withId)
   }
 
   private fun normalizeBundleResources(bundle: Bundle): List<Resource> {

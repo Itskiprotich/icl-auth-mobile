@@ -15,8 +15,6 @@
  */
 package dev.ohs.player.reference.app
 
-import dev.ohs.player.generated.state.GroupListState
-import dev.ohs.player.generated.state.GroupMemberState
 import dev.ohs.player.generated.state.PatientAllergyState
 import dev.ohs.player.generated.state.PatientConditionState
 import dev.ohs.player.generated.state.PatientImmunizationState
@@ -35,13 +33,6 @@ class AppViewRegistryTest {
   @Test
   fun allRequiredRenderersAreRegistered() {
     val registry = buildAppViewRegistry()
-
-    // Group list
-    registry.componentRenderer<GroupListState>(ViewTypeCS.GroupCard)
-    registry.layoutRenderer<GroupListState>(VerticalListRenderer.VIEW_TYPE)
-
-    // Group profile
-    registry.componentRenderer<GroupMemberState>(ViewTypeCS.MemberItem)
 
     // Patient list — component + every layout
     registry.componentRenderer<PatientSummaryState>(ViewTypeCS.PatientCard)

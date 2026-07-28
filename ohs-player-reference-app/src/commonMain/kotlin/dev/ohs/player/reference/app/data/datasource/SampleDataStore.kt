@@ -17,11 +17,9 @@ package dev.ohs.player.reference.app.data.datasource
 
 import dev.ohs.fhir.model.r4.AllergyIntolerance
 import dev.ohs.fhir.model.r4.Condition
-import dev.ohs.fhir.model.r4.Group
 import dev.ohs.fhir.model.r4.Immunization
 import dev.ohs.fhir.model.r4.MedicationRequest
 import dev.ohs.fhir.model.r4.Patient
-import dev.ohs.fhir.model.r4.RelatedPerson
 import dev.ohs.fhir.model.r4.Resource
 import dev.ohs.player.library.model.SearchResult
 import dev.ohs.player.reference.app.data.patientIdFromReference
@@ -82,44 +80,6 @@ suspend fun patientProfileSearchResult(
     resource = patient,
     included = mapOf("patient" to listOf(patient)),
     revIncluded = revIncluded.ifEmpty { null },
-  )
-}
-
-/**
- * Group list: root = Group only. Member count is derived from `Group.member.size` on the resource
- * itself — no additional includes needed.
- */
-suspend fun groupListSearchResults(repository: FhirRepository): List<SearchResult<Resource>> =
-  repository.all("Group").filterIsInstance<Group>().map { group -> SearchResult(resource = group) }
-
-/**
- * Group profile: root = Group, member Patients in included, RelatedPersons in revIncluded. Mirrors
- * a real `GET /Group/{id}?_include=Group:member&_revinclude=RelatedPerson:patient` response. Both
- * GroupHeaderExtractor and GroupMemberExtractor run against this single result.
- */
-suspend fun groupProfileSearchResult(
-  groupId: String,
-  repository: FhirRepository,
-): SearchResult<Resource>? {
-  val group = repository.get("Group", groupId) as? Group ?: return null
-  val memberPatients =
-    group.member.mapNotNull { member ->
-      member.entity.reference?.value?.let(::patientId)?.let {
-        repository.get("Patient", it) as? Patient
-      }
-    }
-  val relatedPersons =
-    repository.all("RelatedPerson").filterIsInstance<RelatedPerson>().filter { relatedPerson ->
-      val relatedPatientId = patientId(relatedPerson.patient.reference?.value)
-      memberPatients.any { it.id == relatedPatientId }
-    }
-
-  return SearchResult(
-    resource = group,
-    included = if (memberPatients.isNotEmpty()) mapOf("member" to memberPatients) else null,
-    revIncluded =
-      if (relatedPersons.isNotEmpty()) mapOf(("RelatedPerson" to "patient") to relatedPersons)
-      else null,
   )
 }
 

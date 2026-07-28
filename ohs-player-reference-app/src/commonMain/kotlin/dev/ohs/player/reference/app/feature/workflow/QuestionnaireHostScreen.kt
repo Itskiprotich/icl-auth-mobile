@@ -69,7 +69,7 @@ import dev.ohs.fhir.model.r4.Reference
 import dev.ohs.fhir.model.r4.Specimen
 import dev.ohs.fhir.model.r4.String as FhirString
 import dev.ohs.fhir.model.r4.Uri
-import dev.ohs.player.reference.app.generateUuid
+import dev.ohs.player.reference.app.generateId
 import dev.ohs.player.reference.app.util.FhirJson
 import kotlin.time.Clock
 import kotlinx.coroutines.CancellationException
@@ -116,7 +116,7 @@ internal fun QuestionnaireHostScreen(
 ) {
   val questionnaireResourcePath = resource
   val fhirJson = FhirJson.instance
-  fun String?.orGeneratedId(): String = takeUnless { it.isNullOrBlank() } ?: generateUuid()
+  fun String?.orGeneratedId(): String = takeUnless { it.isNullOrBlank() } ?: generateId()
   fun String?.takeIfNotBlank(): String? = this?.trim()?.takeIf(String::isNotBlank)
 
   val screenState by
@@ -232,8 +232,8 @@ internal fun QuestionnaireHostScreen(
                     scope.launch {
                       isSubmitting = true
                       try {
-                        val patientId = launchContext?.patientId.takeIfNotBlank() ?: generateUuid()
-                        val encounterId = generateUuid()
+                        val patientId = launchContext?.patientId.takeIfNotBlank() ?: generateId()
+                        val encounterId = generateId()
                         val patientReference = FhirString(value = "Patient/$patientId")
                         val patientRef = Reference(reference = patientReference)
 
@@ -531,7 +531,7 @@ private fun postProcessExtractedBundle(
   return extractedBundle.copy(entry = updatedEntries)
 }
 
-private fun String?.orGeneratedId(): String = this?.takeIf(String::isNotBlank) ?: generateUuid()
+private fun String?.orGeneratedId(): String = this?.takeIf(String::isNotBlank) ?: generateId()
 
 private fun prepareSupervisorChecklistResponse(
   response: dev.ohs.fhir.model.r4.QuestionnaireResponse,

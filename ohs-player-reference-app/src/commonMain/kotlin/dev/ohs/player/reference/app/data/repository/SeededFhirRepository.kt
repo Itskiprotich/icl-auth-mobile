@@ -55,8 +55,7 @@ class SeededFhirRepository(private val delegate: FhirRepository) : FhirRepositor
       if (initialized) return
 
       val hasPatients = delegate.all("Patient").isNotEmpty()
-      val hasGroups = delegate.all("Group").isNotEmpty()
-      if (!hasPatients && !hasGroups) {
+      if (!hasPatients) {
         delegate.upsert(loadSampleResourcesBundle())
       }
 

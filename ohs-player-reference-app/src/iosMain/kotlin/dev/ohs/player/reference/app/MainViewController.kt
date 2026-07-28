@@ -22,21 +22,11 @@ import dev.ohs.fhir.FhirEngineProvider
 import dev.ohs.player.reference.app.auth.AppleAuthSessionStore
 import dev.ohs.player.reference.app.auth.initializeReferenceAuth
 import dev.ohs.player.reference.app.data.di.initKoin
-import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
-import dev.ohs.player.reference.app.data.repository.FhirRepository
-import dev.ohs.player.reference.app.data.repository.SeededFhirRepository
 import org.koin.dsl.module
 
 fun MainViewController() = run {
   initializeReferenceAuth(AppleAuthSessionStore())
-  if (FhirEngineProvider.isNotInitialized()) {
-    FhirEngineProvider.init(FhirEngineConfiguration())
-  }
-  initKoin(
-    module {
-      single<FhirEngine> { FhirEngineProvider.getInstance() }
-      single<FhirRepository> { SeededFhirRepository(FhirEngineRepository(get())) }
-    }
-  )
+  FhirEngineProvider.init(FhirEngineConfiguration())
+  initKoin(module { single<FhirEngine> { FhirEngineProvider.getInstance() } })
   ComposeUIViewController { App() }
 }

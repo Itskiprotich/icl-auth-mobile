@@ -16,6 +16,7 @@
 package dev.ohs.player.reference.app
 
 import icl.ohs.libs.auth.models.IclAuthConfig
+import kotlin.String
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -24,6 +25,5 @@ internal const val REFERENCE_FHIR_BASE_URL = "https://dsrkeycloak.intellisoftken
 
 internal val REFERENCE_AUTH_CONFIG = IclAuthConfig(baseAuthUrl = REFERENCE_AUTH_BASE_URL)
 
-@OptIn(ExperimentalUuidApi::class) fun generateUuid(): String = Uuid.random().toString()
-
-fun generateId(): String = generateUuid()
+@OptIn(ExperimentalUuidApi::class)
+fun generateId(): String = Uuid.random().toString()

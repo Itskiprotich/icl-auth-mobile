@@ -15,23 +15,32 @@
  */
 package dev.ohs.player.reference.app.data.di
 
-import dev.ohs.player.reference.app.data.repository.GroupRepository
+import dev.ohs.player.reference.app.data.repository.FhirEngineRepository
+import dev.ohs.player.reference.app.data.repository.FhirRepository
 import dev.ohs.player.reference.app.data.repository.PatientRepository
-import dev.ohs.player.reference.app.feature.group.list.GroupListViewModel
-import dev.ohs.player.reference.app.feature.group.profile.GroupProfileViewModel
 import dev.ohs.player.reference.app.feature.patient.list.PatientListViewModel
 import dev.ohs.player.reference.app.feature.patient.profile.PatientProfileViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
+/**
+ * Binds the production [FhirRepository], backed by [FhirEngineRepository]. Requires a
+ * [dev.ohs.fhir.FhirEngine] binding, supplied by each platform's module (see [initKoin] callers).
+ */
+internal val fhirEngineRepositoryModule = module {
+  single<FhirRepository> { FhirEngineRepository(get()) }
+}
+
+/**
+ * Repositories that only depend on [FhirRepository] — kept separate from
+ * [fhirEngineRepositoryModule] so tests can swap in a fake [FhirRepository] without redeclaring
+ * these bindings.
+ */
 internal val repositoryModule = module {
   single { PatientRepository(get()) }
-  single { GroupRepository(get()) }
 }
 
 internal val viewModelModule = module {
   viewModel { PatientListViewModel(get()) }
   viewModel { (patientId: String) -> PatientProfileViewModel(patientId, get()) }
-  viewModel { GroupListViewModel(get()) }
-  viewModel { (groupId: String) -> GroupProfileViewModel(groupId, get()) }
 }

@@ -21,7 +21,8 @@ import dev.ohs.player.reference.app.data.encounterIdFromReference
 import dev.ohs.player.reference.app.data.patientIdFromReference
 import dev.ohs.player.reference.app.data.repository.FhirRepository
 import dev.ohs.player.reference.app.data.repository.resolveFhirRepository
-import dev.ohs.player.reference.app.generateUuid
+import dev.ohs.player.reference.app.generateId
+
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -204,7 +205,7 @@ private suspend fun listWorkflowQuestionnaireResponses(
 private fun workflowRepository(): FhirRepository = resolveFhirRepository()
 
 private fun QuestionnaireResponse.withIdIfMissing(): QuestionnaireResponse =
-  if (id.isNullOrBlank()) copy(id = generateUuid()) else this
+  if (id.isNullOrBlank()) copy(id = generateId()) else this
 
 private fun QuestionnaireResponse.matchesRecordResource(resource: String): Boolean =
   WorkflowCasePresentationRegistry.matchesRecordResource(

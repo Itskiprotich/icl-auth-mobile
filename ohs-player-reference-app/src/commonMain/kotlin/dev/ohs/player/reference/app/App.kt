@@ -39,8 +39,6 @@ import androidx.savedstate.read
 import dev.ohs.player.library.registry.LocalViewRegistry
 import dev.ohs.player.reference.app.auth.initializeReferenceAuthIfNeeded
 import dev.ohs.player.reference.app.components.ReferenceBottomBar
-import dev.ohs.player.reference.app.feature.group.list.GroupListScreen
-import dev.ohs.player.reference.app.feature.group.profile.GroupProfileScreen
 import dev.ohs.player.reference.app.feature.home.HomeScreen
 import dev.ohs.player.reference.app.feature.home.HomeShellViewModel
 import dev.ohs.player.reference.app.feature.home.ProfileScreen
@@ -61,15 +59,12 @@ private const val HOME_ROUTE = "home"
 private const val PROFILE_ROUTE = "profile"
 private const val NOTIFICATIONS_ROUTE = "home/notifications"
 private const val CHANGE_PASSWORD_ROUTE = "profile/change-password"
-private const val CASE_MANAGEMENT_ROUTE = "workflow/case-management"
 private const val WORKFLOW_MODULE_ROUTE = "workflow/module"
 private const val WORKFLOW_NODE_ROUTE = "workflow/node"
 private const val WORKFLOW_ACTION_ROUTE = "workflow/action"
 private const val WORKFLOW_CASE_DETAILS_ROUTE = "workflow/case-details"
 private const val WORKFLOW_CASE_TAB_ACTION_ROUTE = "workflow/case-tab-action"
-private const val GROUP_PROFILE_ROUTE = "groupProfile"
 private const val PATIENT_PROFILE_ROUTE = "patientProfile"
-private const val GROUP_ID_ARG = "groupId"
 private const val PATIENT_ID_ARG = "patientId"
 private const val WORKFLOW_MODULE_ID_ARG = "workflowModuleId"
 private const val WORKFLOW_NODE_ID_ARG = "workflowNodeId"
@@ -131,11 +126,7 @@ private fun ReferenceAppNavigation(onLogout: () -> Unit) {
           workflows = workflowCards,
           onNotificationsClick = { navController.navigate(NOTIFICATIONS_ROUTE) },
           onWorkflowClick = { workflow ->
-            if (workflow.key == "case-management") {
-              navController.navigate(CASE_MANAGEMENT_ROUTE)
-            } else {
-              navController.navigate("$WORKFLOW_MODULE_ROUTE/${workflow.key}")
-            }
+            navController.navigate("$WORKFLOW_MODULE_ROUTE/${workflow.key}")
           },
         )
       }
@@ -158,13 +149,6 @@ private fun ReferenceAppNavigation(onLogout: () -> Unit) {
           config = CHANGE_PASSWORD_SCREEN_CONFIG,
           initialIdNumber = uiState.user?.idNumber.orEmpty(),
           onPasswordResetSuccess = { navController.popBackStack() },
-        )
-      }
-
-      composable(CASE_MANAGEMENT_ROUTE) {
-        GroupListScreen(
-          onGroupClick = { id -> navController.navigate("$GROUP_PROFILE_ROUTE/$id") },
-          onBack = { navController.popBackStack() },
         )
       }
 
@@ -267,18 +251,6 @@ private fun ReferenceAppNavigation(onLogout: () -> Unit) {
           questionnaireResponseId = questionnaireResponseId,
           tabId = tabId,
           onBack = { navController.popBackStack() },
-        )
-      }
-
-      composable(
-        route = "$GROUP_PROFILE_ROUTE/{$GROUP_ID_ARG}",
-        arguments = listOf(navArgument(GROUP_ID_ARG) { type = NavType.StringType }),
-      ) { back ->
-        val groupId = back.arguments?.read { getString(GROUP_ID_ARG) }.orEmpty()
-        GroupProfileScreen(
-          groupId = groupId,
-          onBack = { navController.popBackStack() },
-          onMemberClick = { id -> navController.navigate("$PATIENT_PROFILE_ROUTE/$id") },
         )
       }
 

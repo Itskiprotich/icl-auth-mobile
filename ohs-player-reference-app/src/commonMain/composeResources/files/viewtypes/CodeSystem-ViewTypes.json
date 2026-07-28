@@ -47,18 +47,6 @@
     {
       "code": "SectionCard",
       "display": "Section wrapper"
-    },
-    {
-      "code": "GroupCard",
-      "display": "Household list card"
-    },
-    {
-      "code": "GroupHeader",
-      "display": "Household profile header"
-    },
-    {
-      "code": "MemberItem",
-      "display": "Household member row"
     }
   ]
 }

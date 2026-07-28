@@ -171,6 +171,23 @@ internal object WorkflowCasePresentationRegistry {
         questionnaireKeywords = setOf("mpox", "supervisory", "checklist"),
         emptyMessage = "No locally saved supervisory checklists are available yet.",
       ),
+      WorkflowCasePresentationSpec(
+        recordResource = "records/visceral-leishmaniasis-cases.json",
+        questionnaireResources = setOf("questionnaires/visceral-leishmaniasis-case.json"),
+        questionnaireKeywords = setOf("visceral-leishmaniasis-case", "visceral-leishmaniasis"),
+        indicatorLinkIds =
+          setOf(
+            "817903655885",
+            "606848143908",
+            "123103147447",
+            "185890957847",
+            "728034137219",
+            "594158306957",
+            "433410405758",
+            "699010843343",
+          ),
+        emptyMessage = "No locally saved visceral leishmaniasis cases are available yet.",
+      ),
       // Social Forms — both categories (County/Sub County and Community) are dependent
       // sub-forms of the same Social Investigation Form, not independent workflows, so there is
       // no separate per-category record list: both are matched by this single spec and

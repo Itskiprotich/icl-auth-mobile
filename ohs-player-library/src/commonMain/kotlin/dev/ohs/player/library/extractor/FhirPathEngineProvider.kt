@@ -16,6 +16,7 @@
 package dev.ohs.player.library.extractor
 
 import dev.ohs.fhir.fhirpath.FhirPathEngine
+import dev.ohs.fhir.fhirpath.forR4
 
 /**
  * Shared, lazily-initialized R4 FHIRPath engine. [GenericStateExtractor] uses it by default.

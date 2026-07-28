@@ -55,11 +55,9 @@ kotlin {
   applyDefaultHierarchyTemplate()
   sourceSets {
     androidMain.dependencies {
-      implementation(libs.ohs.fhir.engine)
       implementation(libs.compose.uiToolingPreview)
       implementation(libs.androidx.activity.compose)
     }
-    appleMain.dependencies { implementation(libs.ohs.fhir.engine) }
     commonMain.dependencies {
       implementation(project(":icl-auth"))
       implementation(project(":ohs-player-library"))
@@ -84,6 +82,7 @@ kotlin {
       implementation(libs.ohs.fhir.model)
       implementation(libs.ohs.fhir.path)
       implementation(libs.ohs.fhir.data.capture)
+      implementation(libs.ohs.fhir.engine)
     }
     commonTest.dependencies {
       implementation(libs.kotlin.test)
@@ -91,7 +90,6 @@ kotlin {
       implementation(libs.kotlinx.coroutines.test)
     }
     jvmMain.dependencies {
-      implementation(libs.ohs.fhir.engine)
       implementation(compose.desktop.currentOs)
       implementation(libs.kotlinx.coroutinesSwing)
     }
