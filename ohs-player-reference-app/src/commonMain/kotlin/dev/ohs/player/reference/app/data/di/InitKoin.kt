@@ -22,14 +22,14 @@ import org.koin.mp.KoinPlatform
 /**
  * Starts the single global Koin instance for the app. [platformModule] supplies the
  * platform-specific [dev.ohs.fhir.FhirEngine] binding that [fhirEngineRepositoryModule] depends
- * on. Platforms without FhirEngine (e.g. web) can instead supply a [dev.ohs.player.reference.app.data.repository.FhirRepository]
- * binding directly in [platformModule], which overrides [fhirEngineRepositoryModule].
+ * on. Platforms without FhirEngine (e.g. web) that supply a
+ * [dev.ohs.player.reference.app.data.repository.FhirRepository] directly in [platformModule] must
+ * pass `override = true` on that module so it takes precedence over [fhirEngineRepositoryModule].
  */
 fun initKoin(platformModule: Module) {
   if (KoinPlatform.getKoinOrNull() != null) return
 
   startKoin {
-    allowOverride(true)
-    modules(fhirEngineRepositoryModule, repositoryModule, viewModelModule, platformModule)
+    modules(platformModule, fhirEngineRepositoryModule, repositoryModule, viewModelModule)
   }
 }

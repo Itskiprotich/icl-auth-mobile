@@ -28,6 +28,6 @@ import org.koin.dsl.module
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
   initializeReferenceAuth(WebAuthSessionStore())
-  initKoin(module { single<FhirRepository> { SeededFhirRepository(InMemoryFhirRepository()) } })
+  initKoin(module(override = true) { single<FhirRepository> { SeededFhirRepository(InMemoryFhirRepository()) } })
   ComposeViewport { App() }
 }
